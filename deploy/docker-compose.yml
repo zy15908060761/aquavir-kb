@@ -32,7 +32,7 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./static:/usr/share/nginx/html:ro
-      - ../public_downloads:/usr/share/nginx/html/downloads:ro
+      - ../public_downloads:/tmp/downloads:ro
       - certbot_www:/var/www/certbot:ro
       - ssl_certs:/etc/letsencrypt:ro
     ports:
