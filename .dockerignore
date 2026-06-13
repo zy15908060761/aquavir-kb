@@ -20,6 +20,7 @@ backups/
 
 # Deploy configs (not needed inside container)
 deploy/
+!deploy/requirements.txt
 
 # Git
 .git/
