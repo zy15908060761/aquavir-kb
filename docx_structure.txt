@@ -1,0 +1,34 @@
+[Normal] 文章写作架构
+[Heading 1] 标题
+[Normal] ""
+[Heading 1] 一、摘要 (Abstract)
+[Heading 2] （1）背景
+[Heading 2] （2）数据库介绍
+[Heading 2] （3）核心创新
+[Heading 2] （4）可用性与意义
+[Heading 1] 二、引言 (Introduction)
+[Heading 1] 第1段：甲壳动物病毒的背景与重要性
+[Heading 2] 第2段：已有数据资源的积累与不足
+[Heading 2] 第段：本研究的工作
+[Heading 2] 三、材料与方法 (Materials and Methods)
+[Heading 2] 1. 数据收集、验证与管理 (Data collection, verification, and management)
+[Heading 2] 2.
+[Heading 2] 3. 基因组注释、非冗余蛋白数据库与核心基因鉴定
+[Heading 2] 4.
+[Heading 2] 5. 系统发育进化关系分析
+[Heading 2] 6. 应用型知识库构建
+[Heading 2] 7.
+[Heading 1] 四、结果 (Results)
+[Heading 2] 1. 数据库概览 (Database overview)
+[Heading 2] 2.
+[Heading 2] 3. 基因组与蛋白质组 (Genes and proteins)
+[List Bullet] 4.
+[Heading 2] 5. 病毒分离株与蛋白质详情记录
+[Heading 2] 6. 系统发育进化关系
+[Heading 2] 7.
+[Heading 1] 五、讨论 (Discussion)
+[Heading 2] 第1段：数据库的意义总结
+[Heading 2] 第2段：
+[Heading 2] 第3段：局限性
+[Heading 2] 第4段：未来展望
+[Heading 1] 六、数据可用性 (Data availability)

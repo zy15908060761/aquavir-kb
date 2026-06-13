@@ -1,0 +1,154 @@
+{
+  "Cnidaria_coral": {
+    "count": 290,
+    "new": 93,
+    "phylum": "Cnidaria",
+    "sample_accs": [
+      "PP700500.1",
+      "PP700499.1",
+      "PP700498.1",
+      "PP700497.1",
+      "PP700496.1",
+      "PP700495.1",
+      "PP700494.1",
+      "PP700493.1",
+      "PP700492.1",
+      "PP700491.1"
+    ]
+  },
+  "Cnidaria_other": {
+    "count": 9357,
+    "new": 0,
+    "phylum": "Cnidaria",
+    "sample_accs": []
+  },
+  "Porifera": {
+    "count": 99,
+    "new": 68,
+    "phylum": "Porifera",
+    "sample_accs": [
+      "QP747242.1",
+      "QP747241.1",
+      "QP747203.1",
+      "QP747149.1",
+      "QP747107.1",
+      "QP747100.1",
+      "QP747031.1",
+      "QP746948.1",
+      "QP746868.1",
+      "QP746628.1"
+    ]
+  },
+  "Echinodermata": {
+    "count": 55,
+    "new": 4,
+    "phylum": "Echinodermata",
+    "sample_accs": [
+      "BK066815.1",
+      "BK066724.1",
+      "BK022611.1",
+      "BK052683.1"
+    ]
+  },
+  "Annelida": {
+    "count": 76,
+    "new": 68,
+    "phylum": "Annelida",
+    "sample_accs": [
+      "QP747068.1",
+      "QP747065.1",
+      "QP746376.1",
+      "LC899761.1",
+      "LC899760.1",
+      "BK070394.1",
+      "BK070380.1",
+      "BK070348.1",
+      "PQ055050.1",
+      "PQ055049.1"
+    ]
+  },
+  "Mollusca_new": {
+    "count": 957,
+    "new": 76,
+    "phylum": "Mollusca",
+    "sample_accs": [
+      "QP783352.1",
+      "QP783351.1",
+      "QP783350.1",
+      "QP783349.1",
+      "QP783348.1",
+      "QP746612.1",
+      "QP746497.1",
+      "QP746109.1",
+      "PX491733.1",
+      "PX491732.1"
+    ]
+  },
+  "Nematoda": {
+    "count": 341,
+    "new": 91,
+    "phylum": "Nematoda",
+    "sample_accs": [
+      "QP746899.1",
+      "QP746226.1",
+      "PV938577.1",
+      "PV938575.1",
+      "PV938574.1",
+      "PV938573.1",
+      "PV938572.1",
+      "PV938570.1",
+      "PV938569.1",
+      "PV938568.1"
+    ]
+  },
+  "Platyhelminthes": {
+    "count": 47,
+    "new": 47,
+    "phylum": "Platyhelminthes",
+    "sample_accs": [
+      "PX975022.1",
+      "PX975021.1",
+      "PX975020.1",
+      "PX975019.1",
+      "OP627658.1",
+      "OP548620.1",
+      "BK059758.1",
+      "JX997187.1",
+      "JX997178.1",
+      "JX997175.1"
+    ]
+  },
+  "Rotifera": {
+    "count": 10,
+    "new": 9,
+    "phylum": "Rotifera",
+    "sample_accs": [
+      "NC_078108.1",
+      "NC_078107.1",
+      "MT381950.1",
+      "MT381948.1",
+      "MT381949.1",
+      "MT381947.1",
+      "MK828531.1",
+      "MK828520.1",
+      "FM995221.1"
+    ]
+  },
+  "Coral_sponge_MAGs": {
+    "count": 202,
+    "new": 95,
+    "phylum": "multiple",
+    "sample_accs": [
+      "PP700500.1",
+      "PP700499.1",
+      "PP700498.1",
+      "PP700497.1",
+      "PP700496.1",
+      "PP700495.1",
+      "PP700494.1",
+      "PP700493.1",
+      "PP700492.1",
+      "PP700491.1"
+    ]
+  }
+}

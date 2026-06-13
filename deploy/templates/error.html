@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Error - AquaVir-KB{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-16 text-center">
+    <div class="text-6xl mb-4">&#x26A0;&#xFE0F;</div>
+    <h1 class="text-3xl font-bold text-gray-800 mb-2">
+        {% if status_code == 404 %}Page Not Found{% else %}Internal Server Error{% endif %}
+    </h1>
+    <p class="text-gray-500 mb-8 max-w-lg mx-auto">
+        {% if status_code == 404 %}
+            The page you requested does not exist or has been removed.
+        {% else %}
+            Sorry, the server encountered an issue. The error has been logged. Please try again later or contact the administrator.
+        {% endif %}
+    </p>
+
+    {% if detail and status_code != 404 %}
+    <div class="bg-red-50 border border-red-100 rounded-lg p-4 mb-8 text-left max-w-2xl mx-auto">
+        <h4 class="text-sm font-semibold text-red-800 mb-2">Error Details (debug)</h4>
+        <pre class="text-xs text-red-700 whitespace-pre-wrap break-all">{{ detail }}</pre>
+    </div>
+    {% endif %}
+
+    <div class="flex justify-center gap-4">
+        <a href="/" class="bg-teal-600 hover:bg-teal-500 text-white px-6 py-2.5 rounded-lg font-medium transition">Back to Home</a>
+        <a href="/search" class="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-6 py-2.5 rounded-lg font-medium transition">Go to Search</a>
+    </div>
+</div>
+{% endblock %}

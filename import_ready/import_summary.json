@@ -1,0 +1,18 @@
+{
+  "total_literature": 7303,
+  "new_literature": 7160,
+  "existing_in_db": 170,
+  "host_virus_candidates": 13068,
+  "high_quality_associations": 2478,
+  "by_phylum": {
+    "Cnidaria": 885,
+    "Mollusca": 3061,
+    "Arthropoda": 8427,
+    "Porifera": 695
+  },
+  "new_phylum_literature": {
+    "Cnidaria": 437,
+    "Mollusca": 1207,
+    "Porifera": 502
+  }
+}

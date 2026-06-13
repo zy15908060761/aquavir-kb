@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Taxonomy Browser - AquaVir-KB{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-extrabold text-slate-800">🗂️ Taxonomy Browser</h1>
+        <p class="text-slate-500 mt-2 text-sm">Browse by host phylum → virus family hierarchy, with search and expand support</p>
+    </div>
+
+    <!-- Search -->
+    <div class="card p-4 mb-6">
+        <div class="relative">
+            <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text" id="taxonomy-search" placeholder="Search virus family name..."
+                   class="w-full pl-11 pr-4 py-3 border-2 border-slate-200 rounded-2xl focus:outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-50 text-slate-800 transition-all duration-200">
+        </div>
+    </div>
+
+    <!-- Phylum Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5" id="taxonomy-grid">
+        {% for phylum, data in tree.items() %}
+        {% set label = phylum_labels.get(phylum, phylum) %}
+        {% set is_open = loop.index <= 3 %}
+        <div class="taxonomy-card card-hover overflow-hidden" data-phylum="{{ phylum }}" data-families="{{ data.families.keys()|join(' ') }}">
+            <!-- Card Header -->
+            <div class="flex items-center justify-between px-5 py-4 cursor-pointer border-b border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition"
+                 onclick="toggleCard(this)">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">
+                        {%- if phylum == 'Arthropoda' %}🦐
+                        {%- elif phylum == 'Mollusca' %}🐚
+                        {%- elif phylum == 'Cnidaria' %}🪼
+                        {%- elif phylum == 'Echinodermata' %}⭐
+                        {%- elif phylum == 'Porifera' %}🧽
+                        {%- elif phylum == 'Annelida' %}🪱
+                        {%- elif phylum == 'Nematoda' %}🪱
+                        {%- elif phylum == 'Platyhelminthes' %}🪱
+                        {%- else %}🦠{% endif %}
+                    </span>
+                    <div>
+                        <h3 class="font-bold text-slate-800">{{ label }}</h3>
+                        <p class="text-xs text-slate-400 mt-0.5"><em>{{ phylum }}</em></p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="text-xs text-slate-400 hidden sm:inline">
+                        <strong class="text-slate-700 font-mono text-sm">{{ data.total }}</strong> viruses · <strong class="text-slate-700 font-mono text-sm">{{ data.families|length }}</strong> families
+                    </span>
+                    <span class="toggle-icon text-slate-300 text-sm transition-transform duration-200 {{ 'rotate-90' if is_open else '' }}">▶</span>
+                </div>
+            </div>
+
+            <!-- Family Tags -->
+            <div class="card-body px-5 py-4 {{ 'hidden' if not is_open else '' }}">
+                <div class="flex flex-wrap gap-2">
+                    {% for family, count in data.families|dictsort(by='value')|reverse %}
+                    <a href="/viruses?family={{ family|urlencode }}"
+                       class="family-tag inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200
+                              {% if family == 'Unclassified' %}bg-slate-100 text-slate-500 hover:bg-slate-200
+                              {% else %}bg-teal-50 text-teal-700 hover:bg-teal-100 border border-teal-100{% endif %}"
+                       title="{{ family }}: {{ count }} viruses">
+                        {{ family if family != 'Unclassified' else 'Unclassified' }}
+                        <span class="text-xs font-mono {% if family == 'Unclassified' %}text-slate-400{% else %}text-teal-500{% endif %}">{{ count }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div id="no-results" class="hidden empty-state mt-8">
+        <div class="empty-icon">🔍</div>
+        <div class="empty-title">No matching families</div>
+        <div class="empty-desc">Try other search terms</div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function toggleCard(header) {
+    const body = header.nextElementSibling;
+    const icon = header.querySelector('.toggle-icon');
+    body.classList.toggle('hidden');
+    icon.classList.toggle('rotate-90');
+}
+
+// Search filter
+document.getElementById('taxonomy-search').addEventListener('input', function() {
+    const query = this.value.toLowerCase().trim();
+    const cards = document.querySelectorAll('.taxonomy-card');
+    let anyVisible = false;
+
+    cards.forEach(card => {
+        const phylum = (card.dataset.phylum || '').toLowerCase();
+        const families = (card.dataset.families || '').toLowerCase();
+        const text = phylum + ' ' + families;
+
+        if (!query || text.includes(query)) {
+            card.style.display = '';
+            anyVisible = true;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    document.getElementById('no-results').classList.toggle('hidden', anyVisible || !query);
+});
+</script>
+{% endblock %}

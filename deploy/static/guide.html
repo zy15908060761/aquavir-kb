@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AquaVir-KB 完整部署教程 — 从零到上线</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#0f766e;--primary-dark:#134e4a;--accent:#14b8a6;
+  --bg:#f8fafc;--card:#fff;--text:#1e293b;--text2:#64748b;--border:#e2e8f0;
+  --red:#ef4444;--amber:#f59e0b;--green:#10b981;
+}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans SC",sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.75;counter-reset:step;
+}
+
+/* ---- Sidebar ---- */
+.sidebar{
+  position:fixed;top:0;left:0;width:260px;height:100vh;
+  background:linear-gradient(180deg,#0f766e 0%,#134e4a 100%);
+  color:white;overflow-y:auto;padding:1.5rem;z-index:100;
+  font-size:0.875rem;
+}
+.sidebar h2{font-size:1rem;margin-bottom:1rem;opacity:0.9;letter-spacing:0.5px;}
+.sidebar a{color:rgba(255,255,255,0.75);display:block;padding:0.3rem 0;transition:color 0.15s;}
+.sidebar a:hover{color:white;text-decoration:none;}
+.sidebar .divider{border-top:1px solid rgba(255,255,255,0.15);margin:0.75rem 0;}
+
+/* ---- Main ---- */
+.main{margin-left:260px;padding:2.5rem 3rem;max-width:960px;}
+h1{font-size:2rem;font-weight:800;letter-spacing:-0.5px;margin-bottom:0.5rem;color:var(--primary-dark);}
+h1+p{color:var(--text2);margin-bottom:2rem;}
+
+h2{
+  font-size:1.25rem;font-weight:700;margin:2.5rem 0 1rem;
+  padding-bottom:0.5rem;border-bottom:2px solid var(--border);
+  display:flex;align-items:center;gap:0.75rem;
+}
+h2::before{
+  counter-increment:step;content:counter(step);
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:50%;
+  background:var(--primary);color:white;font-size:0.85rem;font-weight:700;
+  flex-shrink:0;
+}
+h3{font-size:1.05rem;font-weight:600;margin:1.5rem 0 0.5rem;color:var(--text);}
+
+.card{
+  background:var(--card);border:1px solid var(--border);border-radius:10px;
+  padding:1.25rem 1.5rem;margin:1rem 0;
+}
+.card.warn{border-left:4px solid var(--amber);}
+.card.info{border-left:4px solid var(--primary);}
+.card.danger{border-left:4px solid var(--red);}
+.card.good{border-left:4px solid var(--green);}
+.card h4{font-size:0.9rem;margin-bottom:0.35rem;}
+.card p,.card li{font-size:0.875rem;color:var(--text2);}
+
+table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:0.875rem;}
+th,td{padding:0.6rem 0.75rem;text-align:left;border-bottom:1px solid var(--border);}
+th{background:#f1f5f9;font-weight:600;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.5px;}
+tr:hover td{background:#f8fafc;}
+
+pre{
+  background:#1e293b;color:#e2e8f0;border-radius:8px;padding:1rem 1.25rem;
+  overflow-x:auto;font-size:0.82rem;line-height:1.65;margin:0.75rem 0;
+  font-family:"JetBrains Mono","Fira Code","Cascadia Code",Consolas,monospace;
+}
+code{background:#f1f5f9;color:var(--primary-dark);padding:0.125rem 0.375rem;border-radius:4px;font-size:0.85em;}
+pre code{background:none;color:inherit;padding:0;}
+
+ul,ol{margin:0.5rem 0 0.5rem 1.5rem;font-size:0.875rem;}
+li{margin-bottom:0.3rem;}
+
+.step-label{
+  display:inline-block;background:var(--primary);color:white;
+  padding:0.15rem 0.6rem;border-radius:4px;font-size:0.75rem;font-weight:600;
+  margin-right:0.5rem;vertical-align:2px;
+}
+.tag{
+  display:inline-block;padding:0.125rem 0.5rem;border-radius:4px;
+  font-size:0.7rem;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;
+}
+.tag-green{background:#d1fae5;color:#065f46;}
+.tag-amber{background:#fef3c7;color:#92400e;}
+.tag-red{background:#fee2e2;color:#991b1b;}
+.tag-blue{background:#dbeafe;color:#1e40af;}
+
+.flow{display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;margin:1rem 0;}
+.flow-step{
+  background:var(--primary);color:white;padding:0.5rem 0.875rem;border-radius:8px;
+  font-size:0.8rem;font-weight:600;white-space:nowrap;
+}
+.flow-arrow{color:var(--text2);font-weight:700;font-size:1.1rem;}
+
+@media(max-width:900px){
+  .sidebar{display:none;}
+  .main{margin-left:0;padding:1.5rem;}
+}
+
+/* Print */
+@media print{
+  .sidebar{display:none;}
+  .main{margin-left:0;}
+  pre{white-space:pre-wrap;}
+}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <h2>AquaVir-KB 部署教程</h2>
+  <a href="#s1">一、租用云服务器</a>
+  <a href="#s2">二、域名与 DNS</a>
+  <a href="#s3">三、服务器基础配置</a>
+  <a href="#s4">四、上传代码</a>
+  <a href="#s4b">四(b)、准备数据文件</a>
+  <a href="#s5">五、启动服务</a>
+  <a href="#s6">六、配置 HTTPS</a>
+  <a href="#s7">七、验证上线</a>
+  <div class="divider"></div>
+  <a href="#cost">费用明细</a>
+  <a href="#arch">部署架构图</a>
+  <a href="#ops">日常运维</a>
+  <a href="#nar">NAR 审稿清单</a>
+</nav>
+
+<main class="main">
+
+<h1>AquaVir-KB 完整部署教程</h1>
+<p>从零到公开上线，无需任何预备知识。总耗时约 30 分钟（不含 DNS 生效）。</p>
+
+<div class="card info">
+  <h4>适用场景</h4>
+  <p>NAR Database Issue 2028 投稿 · aquavir-kb.org 公网部署 · 香港服务器免备案</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="s1">租用云服务器</h2>
+
+<p>云服务器就是<strong>按月租用</strong>的虚拟机，不需要买硬件。推荐阿里云香港轻量应用服务器——免备案、当天可用、国内延迟 30-50ms。</p>
+
+<h3>操作步骤</h3>
+
+<div class="card">
+  <h4><span class="step-label">1</span> 打开控制台</h4>
+  <p>浏览器打开 <a href="https://ecs.aliyun.com" target="_blank">https://ecs.aliyun.com</a>，用支付宝账号登录。<br>
+  备选：腾讯云轻量服务器 <a href="https://cloud.tencent.com/product/lighthouse" target="_blank">https://cloud.tencent.com/product/lighthouse</a></p>
+</div>
+
+<div class="card">
+  <h4><span class="step-label">2</span> 选择配置</h4>
+  <table>
+    <tr><th>参数</th><th>选择</th><th>说明</th></tr>
+    <tr><td>地域</td><td><strong>中国香港</strong></td><td>免备案，国际审稿人访问也快</td></tr>
+    <tr><td>实例规格</td><td>2 vCPU / 4 GB</td><td>学术中小型数据库足够</td></tr>
+    <tr><td>系统镜像</td><td>Ubuntu 22.04 LTS</td><td>Docker 支持最好</td></tr>
+    <tr><td>系统盘</td><td>50 GB SSD</td><td>数据库 882 MB，50G 足够</td></tr>
+    <tr><td>网络</td><td>分配公网 IPv4</td><td>按量带宽 5 Mbps</td></tr>
+    <tr><td>时长</td><td>先 1 个月</td><td>稳定后改年付（便宜 30-40%）</td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h4><span class="step-label">3</span> 付款并等待</h4>
+  <p>支付宝付款 → 等 3-5 分钟 → 控制台显示「运行中」→ 复制 <strong>公网 IP 地址</strong></p>
+</div>
+
+<div class="card warn">
+  <h4>费用参考</h4>
+  <p>阿里云香港轻量 2核4G 50GB：约 <strong>¥130/月</strong>（年付约 ¥100/月）<br>
+  AWS Lightsail 新加坡（备选）：约 $20/月<br>
+  域名 aquavir-kb.org：约 ¥60-80/年（在阿里云/GoDaddy/Namecheap 购买）</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="s2">域名与 DNS</h2>
+
+<div class="card">
+  <h4><span class="step-label">1</span> 购买域名</h4>
+  <p>在阿里云、GoDaddy 或 Namecheap 购买 <code>aquavir-kb.org</code>（或自定义域名）<br>
+  如已购买，跳过此步骤。</p>
+</div>
+
+<div class="card">
+  <h4><span class="step-label">2</span> 添加 DNS A 记录</h4>
+  <p>在域名管理后台的 DNS 设置中添加两条 <strong>A 记录</strong>：</p>
+  <table>
+    <tr><th>主机记录</th><th>记录类型</th><th>记录值</th></tr>
+    <tr><td>@</td><td>A</td><td>服务器公网 IP</td></tr>
+    <tr><td>www</td><td>A</td><td>服务器公网 IP</td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h4><span class="step-label">3</span> 验证 DNS 生效</h4>
+  <p>DNS 全球生效需 5-30 分钟。在命令行测试：</p>
+  <pre><code>nslookup aquavir-kb.org
+# 应返回你的服务器公网 IP</code></pre>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="s3">服务器基础配置</h2>
+
+<div class="card">
+  <h4><span class="step-label">1</span> SSH 登录</h4>
+  <p>在本地终端执行，将 <code>&lt;IP&gt;</code> 换成你的服务器公网 IP：</p>
+  <pre><code>ssh root@&lt;你的服务器IP&gt;</code></pre>
+  <p>首次登录会提示确认指纹，输入 <code>yes</code> 回车。密码在云服务器控制台的「重置密码」中设置。</p>
+</div>
+
+<div class="card">
+  <h4><span class="step-label">2</span> 安装 Docker</h4>
+  <pre><code>curl -fsSL https://get.docker.com | sh
+systemctl enable docker
+systemctl start docker</code></pre>
+</div>
+
+<div class="card">
+  <h4><span class="step-label">3</span> 验证安装</h4>
+  <pre><code>docker --version
+# Docker version 26.x.x ...
+
+docker compose version
+# Docker Compose version v2.x.x ...</code></pre>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="s4">上传代码</h2>
+
+<div class="card">
+  <h4><span class="step-label">1</span> 在本地 Windows 上打包 deploy 目录</h4>
+  <pre><code>cd F:\水生无脊椎动物数据库
+tar -czf deploy.tar.gz deploy\</code></pre>
+</div>
+
+<div class="card">
+  <h4><span class="step-label">2</span> 上传到服务器</h4>
+  <pre><code>scp deploy.tar.gz root@&lt;你的服务器IP&gt;:/opt/</code></pre>
+  <p>或用 WinSCP、FileZilla 等工具传文件。</p>
+</div>
+
+<div class="card">
+  <h4><span class="step-label">3</span> 在服务器上解压</h4>
+  <pre><code>cd /opt
+tar -xzf deploy.tar.gz
+cd deploy
+ls
+# 应看到: Dockerfile  docker-compose.yml  nginx.conf  requirements.txt
+#         init_db.sql  .env.example  static/  seed_data/  README.md</code></pre>
+</div>
+
+<div class="card">
+  <h4><span class="step-label">4</span> 设置密码</h4>
+  <pre><code>cp .env.example .env
+nano .env
+# 把 DB_PASSWORD=change-this-to-a-secure-password
+# 改成你自己的强密码，例如随机生成一个 32 位字符串
+# Ctrl+X 保存，Y 确认</code></pre>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="s5">启动服务</h2>
+
+<div class="card">
+  <h4><span class="step-label">1</span> 启动所有容器</h4>
+  <pre><code>docker compose up -d</code></pre>
+  <p>首次启动会拉取镜像（postgres:16、nginx:alpine）并构建 API 镜像，约需 3-5 分钟。</p>
+</div>
+
+<div class="card">
+  <h4><span class="step-label">2</span> 查看启动状态</h4>
+  <pre><code>docker compose ps
+# 应显示 3 个服务都是 Up 状态:
+#   db      Up (healthy)
+#   api     Up
+#   nginx   Up
+
+docker compose logs -f
+# 实时查看日志，Ctrl+C 退出</code></pre>
+</div>
+
+<div class="card danger">
+  <h4>常见问题：nginx 启动失败</h4>
+  <p>如果 SSL 证书还没申请，nginx 会因找不到证书文件而失败。先注释掉 docker-compose.yml 中 nginx 的 443 端口映射和证书卷，或先完成下一步再启动 nginx：</p>
+  <pre><code>docker compose up -d db api
+# 等证书申请完后:
+docker compose up -d</code></pre>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="s6">配置 HTTPS</h2>
+
+<div class="card">
+  <h4><span class="step-label">1</span> 安装 Certbot</h4>
+  <pre><code>apt update
+apt install -y certbot</code></pre>
+</div>
+
+<div class="card">
+  <h4><span class="step-label">2</span> 申请免费 SSL 证书</h4>
+  <p>先确保 80 端口可访问（DNS 已生效）：</p>
+  <pre><code># 暂时停止 nginx 释放 80 端口
+docker compose stop nginx
+
+# 用 certbot 独立模式验证域名
+certbot certonly --standalone \
+  -d aquavir-kb.org \
+  -d www.aquavir-kb.org
+
+# 成功后会显示:
+# Certificate is saved at: /etc/letsencrypt/live/aquavir-kb.org/fullchain.pem</code></pre>
+</div>
+
+<div class="card">
+  <h4><span class="step-label">3</span> 重启所有服务</h4>
+  <pre><code>docker compose up -d
+# 现在 nginx 看到证书存在，会正常启动</code></pre>
+</div>
+
+<div class="card">
+  <h4><span class="step-label">4</span> 设置自动续期</h4>
+  <p>Let's Encrypt 证书有效期 90 天，需要自动续期：</p>
+  <pre><code>crontab -e
+# 添加一行：
+0 3 1 * * certbot renew --quiet --pre-hook "docker compose -f /opt/deploy/docker-compose.yml stop nginx" --post-hook "docker compose -f /opt/deploy/docker-compose.yml start nginx"</code></pre>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="s7">验证上线</h2>
+
+<p>按以下清单逐项测试，确保所有功能可用：</p>
+
+<table>
+  <tr><th>测试项</th><th>验证命令 / 方法</th><th>期望结果</th></tr>
+  <tr>
+    <td>HTTPS 首页</td>
+    <td>浏览器打开 <code>https://aquavir-kb.org</code></td>
+    <td>显示数据库首页，绿色锁头图标</td>
+  </tr>
+  <tr>
+    <td>健康检查</td>
+    <td><pre><code>curl https://aquavir-kb.org/api/health</code></pre></td>
+    <td>返回 <code>{"status":"ok"}</code></td>
+  </tr>
+  <tr>
+    <td>搜索</td>
+    <td><pre><code>curl "https://aquavir-kb.org/api/search?q=test"</code></pre></td>
+    <td>返回 JSON 搜索结果</td>
+  </tr>
+  <tr>
+    <td>API 文档</td>
+    <td><code>https://aquavir-kb.org/docs</code></td>
+    <td>Swagger UI 正常加载</td>
+  </tr>
+  <tr>
+    <td>安全头</td>
+    <td><pre><code>curl -I https://aquavir-kb.org</code></pre></td>
+    <td>包含 HSTS、X-Content-Type-Options 等</td>
+  </tr>
+  <tr>
+    <td>病毒列表</td>
+    <td><code>https://aquavir-kb.org/viruses</code></td>
+    <td>SSR 页面正常渲染</td>
+  </tr>
+  <tr>
+    <td>统计页</td>
+    <td><code>https://aquavir-kb.org/stats</code></td>
+    <td>ECharts 图表正常加载</td>
+  </tr>
+  <tr>
+    <td>下载页</td>
+    <td><code>https://aquavir-kb.org/download</code></td>
+    <td>文件列表可浏览</td>
+  </tr>
+  <tr>
+    <td>手机浏览器</td>
+    <td>手机打开首页</td>
+    <td>布局正常，无横向滚动</td>
+  </tr>
+</table>
+
+<div class="card good">
+  <h4>全部通过即表示部署成功，可用于 NAR 投稿。</h4>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="cost">费用明细</h2>
+
+<table>
+  <tr><th>项目</th><th>月费用</th><th>年费用</th><th>说明</th></tr>
+  <tr><td>阿里云香港轻量 2核4G</td><td>~¥130</td><td>~¥1,200</td><td>年付有折扣</td></tr>
+  <tr><td>域名 aquavir-kb.org</td><td>—</td><td>~¥70</td><td>.org 域名年费</td></tr>
+  <tr><td>SSL 证书</td><td>免费</td><td>免费</td><td>Let's Encrypt</td></tr>
+  <tr><td><strong>合计</strong></td><td><strong>~¥136/月</strong></td><td><strong>~¥1,270/年</strong></td><td></td></tr>
+</table>
+
+<div class="card info">
+  <h4>NAR 5 年稳定运营承诺</h4>
+  <p>NAR 要求数据库 URL 至少维持 5 年不变。5 年总费用约 ¥6,350，建议一次性购买 3 年服务器 + 5 年域名获得最大折扣。</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="arch">部署架构图</h2>
+
+<div class="flow">
+  <div class="flow-step">用户浏览器</div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-step">HTTPS 443</div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-step">Nginx</div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-step">FastAPI :8000</div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-step">PostgreSQL 16</div>
+</div>
+
+<br>
+
+<table>
+  <tr><th>组件</th><th>端口</th><th>职责</th></tr>
+  <tr><td>Nginx (alpine)</td><td>80, 443</td><td>HTTPS 终止、安全头、静态文件、反向代理、限流</td></tr>
+  <tr><td>FastAPI (uvicorn, 4 workers)</td><td>8000 (内部)</td><td>REST API + Jinja2 SSR 页面渲染</td></tr>
+  <tr><td>PostgreSQL 16</td><td>5432 (内部)</td><td>数据持久化（从 SQLite 迁移）</td></tr>
+</table>
+
+<div class="card">
+  <h4>请求路由逻辑</h4>
+  <pre><code>/                     → nginx 直接返回静态 index.html（极快）
+/static/vendor/*      → nginx 静态文件，1 年缓存
+/downloads/*          → nginx 静态文件 + 目录浏览
+/api/*                → proxy 到 FastAPI（限流 15r/s）
+/docs, /redoc         → proxy 到 FastAPI
+/viruses, /search ... → try_files 静态 → @api 代理 SSR Jinja2</code></pre>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="ops">日常运维</h2>
+
+<h3>常用命令</h3>
+
+<pre><code># 查看服务状态
+docker compose -f /opt/deploy/docker-compose.yml ps
+
+# 查看实时日志
+docker compose -f /opt/deploy/docker-compose.yml logs -f api
+
+# 重启 API 服务
+docker compose -f /opt/deploy/docker-compose.yml restart api
+
+# 更新代码后重新构建
+docker compose -f /opt/deploy/docker-compose.yml build api
+docker compose -f /opt/deploy/docker-compose.yml up -d api
+
+# 备份数据库
+docker compose -f /opt/deploy/docker-compose.yml exec db \
+  pg_dump -U aquavir aquavir_kb > backup_$(date +%Y%m%d).sql
+
+# 全部停止（不删除数据卷）
+docker compose -f /opt/deploy/docker-compose.yml down
+
+# 全部停止并清除数据（危险！）
+docker compose -f /opt/deploy/docker-compose.yml down -v</code></pre>
+
+<h3>监控建议</h3>
+
+<div class="card warn">
+  <h4>至少每周检查一次</h4>
+  <ul>
+    <li>磁盘使用：<code>df -h</code>（50GB 通常够用，但 PG 会随时间增长）</li>
+    <li>服务状态：<code>docker compose ps</code></li>
+    <li>SSL 证书有效期：<code>certbot certificates</code></li>
+    <li>API 健康检查：<code>curl -s https://aquavir-kb.org/api/health</code></li>
+  </ul>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="nar">NAR 审稿通过清单</h2>
+
+<p>投稿前逐项确认：</p>
+
+<table>
+  <tr><th>#</th><th>要求</th><th>检查</th></tr>
+  <tr><td>1</td><td>URL 公开可访问，无需登录/注册</td><td>✅ 全部公开，无用户系统</td></tr>
+  <tr><td>2</td><td>HTTPS 已启用</td><td>✅ Let's Encrypt 免费证书</td></tr>
+  <tr><td>3</td><td>搜索功能可用</td><td>✅ /api/search + /search 页面</td></tr>
+  <tr><td>4</td><td>核心数据可浏览</td><td>✅ /viruses /hosts /stats</td></tr>
+  <tr><td>5</td><td>数据可批量下载</td><td>✅ /download + API export</td></tr>
+  <tr><td>6</td><td>About 页面含引用说明</td><td>✅ /about</td></tr>
+  <tr><td>7</td><td>API 文档可访问</td><td>✅ /docs (Swagger) + /redoc</td></tr>
+  <tr><td>8</td><td>手机浏览器基本可用</td><td>✅ 响应式布局</td></tr>
+  <tr><td>9</td><td>序列数据已提交公共数据库</td><td>✅ 已在 NCBI GenBank 公开</td></tr>
+  <tr><td>10</td><td>承诺 URL 维持 ≥ 5 年</td><td>✅ aquavir-kb.org 续费至 2033</td></tr>
+  <tr><td>11</td><td>无 Login wall / 无 paywall</td><td>✅ 零门槛公开访问</td></tr>
+  <tr><td>12</td><td>数据库内容与同类有区分度</td><td>✅ 唯一的水生无脊椎动物病毒专门库</td></tr>
+</table>
+
+<div class="card good" style="margin-top:2rem;">
+  <h4>部署完成标志</h4>
+  <p>当你在浏览器输入 <code>https://aquavir-kb.org</code> 看到数据库首页，且上述 12 项全部通过时，系统已准备好接受 NAR 审稿。</p>
+</div>
+
+<br>
+<hr style="border-color:var(--border);margin:2rem 0 1.5rem;">
+<p style="font-size:0.8rem;color:var(--text2);text-align:center;">
+  AquaVir-KB Deployment Guide · 2026 · aquavir-kb.org · CC-BY 4.0<br>
+  本教程页即部署在服务器上：<code>https://aquavir-kb.org/guide</code>
+</p>
+
+</main>
+</body>
+</html>

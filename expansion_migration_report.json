@@ -1,0 +1,38 @@
+{
+  "migration": "aquatic_invertebrate_expansion_v1",
+  "timestamp": "2026-05-12T19:14:33.033600",
+  "backup_path": "F:\\甲壳动物数据库\\backups\\pre_expansion_backup_20260512_191302.db",
+  "final_backup_path": "F:\\甲壳动物数据库\\backups\\pre_replace_20260512_191302.db",
+  "checks": [
+    {
+      "name": "Hosts without phylum",
+      "value": 17,
+      "passed": false
+    },
+    {
+      "name": "Non-arthropod biological hosts",
+      "value": 0,
+      "passed": true
+    },
+    {
+      "name": "Virus species without host_phylum",
+      "value": 0,
+      "passed": true
+    },
+    {
+      "name": "Infection records without association method",
+      "value": 0,
+      "passed": true
+    },
+    {
+      "name": "Confirmed infection/disease records",
+      "value": 2276,
+      "passed": true
+    },
+    {
+      "name": "Foreign key violations",
+      "value": 0,
+      "passed": true
+    }
+  ]
+}

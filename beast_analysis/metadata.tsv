@@ -1,0 +1,20 @@
+tip_label	accession	date	dec_year	host	virus	family	aa_len
+HQ113110|Taihu_virus|Macrobrachium_rosenb|2010.247	HQ113110	2010-04-01	2010.247	Macrobrachium rosenbergii	Taihu virus	Dicistroviridae	2065
+AY997025|Taura_syndrome_virus|Litopenaeus_vannamei|2006.329	AY997025	2006-05-01	2006.329	Litopenaeus vannamei	Taura syndrome virus	Dicistroviridae	2107
+AF277675|Taura_syndrome_virus|Penaeus_vannamei|2002.332	AF277675	2002-05-02	2002.332	Penaeus vannamei	Taura syndrome virus	Dicistroviridae	2107
+DQ104696|Taura_syndrome_virus|Penaeus_vannamei|2005.501	DQ104696	2005-07-03	2005.501	Penaeus vannamei	Taura syndrome virus	Dicistroviridae	2107
+DQ212790|Taura_syndrome_virus|Unknown|2008.929	DQ212790	2008-12-05	2008.929	Unknown	Taura syndrome virus	Dicistroviridae	2107
+JX094350|Taura_syndrome_virus|Penaeus_indicus|2010.764	JX094350	2010-10-07	2010.764	Penaeus indicus	Taura syndrome virus	Dicistroviridae	2106
+AY590471|Taura_syndrome_virus|Unknown|2006.948	AY590471	2006-12-13	2006.948	Unknown	Taura syndrome virus	Dicistroviridae	2107
+GQ502201|Taura_syndrome_virus|Penaeus_vannamei_(sh|2004.000	GQ502201	2004-01-01	2004.000	Penaeus vannamei (shrimp)	Taura syndrome virus	Dicistroviridae	2107
+HM777507|Mud_crab_virus|Scylla_serrata_(mud_|2004.000	HM777507	2004-01-01	2004.000	Scylla serrata (mud crab)	Mud crab virus	Dicistroviridae	2179
+JF966384|Taura_syndrome_virus|Penaeus_vannamei|2010.000	JF966384	2010-01-01	2010.000	Penaeus vannamei	Taura syndrome virus	Dicistroviridae	2107
+ON382577|Macrobrachium_rosenbergii_viru|Macrobrachium_rosenb|2019.581	ON382577	2019-08-01	2019.581	Macrobrachium rosenbergii	Macrobrachium rosenbergii virus 8	Dicistroviridae	1741
+ON382576|Macrobrachium_rosenbergii_viru|Macrobrachium_rosenb|2019.581	ON382576	2019-08-01	2019.581	Macrobrachium rosenbergii	Macrobrachium rosenbergii virus 7	Dicistroviridae	3689
+ON382578|Macrobrachium_rosenbergii_viru|Macrobrachium_rosenb|2019.581	ON382578	2019-08-01	2019.581	Macrobrachium rosenbergii	Macrobrachium rosenbergii virus 9	Dicistroviridae	1847
+OL472419|like_virus|Artemia_sp.|2024.079	OL472419	2024-01-30	2024.079	Artemia sp.	like virus	Dicistroviridae	1805
+MT877006|Taura_syndrome_virus|Penaeus_vannamei|2019.082	MT877006	2019-01-31	2019.082	Penaeus vannamei	Taura syndrome virus	Dicistroviridae	2107
+MT877007|Taura_syndrome_virus|Penaeus_vannamei|2019.082	MT877007	2019-01-31	2019.082	Penaeus vannamei	Taura syndrome virus	Dicistroviridae	2107
+MT877008|Taura_syndrome_virus|Penaeus_vannamei|2019.082	MT877008	2019-01-31	2019.082	Penaeus vannamei	Taura syndrome virus	Dicistroviridae	2107
+OP019097|Eriocheir_sinensis_dicistro-li|Eriocheir_sinensis|2021.247	OP019097	2021-04-01	2021.247	Eriocheir sinensis	Eriocheir sinensis dicistro-like virus	Dicistroviridae	1741
+OP019098|Eriocheir_sinensis_dicistrovir|Eriocheir_sinensis|2021.247	OP019098	2021-04-01	2021.247	Eriocheir sinensis	Eriocheir sinensis dicistrovirus 1	Dicistroviridae	1749

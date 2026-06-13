@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+{% block title %}AquaVir-KB — Home{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- ===== Hero + Search ===== -->
+    <div class="card card-hover p-8 mb-6 text-center" style="padding: 32px 24px;">
+        <h1 class="text-4xl font-extrabold tracking-tight" style="color: var(--c-primary-700); margin-bottom: 6px;">
+            AquaVir-KB
+        </h1>
+        <p class="text-lg font-medium" style="color: var(--text-muted); margin-bottom: 4px;">
+            Aquatic Invertebrate Virus Knowledge Base
+        </p>
+        <p class="text-sm" style="color: var(--text-muted); margin-bottom: 16px;">
+            水生无脊椎动物病毒知识库 · 覆盖节肢、软体、刺胞、棘皮、海绵 5 大门类
+        </p>
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full mb-5" style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.15); font-size: 12px; color: #059669;">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500" style="animation: pulse 2s infinite;"></span>
+            Free and open to all users — no login required
+        </div>
+
+        <form action="/search" method="get" class="max-w-2xl mx-auto" style="margin-top: 16px;">
+            <div class="search-box" style="max-width: 100%;">
+                <input type="text" name="q" placeholder="Search virus name, accession, family, genus, host..." autofocus>
+                <button type="submit">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- ===== Quick Phylum Browse ===== -->
+    <div class="flex flex-wrap justify-center gap-2 mb-6">
+        <span class="text-sm" style="color: var(--text-muted); align-self: center; margin-right: 4px;">Browse by host phylum:</span>
+        <a href="/viruses?phylum=Arthropoda" class="tag tag-host" style="background: rgba(245,158,11,0.08); color: #d97706; border-color: rgba(245,158,11,0.2); text-decoration: none; padding: 4px 12px; font-size: 12px;">🦐 Arthropoda</a>
+        <a href="/viruses?phylum=Mollusca" class="tag tag-host" style="background: rgba(139,92,246,0.08); color: #7c3aed; border-color: rgba(139,92,246,0.2); text-decoration: none; padding: 4px 12px; font-size: 12px;">🐚 Mollusca</a>
+        <a href="/viruses?phylum=Cnidaria" class="tag tag-host" style="background: rgba(236,72,153,0.08); color: #db2777; border-color: rgba(236,72,153,0.2); text-decoration: none; padding: 4px 12px; font-size: 12px;">🪸 Cnidaria</a>
+        <a href="/viruses?phylum=Echinodermata" class="tag tag-host" style="background: rgba(245,158,11,0.08); color: #d97706; border-color: rgba(245,158,11,0.2); text-decoration: none; padding: 4px 12px; font-size: 12px;">⭐ Echinodermata</a>
+        <a href="/viruses?phylum=Porifera" class="tag tag-host" style="background: rgba(6,182,212,0.08); color: #0891b2; border-color: rgba(6,182,212,0.2); text-decoration: none; padding: 4px 12px; font-size: 12px;">🧽 Porifera</a>
+    </div>
+
+    <!-- ===== BENTO GRID: Stats ===== -->
+    <div class="grid-bento mb-6" id="bento-stats">
+        <!-- Virus Species -->
+        <div class="card card-hover text-center relative overflow-hidden" style="padding: 18px 12px;">
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: var(--c-primary-500);"></div>
+            <div class="text-2xl font-extrabold mono" style="color: var(--c-primary-600);" id="stat-viruses">—</div>
+            <div class="text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); margin-top: 4px;">Virus Species</div>
+        </div>
+        <!-- Isolates -->
+        <div class="card card-hover text-center relative overflow-hidden" style="padding: 18px 12px;">
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: var(--c-genome);"></div>
+            <div class="text-2xl font-extrabold mono" style="color: var(--c-genome);" id="stat-isolates">—</div>
+            <div class="text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); margin-top: 4px;">Isolates</div>
+        </div>
+        <!-- Hosts -->
+        <div class="card card-hover text-center relative overflow-hidden" style="padding: 18px 12px;">
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: var(--c-host);"></div>
+            <div class="text-2xl font-extrabold mono" style="color: var(--c-host);" id="stat-hosts">—</div>
+            <div class="text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); margin-top: 4px;">Host Species</div>
+        </div>
+        <!-- Proteins -->
+        <div class="card card-hover text-center relative overflow-hidden" style="padding: 18px 12px;">
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: var(--c-protein);"></div>
+            <div class="text-2xl font-extrabold mono" style="color: var(--c-protein);" id="stat-proteins">—</div>
+            <div class="text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); margin-top: 4px;">Proteins</div>
+        </div>
+        <!-- Evidence -->
+        <div class="card card-hover text-center relative overflow-hidden" style="padding: 18px 12px;">
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: var(--c-evidence);"></div>
+            <div class="text-2xl font-extrabold mono" style="color: var(--c-evidence);" id="stat-evidence">—</div>
+            <div class="text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); margin-top: 4px;">Evidence</div>
+        </div>
+        <!-- References -->
+        <div class="card card-hover text-center relative overflow-hidden" style="padding: 18px 12px;">
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: var(--c-literature);"></div>
+            <div class="text-2xl font-extrabold mono" style="color: var(--c-literature);" id="stat-references">—</div>
+            <div class="text-xs font-medium uppercase tracking-wider" style="color: var(--text-muted); margin-top: 4px;">References</div>
+        </div>
+    </div>
+
+    <!-- ===== BENTO GRID: Charts & Map ===== -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+        <!-- Host Phylum Distribution (CSS Bar Chart — lightweight, no JS) -->
+        <div class="card card-hover" style="padding: 20px;">
+            <div class="card-h">
+                <div class="color-bar color-bar--host"></div>
+                <span>Host Phylum Distribution</span>
+                <span style="margin-left: auto; font-size: 11px; color: var(--text-muted); font-weight: 400;">Species count</span>
+            </div>
+            <div id="phylum-bars" style="space-y: 10px;">
+                <!-- Populated by JS -->
+                <div class="loading-shimmer" style="height: 180px; border-radius: var(--radius-md);"></div>
+            </div>
+        </div>
+
+        <!-- Top Viruses (Ranked List — lightweight, no JS chart) -->
+        <div class="card card-hover" style="padding: 20px;">
+            <div class="card-h">
+                <div class="color-bar color-bar--genome"></div>
+                <span>Top 10 Viruses by Isolates</span>
+                <a href="/stats" style="margin-left: auto; font-size: 11px; color: var(--c-primary-600);">Full stats →</a>
+            </div>
+            <div id="top-viruses-list" style="space-y: 6px;">
+                <!-- Populated by JS -->
+                <div class="loading-shimmer" style="height: 180px; border-radius: var(--radius-md);"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Map Thumbnail ===== -->
+    <div class="card card-hover mb-6" style="padding: 20px;">
+        <div class="card-h" style="margin-bottom: 12px;">
+            <div class="color-bar color-bar--geography"></div>
+            <span>Global Sampling Distribution</span>
+            <span style="margin-left: auto; font-size: 11px; color: var(--text-muted); font-weight: 400;">Click to explore →</span>
+        </div>
+        <a href="/map" style="display: block; text-decoration: none;">
+            <div style="position: relative; height: 160px; border-radius: var(--radius-md); overflow: hidden; background: var(--bg-elevated); border: 1px solid var(--border-subtle);">
+                <!-- Simplified SVG World Map -->
+                <svg viewBox="0 0 1000 500" style="width: 100%; height: 100%; opacity: 0.35;">
+                    <rect width="1000" height="500" fill="var(--bg-elevated)" class="dark:fill-slate-700"/>
+                    <path d="M150,120 Q200,80 280,100 Q350,110 380,160 Q360,220 300,240 Q200,230 150,180 Z" fill="var(--border-strong)"/>
+                    <path d="M280,260 Q340,240 380,280 Q370,380 320,420 Q260,400 250,320 Z" fill="var(--border-strong)"/>
+                    <path d="M450,100 Q520,80 580,110 Q620,150 600,220 Q550,260 480,230 Q430,180 450,120 Z" fill="var(--border-strong)"/>
+                    <path d="M460,250 Q520,240 560,270 Q580,350 540,400 Q480,410 450,360 Q430,300 460,250 Z" fill="var(--border-strong)"/>
+                    <path d="M600,100 Q750,80 880,120 Q920,180 850,240 Q750,260 650,220 Q580,170 600,100 Z" fill="var(--border-strong)"/>
+                    <path d="M750,280 Q850,260 920,300 Q950,380 880,420 Q780,410 730,350 Q700,300 750,280 Z" fill="var(--border-strong)"/>
+                    <!-- Hot spots -->
+                    <circle cx="780" cy="180" r="8" fill="#f59e0b" opacity="0.6"><animate attributeName="r" values="6;10;6" dur="2s" repeatCount="indefinite"/></circle>
+                    <circle cx="650" cy="200" r="6" fill="#f59e0b" opacity="0.5"><animate attributeName="r" values="4;8;4" dur="2.5s" repeatCount="indefinite"/></circle>
+                    <circle cx="520" cy="280" r="5" fill="#f59e0b" opacity="0.4"/>
+                    <circle cx="280" cy="180" r="4" fill="#f59e0b" opacity="0.3"/>
+                    <circle cx="200" cy="320" r="4" fill="#f59e0b" opacity="0.3"/>
+                </svg>
+                <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;">
+                    <span class="tag" style="background: var(--bg-card); color: var(--text-secondary); font-size: 12px; padding: 6px 14px; border: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm);">
+                        🗺️ 40+ countries · 4,317 sampling records
+                    </span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- ===== Data Quality Overview ===== -->
+    <div class="card mb-6" style="padding: 20px;">
+        <div class="card-h">
+            <div class="color-bar color-bar--primary"></div>
+            <span>Data Quality Overview</span>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="text-center" style="padding: 8px;">
+                <div class="text-xl font-extrabold mono" style="color: var(--text-main);" id="dq-ictv">—%</div>
+                <div class="text-xs font-medium" style="color: var(--text-muted); margin-top: 2px;">ICTV Mapping</div>
+                <div style="width: 100%; height: 6px; background: var(--bg-elevated); border-radius: 3px; margin-top: 8px; overflow: hidden;">
+                    <div id="dq-ictv-bar" style="height: 100%; width: 0%; background: var(--c-primary-500); border-radius: 3px; transition: width 0.7s ease;"></div>
+                </div>
+            </div>
+            <div class="text-center" style="padding: 8px;">
+                <div class="text-xl font-extrabold mono" style="color: var(--text-main);" id="dq-geo">—%</div>
+                <div class="text-xs font-medium" style="color: var(--text-muted); margin-top: 2px;">Geographic Coverage</div>
+                <div style="width: 100%; height: 6px; background: var(--bg-elevated); border-radius: 3px; margin-top: 8px; overflow: hidden;">
+                    <div id="dq-geo-bar" style="height: 100%; width: 0%; background: var(--c-geography); border-radius: 3px; transition: width 0.7s ease;"></div>
+                </div>
+            </div>
+            <div class="text-center" style="padding: 8px;">
+                <div class="text-xl font-extrabold mono" style="color: var(--text-main);" id="dq-host">—%</div>
+                <div class="text-xs font-medium" style="color: var(--text-muted); margin-top: 2px;">Host Info Coverage</div>
+                <div style="width: 100%; height: 6px; background: var(--bg-elevated); border-radius: 3px; margin-top: 8px; overflow: hidden;">
+                    <div id="dq-host-bar" style="height: 100%; width: 0%; background: var(--c-host); border-radius: 3px; transition: width 0.7s ease;"></div>
+                </div>
+            </div>
+            <div class="text-center" style="padding: 8px;">
+                <div class="text-xl font-extrabold mono" style="color: var(--text-main);" id="dq-diff">—%</div>
+                <div class="text-xs font-medium" style="color: var(--text-muted); margin-top: 2px;">Differential Data</div>
+                <div style="width: 100%; height: 6px; background: var(--bg-elevated); border-radius: 3px; margin-top: 8px; overflow: hidden;">
+                    <div id="dq-diff-bar" style="height: 100%; width: 0%; background: var(--c-protein); border-radius: 3px; transition: width 0.7s ease;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Quick Links ===== -->
+    <div class="card" style="padding: 20px;">
+        <div class="card-h">
+            <div class="color-bar color-bar--literature"></div>
+            <span>Explore</span>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            <a href="/search" class="btn btn-primary" style="text-decoration: none; font-size: 12px; padding: 6px 14px;">
+                <span>🔍</span> Search
+            </a>
+            <a href="/rdrp" class="btn" style="text-decoration: none; border-color: rgba(59,130,246,0.2); color: var(--c-genome); background: rgba(59,130,246,0.04); font-size: 12px; padding: 6px 14px;">
+                <span>🧬</span> BLAST / RdRp
+            </a>
+            <a href="/phylogeny" class="btn" style="text-decoration: none; border-color: rgba(16,185,129,0.2); color: var(--c-host); background: rgba(16,185,129,0.04); font-size: 12px; padding: 6px 14px;">
+                <span>🌳</span> Phylogeny
+            </a>
+            <a href="/map" class="btn" style="text-decoration: none; border-color: rgba(6,182,212,0.2); color: var(--c-geography); background: rgba(6,182,212,0.04); font-size: 12px; padding: 6px 14px;">
+                <span>🌍</span> Map
+            </a>
+            <a href="/network" class="btn" style="text-decoration: none; border-color: rgba(139,92,246,0.2); color: var(--c-protein); background: rgba(139,92,246,0.04); font-size: 12px; padding: 6px 14px;">
+                <span>🕸️</span> Network
+            </a>
+            <a href="/download" class="btn" style="text-decoration: none; font-size: 12px; padding: 6px 14px;">
+                <span>⬇️</span> Download
+            </a>
+            <a href="/api/docs" class="btn" style="text-decoration: none; border-color: rgba(236,72,153,0.2); color: var(--c-evidence); background: rgba(236,72,153,0.04); font-size: 12px; padding: 6px 14px;">
+                <span>⚡</span> API
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // ── Phylum colors ──
+    const PHYLUM_COLORS = {
+        'Arthropoda': '#f59e0b', 'Mollusca': '#8b5cf6', 'Cnidaria': '#ec4899',
+        'Echinodermata': '#f59e0b', 'Porifera': '#06b6d4', 'Annelida': '#84cc16',
+        'Nematoda': '#ef4444', 'Platyhelminthes': '#a855f7', 'Rotifera': '#14b8a6',
+        'multiple': '#94a3b8', 'non_target (algae)': '#65a30d', 'non_aquatic': '#78716c'
+    };
+
+    // ── Load dashboard data (single API call) ──
+    async function loadDashboard() {
+        try {
+            const res = await fetch('/api/dashboard');
+            if (!res.ok) throw new Error('API error');
+            const data = await res.json();
+            const s = data.stats || {};
+
+            // Stats cards
+            const isoCount = s.strict_target_isolates || s.viral_isolates || 0;
+            document.getElementById('stat-viruses').textContent = (s.virus_species || 0).toLocaleString();
+            document.getElementById('stat-isolates').textContent = isoCount.toLocaleString();
+            document.getElementById('stat-hosts').textContent = (s.host_species || 0).toLocaleString();
+            document.getElementById('stat-proteins').textContent = (s.viral_proteins || 0).toLocaleString();
+            document.getElementById('stat-evidence').textContent = (s.total_evidence || 0).toLocaleString();
+            document.getElementById('stat-references').textContent = (s.pmid_count || s.references || 0).toLocaleString();
+
+            // Data quality bars
+            const ictvRate = s.ictv_mapping_rate || 0;
+            document.getElementById('dq-ictv').textContent = ictvRate + '%';
+            document.getElementById('dq-ictv-bar').style.width = Math.min(ictvRate, 100) + '%';
+
+            const targetTotal = s.analysis_target_isolates_total || s.viral_isolates || 0;
+            const geoRate = targetTotal ? Math.round((s.target_country_covered || s.geo_covered_isolates || 0) / targetTotal * 100) : 0;
+            document.getElementById('dq-geo').textContent = geoRate + '%';
+            document.getElementById('dq-geo-bar').style.width = Math.min(geoRate, 100) + '%';
+
+            const hostRate = targetTotal ? Math.round((s.target_host_covered || s.host_covered_isolates || 0) / targetTotal * 100) : 0;
+            document.getElementById('dq-host').textContent = hostRate + '%';
+            document.getElementById('dq-host-bar').style.width = Math.min(hostRate, 100) + '%';
+
+            const diffRate = s.virus_species ? Math.round(((s.virulence_covered || 0) + (s.temperature_covered || 0)) / 2 / s.virus_species * 100) : 0;
+            document.getElementById('dq-diff').textContent = diffRate + '%';
+            document.getElementById('dq-diff-bar').style.width = Math.min(diffRate, 100) + '%';
+
+            // Phylum bars (CSS-based, no ECharts)
+            renderPhylumBars(data.phylum_distribution || s.viruses_by_phylum || {});
+
+            // Top viruses list
+            renderTopViruses(data.top_viruses || []);
+
+        } catch (e) {
+            console.warn('Dashboard load failed:', e);
+            // Show fallback static content if API fails
+        }
+    }
+
+    function renderPhylumBars(phylumData) {
+        const container = document.getElementById('phylum-bars');
+        const entries = Object.entries(phylumData).sort((a, b) => b[1] - a[1]);
+        if (entries.length === 0) { container.innerHTML = '<p style="color: var(--text-muted); font-size: 12px; text-align: center; padding: 40px;">No phylum data available</p>'; return; }
+
+        const maxVal = entries[0][1];
+        let html = '<div style="display: flex; flex-direction: column; gap: 10px;">';
+        entries.forEach(([name, count]) => {
+            const pct = Math.round((count / maxVal) * 100);
+            const color = PHYLUM_COLORS[name] || '#94a3b8';
+            html += `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 90px; font-size: 12px; color: var(--text-secondary); text-align: right; flex-shrink: 0;" class="text-ellipsis">${name}</div>
+                    <div style="flex: 1; height: 22px; background: var(--bg-elevated); border-radius: 4px; overflow: hidden; position: relative;">
+                        <div style="width: ${pct}%; height: 100%; background: ${color}; border-radius: 4px; display: flex; align-items: center; justify-content: flex-end; padding-right: 6px; transition: width 0.6s ease;">
+                            <span style="font-size: 11px; font-weight: 600; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">${count}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    function renderTopViruses(viruses) {
+        const container = document.getElementById('top-viruses-list');
+        if (!viruses || viruses.length === 0) { container.innerHTML = '<p style="color: var(--text-muted); font-size: 12px; text-align: center; padding: 40px;">No data</p>'; return; }
+
+        const maxVal = viruses[0].count;
+        let html = '<div style="display: flex; flex-direction: column; gap: 6px;">';
+        viruses.slice(0, 10).forEach((v, i) => {
+            const pct = Math.round((v.count / maxVal) * 100);
+            const color = i === 0 ? '#ef4444' : i === 1 ? '#f59e0b' : i === 2 ? '#f97316' : '#3b82f6';
+            html += `
+                <a href="/search?q=${encodeURIComponent(v.virus_name)}" style="display: flex; align-items: center; gap: 8px; text-decoration: none; padding: 5px 8px; border-radius: 6px; transition: background 0.15s;" onmouseover="this.style.background='var(--bg-elevated)'" onmouseout="this.style.background='transparent'">
+                    <span style="width: 18px; text-align: right; font-size: 11px; font-weight: 700; color: var(--text-muted); flex-shrink: 0;">${i+1}</span>
+                    <span style="width: 6px; height: 6px; border-radius: 50%; background: ${color}; flex-shrink: 0;"></span>
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-size: 12px; font-weight: 500; color: var(--text-main);" class="text-ellipsis">${v.virus_name}</div>
+                    </div>
+                    <div style="width: 80px; height: 6px; background: var(--bg-elevated); border-radius: 3px; overflow: hidden; flex-shrink: 0;">
+                        <div style="width: ${pct}%; height: 100%; background: ${color}; border-radius: 3px; transition: width 0.6s ease;"></div>
+                    </div>
+                    <span style="width: 50px; text-align: right; font-size: 11px; font-family: monospace; color: var(--text-muted); flex-shrink: 0;">${v.count.toLocaleString()}</span>
+                </a>
+            `;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    document.addEventListener('DOMContentLoaded', loadDashboard);
+</script>
+{% endblock %}

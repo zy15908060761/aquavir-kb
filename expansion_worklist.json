@@ -1,0 +1,315 @@
+{
+  "generated_at": "2026-05-12T16:54:45.537683",
+  "new_virus_candidates": [
+    {
+      "accession": "NZ_JBHYCD000000000.1",
+      "virus_name": "",
+      "host_order": "crustacean_virome",
+      "title": "Acinetobacter baumannii strain vekt164SM413528, whole genome shotgun sequencing project",
+      "priority": "high",
+      "source": "genbank",
+      "create_date": "2024/10/10",
+      "taxid": "470"
+    },
+    {
+      "accession": "NZ_JBHYCD010000453.1",
+      "virus_name": "",
+      "host_order": "crustacean_virome",
+      "title": "Acinetobacter baumannii strain vekt164SM413528 NODE_453_length_208_cov_2.931298, whole genome shotgun sequence",
+      "priority": "high",
+      "source": "genbank",
+      "create_date": "2024/10/10",
+      "taxid": "470"
+    },
+    {
+      "accession": "NZ_JBHYCD010000452.1",
+      "virus_name": "",
+      "host_order": "crustacean_virome",
+      "title": "Acinetobacter baumannii strain vekt164SM413528 NODE_452_length_218_cov_66.546099, whole genome shotgun sequence",
+      "priority": "high",
+      "source": "genbank",
+      "create_date": "2024/10/10",
+      "taxid": "470"
+    },
+    {
+      "accession": "NZ_JBHYCD010000451.1",
+      "virus_name": "",
+      "host_order": "crustacean_virome",
+      "title": "Acinetobacter baumannii strain vekt164SM413528 NODE_451_length_230_cov_0.967320, whole genome shotgun sequence",
+      "priority": "high",
+      "source": "genbank",
+      "create_date": "2024/10/10",
+      "taxid": "470"
+    },
+    {
+      "accession": "NZ_JBHYCD010000450.1",
+      "virus_name": "",
+      "host_order": "crustacean_virome",
+      "title": "Acinetobacter baumannii strain vekt164SM413528 NODE_450_length_239_cov_1.425926, whole genome shotgun sequence",
+      "priority": "high",
+      "source": "genbank",
+      "create_date": "2024/10/10",
+      "taxid": "470"
+    },
+    {
+      "accession": "NZ_JBHYCD010000449.1",
+      "virus_name": "",
+      "host_order": "crustacean_virome",
+      "title": "Acinetobacter baumannii strain vekt164SM413528 NODE_449_length_243_cov_1.108434, whole genome shotgun sequence",
+      "priority": "high",
+      "source": "genbank",
+      "create_date": "2024/10/10",
+      "taxid": "470"
+    },
+    {
+      "accession": "NZ_JBHYCD010000448.1",
+      "virus_name": "",
+      "host_order": "crustacean_virome",
+      "title": "Acinetobacter baumannii strain vekt164SM413528 NODE_448_length_245_cov_0.875000, whole genome shotgun sequence",
+      "priority": "high",
+      "source": "genbank",
+      "create_date": "2024/10/10",
+      "taxid": "470"
+    },
+    {
+      "accession": "NZ_JBHYCD010000447.1",
+      "virus_name": "",
+      "host_order": "crustacean_virome",
+      "title": "Acinetobacter baumannii strain vekt164SM413528 NODE_447_length_247_cov_3.623529, whole genome shotgun sequence",
+      "priority": "high",
+      "source": "genbank",
+      "create_date": "2024/10/10",
+      "taxid": "470"
+    },
+    {
+      "accession": "NZ_JBHYCD010000446.1",
+      "virus_name": "",
+      "host_order": "crustacean_virome",
+      "title": "Acinetobacter baumannii strain vekt164SM413528 NODE_446_length_248_cov_0.865497, whole genome shotgun sequence",
+      "priority": "high",
+      "source": "genbank",
+      "create_date": "2024/10/10",
+      "taxid": "470"
+    },
+    {
+      "accession": "NZ_JBHYCD010000445.1",
+      "virus_name": "",
+      "host_order": "crustacean_virome",
+      "title": "Acinetobacter baumannii strain vekt164SM413528 NODE_445_length_252_cov_2.365714, whole genome shotgun sequence",
+      "priority": "high",
+      "source": "genbank",
+      "create_date": "2024/10/10",
+      "taxid": "470"
+    },
+    {
+      "accession": "NZ_JBHYCD010000443.1",
+      "virus_name": "",
+      "host_order": "crustacean_virome",
+      "title": "Acinetobacter baumannii strain vekt164SM413528 NODE_443_length_255_cov_0.803371, whole genome shotgun sequence",
+      "priority": "high",
+      "source": "genbank",
+      "create_date": "2024/10/10",
+      "taxid": "470"
+    },
+    {
+      "accession": "NZ_JBHYCD010000442.1",
+      "virus_name": "",
+      "host_order": "crustacean_virome",
+      "title": "Acinetobacter baumannii strain vekt164SM413528 NODE_442_length_260_cov_2.163934, whole genome shotgun sequence",
+      "priority": "high",
+      "source": "genbank",
+      "create_date": "2024/10/10",
+      "taxid": "470"
+    },
+    {
+      "accession": "NZ_JBHYCD010000441.1",
+      "virus_name": "",
+      "host_order": "crustacean_virome",
+      "title": "Acinetobacter baumannii strain vekt164SM413528 NODE_441_length_260_cov_2.612022, whole genome shotgun sequence",
+      "priority": "high",
+      "source": "genbank",
+      "create_date": "2024/10/10",
+      "taxid": "470"
+    },
+    {
+      "accession": "NZ_JBHYCD010000440.1",
+      "virus_name": "",
+      "host_order": "crustacean_virome",
+      "title": "Acinetobacter baumannii strain vekt164SM413528 NODE_440_length_282_cov_4.853659, whole genome shotgun sequence",
+      "priority": "high",
+      "source": "genbank",
+      "create_date": "2024/10/10",
+      "taxid": "470"
+    },
+    {
+      "accession": "NZ_JBHYCD010000438.1",
+      "virus_name": "",
+      "host_order": "crustacean_virome",
+      "title": "Acinetobacter baumannii strain vekt164SM413528 NODE_438_length_295_cov_3.261468, whole genome shotgun sequence",
+      "priority": "high",
+      "source": "genbank",
+      "create_date": "2024/10/10",
+      "taxid": "470"
+    },
+    {
+      "accession": "NZ_JBHYCD010000436.1",
+      "virus_name": "",
+      "host_order": "crustacean_virome",
+      "title": "Acinetobacter baumannii strain vekt164SM413528 NODE_436_length_303_cov_5.185841, whole genome shotgun sequence",
+      "priority": "high",
+      "source": "genbank",
+      "create_date": "2024/10/10",
+      "taxid": "470"
+    },
+    {
+      "accession": "NZ_JBHYCD010000435.1",
+      "virus_name": "",
+      "host_order": "crustacean_virome",
+      "title": "Acinetobacter baumannii strain vekt164SM413528 NODE_435_length_308_cov_2.649351, whole genome shotgun sequence",
+      "priority": "high",
+      "source": "genbank",
+      "create_date": "2024/10/10",
+      "taxid": "470"
+    },
+    {
+      "accession": "NZ_JBHYCD010000434.1",
+      "virus_name": "",
+      "host_order": "crustacean_virome",
+      "title": "Acinetobacter baumannii strain vekt164SM413528 NODE_434_length_312_cov_1.914894, whole genome shotgun sequence",
+      "priority": "high",
+      "source": "genbank",
+      "create_date": "2024/10/10",
+      "taxid": "470"
+    },
+    {
+      "accession": "NZ_JBHYCD010000433.1",
+      "virus_name": "",
+      "host_order": "crustacean_virome",
+      "title": "Acinetobacter baumannii strain vekt164SM413528 NODE_433_length_319_cov_3.413223, whole genome shotgun sequence",
+      "priority": "high",
+      "source": "genbank",
+      "create_date": "2024/10/10",
+      "taxid": "470"
+    },
+    {
+      "accession": "NZ_JBHYCD010000432.1",
+      "virus_name": "",
+      "host_order": "crustacean_virome",
+      "title": "Acinetobacter baumannii strain vekt164SM413528 NODE_432_length_324_cov_1.676113, whole genome shotgun sequence",
+      "priority": "high",
+      "source": "genbank",
+      "create_date": "2024/10/10",
+      "taxid": "470"
+    },
+    {
+      "accession": "NZ_JBHYCD010000431.1",
+      "virus_name": "",
+      "host_order": "crustacean_virome",
+      "title": "Acinetobacter baumannii strain vekt164SM413528 NODE_431_length_338_cov_23.498084, whole genome shotgun sequence",
+      "priority": "high",
+      "source": "genbank",
+      "create_date": "2024/10/10",
+      "taxid": "470"
+    },
+    {
+      "accession": "NZ_JBHYCD010000430.1",
+      "virus_name": "",
+      "host_order": "crustacean_virome",
+      "title": "Acinetobacter baumannii strain vekt164SM413528 NODE_430_length_342_cov_1.705660, whole genome shotgun sequence",
+      "priority": "high",
+      "source": "genbank",
+      "create_date": "2024/10/10",
+      "taxid": "470"
+    },
+    {
+      "accession": "NZ_JBHYCD010000429.1",
+      "virus_name": "",
+      "host_order": "crustacean_virome",
+      "title": "Acinetobacter baumannii strain vekt164SM413528 NODE_429_length_343_cov_2.774436, whole genome shotgun sequence",
+      "priority": "high",
+      "source": "genbank",
+      "create_date": "2024/10/10",
+      "taxid": "470"
+    },
+    {
+      "accession": "NZ_JBHYCD010000428.1",
+      "virus_name": "",
+      "host_order": "crustacean_virome",
+      "title": "Acinetobacter baumannii strain vekt164SM413528 NODE_428_length_346_cov_15.814126, whole genome shotgun sequence",
+      "priority": "high",
+      "source": "genbank",
+      "create_date": "2024/10/10",
+      "taxid": "470"
+    },
+    {
+      "accession": "NZ_JBHYCD010000426.1",
+      "virus_name": "",
+      "host_order": "crustacean_virome",
+      "title": "Acinetobacter baumannii strain vekt164SM413528 NODE_426_length_372_cov_4.135857, whole genome shotgun sequence",
+      "priority": "high",
+      "source": "genbank",
+      "create_date": "2024/10/10",
+      "taxid": "470"
+    },
+    {
+      "accession": "NZ_JBHYCD010000425.1",
+      "virus_name": "",
+      "host_order": "crustacean_virome",
+      "title": "Acinetobacter baumannii strain vekt164SM413528 NODE_425_length_378_cov_3.458472, whole genome shotgun sequence",
+      "priority": "high",
+      "source": "genbank",
+      "create_date": "2024/10/10",
+      "taxid": "470"
+    },
+    {
+      "accession": "NZ_JBHYCD010000424.1",
+      "virus_name": "",
+      "host_order": "crustacean_virome",
+      "title": "Acinetobacter baumannii strain vekt164SM413528 NODE_424_length_378_cov_33.398671, whole genome shotgun sequence",
+      "priority": "high",
+      "source": "genbank",
+      "create_date": "2024/10/10",
+      "taxid": "470"
+    },
+    {
+      "accession": "NZ_JBHYCD010000423.1",
+      "virus_name": "",
+      "host_order": "crustacean_virome",
+      "title": "Acinetobacter baumannii strain vekt164SM413528 NODE_423_length_386_cov_2.207120, whole genome shotgun sequence",
+      "priority": "high",
+      "source": "genbank",
+      "create_date": "2024/10/10",
+      "taxid": "470"
+    },
+    {
+      "accession": "NZ_JBHYCD010000422.1",
+      "virus_name": "",
+      "host_order": "crustacean_virome",
+      "title": "Acinetobacter baumannii strain vekt164SM413528 NODE_422_length_393_cov_1.810127, whole genome shotgun sequence",
+      "priority": "high",
+      "source": "genbank",
+      "create_date": "2024/10/10",
+      "taxid": "470"
+    },
+    {
+      "accession": "NZ_JBHYCD010000421.1",
+      "virus_name": "",
+      "host_order": "crustacean_virome",
+      "title": "Acinetobacter baumannii strain vekt164SM413528 NODE_421_length_394_cov_3.425868, whole genome shotgun sequence",
+      "priority": "high",
+      "source": "genbank",
+      "create_date": "2024/10/10",
+      "taxid": "470"
+    }
+  ],
+  "new_host_taxa": [],
+  "sra_projects": [],
+  "summary": {
+    "total_new_candidates": 30,
+    "new_orders_found": [
+      "crustacean_virome"
+    ],
+    "sra_projects_found": 0,
+    "search_targets_queried": 10
+  }
+}

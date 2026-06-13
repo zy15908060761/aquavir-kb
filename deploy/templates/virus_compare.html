@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Virus Comparison - AquaVir-KB{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold text-gray-800 mb-2">Virus Comparison</h1>
+    <p class="text-gray-500 mb-6">Select 2-4 viruses for side-by-side comparison</p>
+
+    {% if viruses %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="text-left px-4 py-3 font-semibold text-gray-700">Property</th>
+                        {% for v in viruses %}
+                        <th class="text-center px-4 py-3 font-semibold text-gray-700 min-w-[200px]">{{ v.canonical_name or v.virus_name }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    <tr>
+                        <td class="px-4 py-2.5 text-gray-500 font-medium">Common Name</td>
+                        {% for v in viruses %}
+                        <td class="px-4 py-2.5 text-center text-gray-800">{{ v.chinese_name or '-' }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="px-4 py-2.5 text-gray-500 font-medium">Family</td>
+                        {% for v in viruses %}
+                        <td class="px-4 py-2.5 text-center text-gray-800">{{ v.virus_family or 'Unclassified' }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="px-4 py-2.5 text-gray-500 font-medium">Genome Type</td>
+                        {% for v in viruses %}
+                        <td class="px-4 py-2.5 text-center">
+                            <span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded text-xs">{{ v.genome_type or '-' }}</span>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="px-4 py-2.5 text-gray-500 font-medium">Host Phylum</td>
+                        {% for v in viruses %}
+                        <td class="px-4 py-2.5 text-center text-gray-800">{{ v.host_phylum or '-' }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="px-4 py-2.5 text-gray-500 font-medium">Discovery Context</td>
+                        {% for v in viruses %}
+                        <td class="px-4 py-2.5 text-center text-gray-800">{{ v.discovery_context or '-' }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="px-4 py-2.5 text-gray-500 font-medium">Genome Length</td>
+                        {% for v in viruses %}
+                        <td class="px-4 py-2.5 text-center font-mono text-gray-800">{{ "{:,}".format(v.genome_length) if v.genome_length else '-' }} bp</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="px-4 py-2.5 text-gray-500 font-medium">Isolate Count</td>
+                        {% for v in viruses %}
+                        <td class="px-4 py-2.5 text-center font-mono text-gray-800">{{ v.isolate_count or 0 }}</td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center text-gray-400">
+        <div class="text-4xl mb-3">🔬</div>
+        <p>Specify viruses to compare in the URL</p>
+        <p class="text-sm mt-2">Example: <code class="bg-gray-100 px-2 py-0.5 rounded">/compare?v=White+spot+syndrome+virus,Yellow+head+virus</code></p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

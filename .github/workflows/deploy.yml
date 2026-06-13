@@ -1,0 +1,83 @@
+name: Test & Deploy
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:  # allow manual trigger
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: aquavir_kb_test
+          POSTGRES_USER: aquavir
+          POSTGRES_PASSWORD: test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install -r deploy/requirements.txt
+          pip install psycopg2-binary pytest pytest-cov
+
+      - name: Initialize test schema
+        run: |
+          PGPASSWORD=test_password psql -h localhost -U aquavir -d aquavir_kb_test -f deploy/init_db.sql
+        env:
+          PGOPTIONS: "--client-min-messages=warning"
+
+      - name: Run tests
+        run: |
+          pytest tests/ -v --tb=short --timeout=60
+        env:
+          DATABASE_URL: postgresql://aquavir:test_password@localhost:5432/aquavir_kb_test
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+
+    steps:
+      - name: Deploy to production
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: root
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            set -e
+            cd /opt/deploy
+
+            # Pull latest code or copy from upload
+            if [ -d .git ]; then
+              git pull origin main 2>/dev/null || echo "[WARN] git pull failed, using existing files"
+            fi
+
+            # Rebuild and restart
+            docker compose up -d --build --remove-orphans
+
+            # Wait for healthy
+            sleep 10
+
+            # Health check
+            curl -sf https://aquavirdb.com/api/health || echo "[WARN] Health check failed"
+
+            # Verify PostgreSQL backend
+            docker compose exec -T api python -c "from db_pg import _IS_PG; assert _IS_PG, 'PG not active'"
+            echo "[ OK ] PostgreSQL backend confirmed"

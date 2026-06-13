@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AquaVir-KB — 水生无脊椎动物病毒知识库</title>
+    <meta name="description" content="AquaVir-KB: 全面覆盖水生无脊椎动物病毒的综合性知识库，收录1717种靶标病毒、353160条证据记录、3898条序列文件。">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --primary: #0f766e;
+            --primary-dark: #134e4a;
+            --accent: #14b8a6;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans SC", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        a { color: var(--primary); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* Nav */
+        .nav {
+            background: linear-gradient(135deg, #0f766e 0%, #134e4a 100%);
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 56px;
+        }
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: white;
+        }
+        .nav-brand:hover { text-decoration: none; opacity: 0.9; }
+        .nav-brand-icon { font-size: 1.5rem; }
+        .nav-links { display: flex; gap: 0.25rem; }
+        .nav-links a {
+            color: rgba(255,255,255,0.85);
+            padding: 0.375rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+        .nav-links a:hover {
+            background: rgba(255,255,255,0.12);
+            text-decoration: none;
+            color: white;
+        }
+        .nav-mobile-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.25rem;
+        }
+
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, #0f766e 0%, #115e59 40%, #134e4a 100%);
+            color: white;
+            padding: 4rem 1.5rem;
+            text-align: center;
+        }
+        .hero h1 { font-size: clamp(1.75rem, 4vw, 2.75rem); font-weight: 800; letter-spacing: -0.5px; }
+        .hero p { margin-top: 0.75rem; font-size: 1.1rem; opacity: 0.9; max-width: 640px; margin-inline: auto; }
+        .hero-badge {
+            display: inline-block;
+            margin-top: 1.25rem;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.25);
+            padding: 0.375rem 1rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* Search */
+        .search-section {
+            max-width: 720px;
+            margin: -1.75rem auto 2rem;
+            padding: 0 1.5rem;
+            position: relative;
+            z-index: 10;
+        }
+        .search-box {
+            display: flex;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        .search-box input {
+            flex: 1;
+            border: none;
+            padding: 1rem 1.25rem;
+            font-size: 1rem;
+            outline: none;
+            color: var(--text);
+        }
+        .search-box input::placeholder { color: #94a3b8; }
+        .search-box button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0 1.75rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+        .search-box button:hover { background: var(--primary-dark); }
+        .search-hint {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+            text-align: left;
+            padding-left: 0.5rem;
+        }
+
+        /* Stats grid */
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+        .section-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            color: var(--text);
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+        }
+        .stat-card {
+            background: var(--card);
+            border-radius: 10px;
+            padding: 1.25rem;
+            text-align: center;
+            border: 1px solid var(--border);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px -6px rgba(0,0,0,0.1); }
+        .stat-num { font-size: 1.75rem; font-weight: 800; color: var(--primary); letter-spacing: -0.5px; }
+        .stat-label { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+
+        /* Features */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2.5rem;
+        }
+        .feature-card {
+            background: var(--card);
+            border-radius: 10px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .feature-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px -6px rgba(0,0,0,0.1); }
+        .feature-icon { font-size: 1.75rem; margin-bottom: 0.5rem; }
+        .feature-card h3 { font-size: 1rem; margin-bottom: 0.375rem; }
+        .feature-card p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.55; }
+
+        /* Hosts bar */
+        .host-bar { margin-bottom: 2.5rem; }
+        .host-item { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; font-size: 0.875rem; }
+        .host-name { width: 130px; text-align: right; flex-shrink: 0; color: var(--text); }
+        .host-count { width: 48px; text-align: right; font-weight: 700; color: var(--primary); font-size: 0.85rem; }
+        .host-track { flex: 1; height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
+        .host-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--accent), var(--primary)); }
+
+        /* Footer */
+        footer {
+            background: #1e293b;
+            color: #cbd5e1;
+            font-size: 0.8rem;
+            margin-top: auto;
+            padding: 2rem 1.5rem;
+        }
+        .footer-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+        footer a { color: #94a3b8; }
+        footer a:hover { color: white; }
+        .footer-disclaimer {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            max-width: 460px;
+            line-height: 1.6;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .nav-mobile-btn { display: block; }
+            .nav-links.open {
+                display: flex;
+                flex-direction: column;
+                position: absolute;
+                top: 56px;
+                left: 0;
+                right: 0;
+                background: var(--primary-dark);
+                padding: 0.5rem 1rem 1rem;
+            }
+            .hero { padding: 2.5rem 1rem; }
+            .hero h1 { font-size: 1.5rem; }
+            .hero p { font-size: 0.95rem; }
+            .search-box { flex-direction: column; }
+            .search-box button { padding: 0.75rem; border-radius: 0 0 12px 12px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .features-grid { grid-template-columns: 1fr; }
+            .host-name { width: 100px; font-size: 0.8rem; }
+            .footer-inner { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-inner">
+            <a href="/" class="nav-brand">
+                <span class="nav-brand-icon">🦐</span> AquaVir-KB
+            </a>
+            <div class="nav-links" id="navLinks">
+                <a href="/viruses">病毒数据库</a>
+                <a href="/hosts">宿主信息</a>
+                <a href="/stats">统计面板</a>
+                <a href="/browse/taxonomy">分类浏览</a>
+                <a href="/download">数据下载</a>
+                <a href="/docs">API 文档</a>
+                <a href="/about">关于项目</a>
+            </div>
+            <button class="nav-mobile-btn" id="navToggle" aria-label="菜单">☰</button>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <h1>Aquatic Invertebrate Virus Knowledge Base</h1>
+        <p>全面覆盖水生无脊椎动物病毒的综合性知识库，整合基因组学、蛋白质组学、生态地理学与宿主互作信息</p>
+        <div class="hero-badge">NAR Database Issue 2028 · 水产病毒学</div>
+    </section>
+
+    <!-- Search -->
+    <section class="search-section">
+        <form class="search-box" action="/search" method="GET">
+            <input type="text" name="q" placeholder="搜索病毒名称、宿主种类、GenBank 登录号…" autofocus>
+            <button type="submit">搜索</button>
+        </form>
+        <p class="search-hint">支持：病毒名称、NCBI 登录号、宿主分类、RdRp 序列 · 试试 "white spot syndrome virus" 或 "Penaeus"</p>
+    </section>
+
+    <!-- Stats -->
+    <div class="container">
+        <h2 class="section-title">数据库概况</h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-num">1,717</div>
+                <div class="stat-label">靶标病毒物种</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num">8,993</div>
+                <div class="stat-label">病毒分离株</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num">353,160</div>
+                <div class="stat-label">证据记录</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num">9,065</div>
+                <div class="stat-label">参考文献</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num">27,096</div>
+                <div class="stat-label">蛋白序列</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num">3,898</div>
+                <div class="stat-label">FASTA 序列文件</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num">71,537</div>
+                <div class="stat-label">功能结构域</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num">140 / 45</div>
+                <div class="stat-label">数据表 / 视图</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Host coverage -->
+    <div class="container">
+        <h2 class="section-title">宿主门类覆盖</h2>
+        <div class="host-bar">
+            <div class="host-item"><span class="host-name">节肢动物门</span><span class="host-count">622</span><div class="host-track"><div class="host-fill" style="width:100%"></div></div></div>
+            <div class="host-item"><span class="host-name">软体动物门</span><span class="host-count">398</span><div class="host-track"><div class="host-fill" style="width:64%"></div></div></div>
+            <div class="host-item"><span class="host-name">刺胞动物门</span><span class="host-count">57</span><div class="host-track"><div class="host-fill" style="width:9.2%"></div></div></div>
+            <div class="host-item"><span class="host-name">线虫动物门</span><span class="host-count">55</span><div class="host-track"><div class="host-fill" style="width:8.8%"></div></div></div>
+            <div class="host-item"><span class="host-name">棘皮动物门</span><span class="host-count">51</span><div class="host-track"><div class="host-fill" style="width:8.2%"></div></div></div>
+            <div class="host-item"><span class="host-name">多孔动物门</span><span class="host-count">45</span><div class="host-track"><div class="host-fill" style="width:7.2%"></div></div></div>
+            <div class="host-item"><span class="host-name">环节动物门</span><span class="host-count">32</span><div class="host-track"><div class="host-fill" style="width:5.1%"></div></div></div>
+            <div class="host-item"><span class="host-name">扁形动物门</span><span class="host-count">30</span><div class="host-track"><div class="host-fill" style="width:4.8%"></div></div></div>
+            <div class="host-item"><span class="host-name">轮虫动物门</span><span class="host-count">4</span><div class="host-track"><div class="host-fill" style="width:0.6%"></div></div></div>
+        </div>
+    </div>
+
+    <!-- Features -->
+    <div class="container">
+        <h2 class="section-title">功能模块</h2>
+        <div class="features-grid">
+            <a href="/viruses" class="feature-card" style="color:inherit;">
+                <div class="feature-icon">🦠</div>
+                <h3>病毒数据库</h3>
+                <p>浏览 1,717 种靶标病毒的详细注释：分类、基因组结构、宿主范围、地理分布</p>
+            </a>
+            <a href="/rdrp" class="feature-card" style="color:inherit;">
+                <div class="feature-icon">🧬</div>
+                <h3>RdRp 进化分析</h3>
+                <p>131 种 RNA 病毒的 RNA 依赖 RNA 聚合酶序列比对、系统发育树与 BLAST 搜索</p>
+            </a>
+            <a href="/network" class="feature-card" style="color:inherit;">
+                <div class="feature-icon">🕸️</div>
+                <h3>宿主-病毒互作网络</h3>
+                <p>交互式网络图展示病毒-宿主双边关系，按门类、生态位、检出频率多维度筛选</p>
+            </a>
+            <a href="/enrichment" class="feature-card" style="color:inherit;">
+                <div class="feature-icon">🔬</div>
+                <h3>功能注释富集</h3>
+                <p>KEGG 通路、ViralZone、InterPro 结构域、AlphaFold 蛋白结构预测的多源集成</p>
+            </a>
+            <a href="/map" class="feature-card" style="color:inherit;">
+                <div class="feature-icon">🌏</div>
+                <h3>地理分布地图</h3>
+                <p>全球采集点可视化，按国家/地区/年份展示病毒检出分布与时空动态</p>
+            </a>
+            <a href="/download" class="feature-card" style="color:inherit;">
+                <div class="feature-icon">📥</div>
+                <h3>数据下载</h3>
+                <p>批量下载 FASTA 序列、元数据表格、宿主-病毒网络 CSV。数据以 CC-BY 4.0 发布</p>
+            </a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-inner">
+            <div>
+                <p style="font-weight:600;color:white;margin-bottom:0.25rem;">AquaVir-KB v1.0</p>
+                <p>水生无脊椎动物病毒知识库</p>
+                <p style="margin-top:0.5rem;">引用：请在论文中注明 AquaVir-KB 及本网站 URL</p>
+                <p style="margin-top:0.75rem;">
+                    <a href="/api/stats">REST API</a> &nbsp;·&nbsp;
+                    <a href="/docs">Swagger</a> &nbsp;·&nbsp;
+                    <a href="https://github.com/zy15908060761/CDB">GitHub</a> &nbsp;·&nbsp;
+                    <a href="https://www.ncbi.nlm.nih.gov/">NCBI</a>
+                </p>
+            </div>
+            <div class="footer-disclaimer">
+                <p>本数据库持续建设中。未审核证据不构成养殖建议。数据来源包括 NCBI GenBank、UniProt、AlphaFold DB、ViralZone、KEGG 等公共数据库。序列与元数据可从 <a href="/download">下载页面</a> 以 CC-BY 4.0 许可获取。数据 DOI 将通过 Zenodo 注册。</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        document.getElementById('navToggle').addEventListener('click', function() {
+            document.getElementById('navLinks').classList.toggle('open');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}Host Ecology — Aquatic Invertebrate Virus Knowledge Base{% endblock %}
+{% block extra_head %}<style>.eco-card { border-left: 4px solid transparent; transition: all 0.2s; } .eco-card:hover { border-left-color: #10b981; }</style>{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+    <div class="flex items-center gap-2 text-sm text-gray-400 mb-4">
+        <a href="/enrichment" class="hover:text-primary">Enrichment Hub</a><span>/</span><span class="text-gray-700 font-medium">Host Ecology &amp; Distribution</span>
+    </div>
+
+    <div class="bg-white rounded-xl p-5 mb-6 border border-gray-100">
+        <div class="flex items-center gap-3 mb-2">
+            <span class="text-3xl">&#x1F30D;</span>
+            <div><h1 class="text-2xl font-bold text-gray-800">Host Ecology &amp; Geographic Distribution</h1><p class="text-sm text-gray-500">GBIF + OBIS + EOL — Global host species distribution, ecological traits, and biological profiles</p></div>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mt-4">
+            <div class="text-center p-3 bg-green-50 rounded-lg"><div class="text-xl font-bold text-green-700" id="s-gbif">--</div><div class="text-xs text-gray-500">GBIF Occurrence Records</div></div>
+            <div class="text-center p-3 bg-green-50 rounded-lg"><div class="text-xl font-bold text-green-700" id="s-obis">--</div><div class="text-xs text-gray-500">OBIS Marine Records</div></div>
+            <div class="text-center p-3 bg-green-50 rounded-lg"><div class="text-xl font-bold text-green-700" id="s-traits">--</div><div class="text-xs text-gray-500">Ecological Traits</div></div>
+            <div class="text-center p-3 bg-green-50 rounded-lg"><div class="text-xl font-bold text-green-700" id="s-profiles">--</div><div class="text-xs text-gray-500">Biological Profiles</div></div>
+            <div class="text-center p-3 bg-green-50 rounded-lg"><div class="text-xl font-bold text-green-700" id="s-hosts">--</div><div class="text-xs text-gray-500">Host Species</div></div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Species Selector -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-xl p-4 border border-gray-100 mb-4">
+                <input type="text" id="host-search" placeholder="Search host scientific name..." class="search-input w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500 mb-2">
+                <div id="host-list" class="max-h-[400px] overflow-y-auto space-y-1 text-sm"><div class="text-gray-400 py-4 text-center">Loading...</div></div>
+            </div>
+        </div>
+        <!-- Detail Panel -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-xl p-4 border border-gray-100 mb-4">
+                <h3 class="font-semibold text-gray-800 mb-3" id="eco-title">Select a host species</h3>
+                <div id="eco-detail" class="text-sm text-gray-500">Click a species name on the left to view detailed ecological information</div>
+            </div>
+            <!-- Mini Map -->
+            <div class="bg-white rounded-xl border border-gray-100 p-2">
+                <div id="host-map-chart" style="height:350px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let hosts = [], gbifData = [], obisData = [], mapChart = null, selectedHost = null;
+
+Promise.all([
+    fetch('/api/hosts').then(r => r.json()),
+    fetch('/api/enrichment/gbif?limit=1000').then(r => r.json()),
+    fetch('/api/enrichment/host-ecology?limit=500').then(r => r.json())
+]).then(([h, g, e]) => {
+    hosts = Array.isArray(h) ? h : (h.hosts || []);
+    gbifData = (g.status === 'success' ? g.data : []);
+    obisData = (e.status === 'success' ? (e.traits?.data || []) : []);
+    document.getElementById('s-hosts').textContent = hosts.length;
+    document.getElementById('s-gbif').textContent = gbifData.length;
+    document.getElementById('s-obis').textContent = obisData.length;
+    document.getElementById('s-traits').textContent = (e.traits?.data?.length || 0);
+    document.getElementById('s-profiles').textContent = (e.profiles?.data?.length || 0);
+    if (hosts.length === 0) {
+        UI.showEmpty('host-list', '&#x1F990;', 'No host data available', 'Host ecology data is being collected');
+    }
+    renderHostList();
+    initHostMap();
+}).catch(() => {
+    UI.showError('host-list', 'Failed to load host data. Please refresh and try again.');
+});
+
+function renderHostList(filter = '') {
+    const f = hosts.filter(h => {
+        const name = h.scientific_name || h.name || '';
+        return name.toLowerCase().includes(filter.toLowerCase());
+    });
+    document.getElementById('host-list').innerHTML = f.slice(0, 50).map(h => {
+        const name = h.scientific_name || h.name || '--';
+        const cn = h.common_name_cn || '';
+        return `<div class="eco-card bg-gray-50 rounded p-2 cursor-pointer hover:bg-green-50 text-sm" onclick="selectHost('${name.replace(/'/g, "\\'")}')">
+            <span class="font-medium text-gray-800">${name}</span>
+            ${cn ? `<span class="text-gray-400 ml-1">${cn}</span>` : ''}
+        </div>`;
+    }).join('');
+}
+
+function selectHost(name) {
+    selectedHost = name;
+    document.querySelectorAll('.eco-card').forEach(c => c.style.background = '');
+    document.querySelectorAll('.eco-card').forEach(c => { if (c.textContent.includes(name)) c.style.background = '#dcfce7'; });
+    document.getElementById('eco-title').textContent = name;
+
+    // GBIF data for this host
+    const gbif = gbifData.filter(x => x.scientific_name === name);
+    const obisEntry = obisData.filter(x => x.scientific_name === name);
+
+    document.getElementById('eco-detail').innerHTML = `
+        <div class="grid grid-cols-2 gap-3">
+            <div class="bg-green-50 rounded p-3"><div class="text-lg font-bold text-green-700">${gbif.length}</div><div class="text-xs text-gray-500">GBIF Occurrence Records</div></div>
+            <div class="bg-blue-50 rounded p-3"><div class="text-lg font-bold text-blue-700">${obisEntry.length}</div><div class="text-xs text-gray-500">OBIS Marine Records</div></div>
+        </div>
+        ${gbif.length > 0 ? `<div class="mt-3"><h4 class="font-medium text-sm text-gray-700 mb-1">Distribution Countries</h4><div class="flex flex-wrap gap-1">${[...new Set(gbif.map(x => x.country).filter(Boolean))].slice(0, 15).map(c => `<span class="px-2 py-0.5 bg-gray-100 rounded text-xs">${c}</span>`).join('')}</div></div>` : ''}
+        <div class="mt-2 text-xs text-gray-400">Click another host on the left to view different species</div>
+    `;
+
+    // Update map
+    updateHostMap(gbif);
+}
+
+function initHostMap() {
+    mapChart = echarts.init(document.getElementById('host-map-chart'));
+    fetch('/static/world.json').then(r => r.json()).then(geo => {
+        echarts.registerMap('world', geo);
+        mapChart.setOption({
+            geo: { map: 'world', roam: true, itemStyle: { areaColor: '#e5e7eb', borderColor: '#9ca3af' } },
+            series: [{ type: 'scatter', coordinateSystem: 'geo', data: [], symbolSize: 8 }]
+        });
+    });
+}
+
+function updateHostMap(gbif) {
+    if (!mapChart) return;
+    const points = gbif
+        .filter(x => x.decimal_latitude && x.decimal_longitude)
+        .map(x => [
+            x.decimal_longitude,
+            x.decimal_latitude,
+            x.country || '',
+            x.coordinate_uncertainty_in_meters || x.coordinate_uncertainty || 'not reported'
+        ]);
+    mapChart.setOption({
+        series: [{ type: 'scatter', coordinateSystem: 'geo', data: points, symbolSize: 6, itemStyle: { color: '#10b981', opacity: 0.7 },
+            tooltip: { formatter: p => `${p.value[2]}<br>Host occurrence record, not virus sampling site<br>Coordinate uncertainty: ${p.value[3]}` } }]
+    });
+}
+
+document.getElementById('host-search').addEventListener('input', function() { renderHostList(this.value); });
+window.addEventListener('resize', () => mapChart && mapChart.resize());
+</script>
+{% endblock %}

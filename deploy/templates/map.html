@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}Global Distribution - AquaVir-KB{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">🗺️ Global Sampling Record Distribution</h1>
+        <p class="text-slate-500 mt-2 text-sm">Country/region-level record distribution based on GenBank metadata. Darker colors indicate more records.</p>
+    </div>
+
+    <!-- Filter Controls -->
+    <div class="card p-4 mb-4">
+        <div class="flex flex-wrap gap-4 items-center">
+            <div class="flex items-center gap-2">
+                <label class="text-sm text-gray-600 font-medium">Host Phylum:</label>
+                <select id="filter-phylum" class="px-3 py-1.5 border border-gray-200 rounded-lg text-sm" onchange="updateMapFilter()">
+                    <option value="">All Phyla</option>
+                    <option value="Arthropoda">Arthropoda</option>
+                    <option value="Mollusca">Mollusca</option>
+                    <option value="Cnidaria">Cnidaria</option>
+                    <option value="Echinodermata">Echinodermata</option>
+                    <option value="Porifera">Porifera</option>
+                    <option value="Annelida">Annelida</option>
+                </select>
+            </div>
+            <button onclick="updateMapFilter()" class="px-4 py-1.5 bg-teal-600 text-white rounded-lg text-sm hover:bg-teal-500 transition">Apply Filter</button>
+            <div id="map-legend" class="flex gap-3 text-xs ml-auto flex-wrap text-slate-500">
+                <span>Color intensity indicates record density</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- World Map -->
+    <div class="card p-5 mb-6">
+        <div id="world-map" style="width:100%;height:520px"></div>
+    </div>
+
+    <!-- China Map -->
+    <div class="card p-5 mb-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4 text-center">🇨🇳 China Provincial Distribution</h3>
+        <p class="text-xs text-gray-400 text-center mb-4">Provincial data being continuously collected; current framework shown</p>
+        <div id="china-map" style="width:100%;height:450px;max-width:800px;margin:0 auto"></div>
+    </div>
+
+    <!-- Country Table -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+        <h3 class="text-sm font-semibold text-gray-700 mb-3">Record Count Ranking</h3>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="text-left px-4 py-2 font-semibold text-gray-700">Rank</th>
+                        <th class="text-left px-4 py-2 font-semibold text-gray-700">Country/Region</th>
+                        <th class="text-right px-4 py-2 font-semibold text-gray-700">Records</th>
+                        <th class="text-right px-4 py-2 font-semibold text-gray-700">Percentage</th>
+                    </tr>
+                </thead>
+                <tbody id="country-table-body" class="divide-y divide-gray-100">
+                    <tr><td colspan="4" class="px-4 py-8 text-center text-gray-400">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    async function initMaps() {
+        // World Map
+        const worldDom = document.getElementById('world-map');
+        if (worldDom && typeof echarts !== 'undefined') {
+            try {
+                const countryRes = await fetch('/api/stats_by_country');
+                const countryData = await countryRes.json();
+
+                if (countryData.length === 0) {
+                    worldDom.innerHTML = '<div class="flex flex-col items-center justify-center h-full text-gray-400"><div class="text-5xl mb-3">🗺️</div><div class="text-lg font-medium">Geographic data being collected</div></div>';
+                } else {
+                    const nameMap = { 'USA': 'United States', 'United States': 'United States', 'Korea': 'Korea', 'South Korea': 'Korea' };
+                    const mapData = countryData.map(item => ({ name: nameMap[item.country] || item.country, value: item.count }));
+                    const maxVal = Math.max(...mapData.map(d => d.value));
+
+                    const chart = echarts.init(worldDom);
+                    fetch('/static/world.json')
+                        .then(r => { if (!r.ok) throw new Error('fail'); return r.json(); })
+                        .then(worldJson => {
+                            echarts.registerMap('world', worldJson);
+                            chart.setOption({
+                                tooltip: {
+                                    trigger: 'item',
+                                    formatter: p => p.value ? `${p.name}<br/>Records: ${p.value}` : `${p.name}: No records`
+                                },
+                                visualMap: {
+                                    min: 0, max: maxVal, text: ['High', 'Low'], realtime: false, calculable: true,
+                                    inRange: { color: ['#e0f3f8', '#abd9e9', '#74add1', '#4575b4', '#313695'] },
+                                    left: 'left', bottom: '20'
+                                },
+                                series: [{
+                                    name: 'Virus Records', type: 'map', map: 'world', roam: true,
+                                    emphasis: { label: { show: true }, itemStyle: { areaColor: '#f39c12' } },
+                                    itemStyle: { areaColor: '#f0f0f0', borderColor: '#ccc' },
+                                    data: mapData
+                                }]
+                            });
+                        })
+                        .catch(() => {
+                            // Fallback bar chart
+                            const sorted = countryData.sort((a, b) => b.count - a.count).slice(0, 20);
+                            chart.setOption({
+                                title: { text: '(Map data failed to load; degraded to bar chart)', left: 'center', top: 10, textStyle: { fontSize: 13, color: '#999' } },
+                                tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+                                grid: { left: '3%', right: '8%', bottom: '3%', top: '15%', containLabel: true },
+                                xAxis: { type: 'value' },
+                                yAxis: { type: 'category', data: sorted.map(d => d.country).reverse() },
+                                series: [{ type: 'bar', data: sorted.map(d => d.count).reverse(), itemStyle: { color: '#74add1' }, label: { show: true, position: 'right' } }]
+                            });
+                        });
+                    window.addEventListener('resize', () => chart.resize());
+
+                    // Populate country table
+                    const tbody = document.getElementById('country-table-body');
+                    const total = countryData.reduce((s, d) => s + d.count, 0);
+                    tbody.innerHTML = countryData.slice(0, 20).map((d, i) => `
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2 text-gray-500">${i + 1}</td>
+                            <td class="px-4 py-2 font-medium text-gray-800">${d.country}</td>
+                            <td class="px-4 py-2 text-right font-medium text-gray-800">${d.count}</td>
+                            <td class="px-4 py-2 text-right text-gray-500">${(d.count / total * 100).toFixed(1)}%</td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (e) {
+                worldDom.innerHTML = '<div class="flex flex-col items-center justify-center h-full text-gray-400"><div class="text-5xl mb-3">🗺️</div><div>Map data loading failed</div></div>';
+            }
+        }
+
+        // China Map
+        const chinaDom = document.getElementById('china-map');
+        if (chinaDom && typeof echarts !== 'undefined') {
+            try {
+                const [geoRes, provinceRes] = await Promise.all([
+                    fetch('/static/china.json'),
+                    fetch('/api/stats_by_province?country=China')
+                ]);
+                if (!geoRes.ok) throw new Error('fail');
+                const chinaJson = await geoRes.json();
+                echarts.registerMap('china', chinaJson);
+
+                const provinceData = await provinceRes.json();
+                const mapData = (provinceData.data || []).map(d => ({
+                    name: d.name,
+                    value: d.count
+                }));
+                const totalMapped = provinceData.total_mapped || 0;
+                const hasData = mapData.length > 0;
+                const maxVal = hasData ? Math.max(...mapData.map(d => d.value)) : 100;
+
+                const chart = echarts.init(chinaDom);
+                chart.setOption({
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: p => {
+                            if (p.value) return `${p.name}<br/>Records: ${p.value}`;
+                            return `${p.name}<br/>No data`;
+                        }
+                    },
+                    visualMap: {
+                        min: 0, max: maxVal, text: ['More', 'Fewer'], realtime: false, calculable: true,
+                        inRange: { color: ['#e0f3f8', '#74add1', '#313695'] }, left: 'left', bottom: '20'
+                    },
+                    series: [{
+                        name: 'China Province Distribution', type: 'map', map: 'china', roam: true,
+                        emphasis: { label: { show: true }, itemStyle: { areaColor: '#f39c12' } },
+                        itemStyle: { areaColor: '#f0f0f0', borderColor: '#ccc' },
+                        data: mapData
+                    }]
+                });
+
+                // Update description text
+                const descEl = chinaDom.parentElement.querySelector('p');
+                if (descEl) {
+                    if (hasData) {
+                        descEl.textContent = `Mapped ${mapData.length} provinces, ${totalMapped} total records (some province names pending standardization)`;
+                        descEl.className = 'text-xs text-teal-600 text-center mb-4';
+                    } else {
+                        descEl.textContent = 'Province names being standardized; no mappable province data available';
+                    }
+                }
+
+                window.addEventListener('resize', () => chart.resize());
+            } catch (e) {
+                chinaDom.innerHTML = '<div class="flex items-center justify-center h-full text-gray-400">China map data loading failed</div>';
+            }
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', initMaps);
+</script>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}{% if query %}"{{ query }}" — Search Results{% else %}Search — AquaVir-KB{% endif %}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-6">
+    <!-- Header -->
+    <div class="mb-6">
+        <h1 class="page-title" style="margin-bottom: 4px;">Search</h1>
+        <p class="text-sm" style="color: var(--text-muted);">Find viruses, hosts, sequences, and literature across the knowledge base</p>
+    </div>
+
+    <!-- Search & Filter Bar -->
+    <div class="card mb-5" style="padding: 18px 20px;">
+        <form action="/search" method="get" class="space-y-3"
+              hx-get="/search" hx-target="#results-area" hx-push-url="true"
+              hx-trigger="submit, change from:select, change from:input[type=number]"
+              hx-indicator="#search-indicator">
+
+            <!-- Search Input -->
+            <div class="search-box" style="max-width: 100%; margin-bottom: 4px;">
+                <input type="text" name="q" value="{{ query }}" placeholder="Search virus name, accession, family, genus, host..." autofocus>
+                <button type="submit">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </button>
+            </div>
+
+            <!-- Filters Row -->
+            <div class="flex flex-wrap gap-2 items-center" style="padding-top: 4px;">
+                <select name="phylum" class="input-focus" style="padding: 5px 10px; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); font-size: 12px; background: var(--bg-card); color: var(--text-main); cursor: pointer;">
+                    <option value="">All Phyla</option>
+                    <option value="Arthropoda" {% if phylum == 'Arthropoda' %}selected{% endif %}>Arthropoda</option>
+                    <option value="Mollusca" {% if phylum == 'Mollusca' %}selected{% endif %}>Mollusca</option>
+                    <option value="Cnidaria" {% if phylum == 'Cnidaria' %}selected{% endif %}>Cnidaria</option>
+                    <option value="Echinodermata" {% if phylum == 'Echinodermata' %}selected{% endif %}>Echinodermata</option>
+                    <option value="Porifera" {% if phylum == 'Porifera' %}selected{% endif %}>Porifera</option>
+                    <option value="Annelida" {% if phylum == 'Annelida' %}selected{% endif %}>Annelida</option>
+                    <option value="Nematoda" {% if phylum == 'Nematoda' %}selected{% endif %}>Nematoda</option>
+                    <option value="Platyhelminthes" {% if phylum == 'Platyhelminthes' %}selected{% endif %}>Platyhelminthes</option>
+                    <option value="Rotifera" {% if phylum == 'Rotifera' %}selected{% endif %}>Rotifera</option>
+                </select>
+
+                <select name="family" style="padding: 5px 10px; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); font-size: 12px; background: var(--bg-card); color: var(--text-main); cursor: pointer; max-width: 160px;">
+                    <option value="">All Families</option>
+                    {% for fam in families %}
+                    <option value="{{ fam }}" {% if family == fam %}selected{% endif %}>{{ fam }}</option>
+                    {% endfor %}
+                </select>
+
+                <select name="completeness" style="padding: 5px 10px; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); font-size: 12px; background: var(--bg-card); color: var(--text-main); cursor: pointer;">
+                    <option value="">All Completeness</option>
+                    <option value="complete_genome" {% if completeness == 'complete_genome' %}selected{% endif %}>Complete Genome</option>
+                    <option value="partial_sequence" {% if completeness == 'partial_sequence' %}selected{% endif %}>Partial Sequence</option>
+                    <option value="gene_fragment" {% if completeness == 'gene_fragment' %}selected{% endif %}>Gene Fragment</option>
+                </select>
+
+                <select name="country" style="padding: 5px 10px; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); font-size: 12px; background: var(--bg-card); color: var(--text-main); cursor: pointer; max-width: 140px;">
+                    <option value="">All Countries</option>
+                    {% for c in countries %}
+                    <option value="{{ c }}" {% if country == c %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+
+                <div class="flex items-center gap-1" style="border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 2px 6px; background: var(--bg-card);">
+                    <input type="number" name="year_from" value="{{ year_from }}" placeholder="From" min="1960" max="2030"
+                           style="width: 52px; border: none; background: transparent; font-size: 12px; text-align: center; outline: none; color: var(--text-main); padding: 3px 0;">
+                    <span style="font-size: 11px; color: var(--text-muted);">—</span>
+                    <input type="number" name="year_to" value="{{ year_to }}" placeholder="To" min="1960" max="2030"
+                           style="width: 52px; border: none; background: transparent; font-size: 12px; text-align: center; outline: none; color: var(--text-main); padding: 3px 0;">
+                </div>
+
+                {% if query or family or completeness or country or year_from or year_to %}
+                <a href="/search" class="btn btn-sm" style="color: var(--c-severe); border-color: rgba(239,68,68,0.15); background: rgba(239,68,68,0.04); text-decoration: none; margin-left: auto;">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    Clear
+                </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Results Area -->
+    <div id="results-area">
+        {% include "components/search_results.html" %}
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="search-indicator" class="htmx-indicator" style="display:none; position: fixed; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center;">
+        <div class="glass" style="border-radius: var(--radius-xl); box-shadow: var(--shadow-lg); padding: 16px 24px; display: flex; align-items: center; gap: 10px; border: 1px solid var(--border-subtle);">
+            <div style="width: 20px; height: 20px; border: 2px solid var(--border-subtle); border-top-color: var(--c-primary-500); border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+            <span style="font-size: 13px; font-weight: 500; color: var(--text-secondary);">Searching...</span>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<style>
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .htmx-indicator { display: none !important; }
+    .htmx-request .htmx-indicator { display: flex !important; }
+</style>
+{% endblock %}

@@ -1,0 +1,28 @@
+==================================================
+AquaVir-KB 导入后统计
+==================================================
+
+总文献数: 7482
+病毒物种: 1257
+宿主物种: 9
+覆盖门类: 8
+
+宿主按门类:
+  Arthropoda: 111
+  Mollusca: 22
+  Echinodermata: 7
+  Chordata: 6
+  Proteobacteria: 6
+  Cnidaria: 4
+  Environmental: 2
+  Porifera: 2
+
+病毒按门类:
+  Arthropoda: 575
+  Mollusca: 159
+  Ochrophyta (algae): 153
+  non_aquatic: 73
+  multiple: 27
+  Cnidaria: 17
+  Echinodermata: 16
+  Porifera: 12

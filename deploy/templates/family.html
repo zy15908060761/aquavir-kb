@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+{% block title %}Family {{ family_name }} Summary - AquaVir-KB{% endblock %}
+
+{% block breadcrumbs %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+    <nav class="flex text-xs text-gray-400 space-x-1">
+        <a href="/" class="hover:text-teal-600 transition">Home</a>
+        <span>/</span><a href="/search" class="hover:text-teal-600 transition">Search</a>
+        <span>/</span><span class="text-gray-600">{{ family_name }}</span>
+    </nav>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">{{ family_name }}</h1>
+        <p class="text-gray-500 mt-2">Virus Family Summary Statistics</p>
+    </div>
+
+    <!-- Stats Bar -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6" id="family-stats">
+        <div class="card-hover p-4 text-center border-l-[4px] border-l-teal-500 rounded-l-none"><div class="text-xl font-extrabold text-teal-600 font-mono" id="stat-isolates">--</div><div class="text-xs text-slate-500 mt-1 font-medium">Isolates</div></div>
+        <div class="card-hover p-4 text-center border-l-[4px] border-l-blue-500 rounded-l-none"><div class="text-xl font-extrabold text-blue-600 font-mono" id="stat-species">--</div><div class="text-xs text-slate-500 mt-1 font-medium">Virus Species</div></div>
+        <div class="card-hover p-4 text-center border-l-[4px] border-l-green-500 rounded-l-none"><div class="text-xl font-extrabold text-green-600 font-mono" id="stat-hosts">--</div><div class="text-xs text-slate-500 mt-1 font-medium">Host Species</div></div>
+        <div class="card-hover p-4 text-center border-l-[4px] border-l-purple-500 rounded-l-none"><div class="text-xl font-extrabold text-purple-600 font-mono" id="stat-countries">--</div><div class="text-xs text-slate-500 mt-1 font-medium">Countries</div></div>
+        <div class="card-hover p-4 text-center border-l-[4px] border-l-amber-500 rounded-l-none"><div class="text-xl font-extrabold text-amber-600 font-mono" id="stat-ictv">--</div><div class="text-xs text-slate-500 mt-1 font-medium">ICTV Mapped</div></div>
+        <div class="card-hover p-4 text-center border-l-[4px] border-l-slate-500 rounded-l-none"><div class="text-xl font-extrabold text-slate-600 font-mono" id="stat-year">--</div><div class="text-xs text-slate-500 mt-1 font-medium">Year Range</div></div>
+        <div class="card-hover p-4 text-center border-l-[4px] border-l-slate-500 rounded-l-none"><div class="text-xl font-extrabold text-slate-600 font-mono" id="stat-gc">--</div><div class="text-xs text-slate-500 mt-1 font-medium">Mean GC%</div></div>
+        <div class="card-hover p-4 text-center border-l-[4px] border-l-slate-500 rounded-l-none"><div class="text-xl font-extrabold text-slate-600 font-mono" id="stat-avg-len">--</div><div class="text-xs text-slate-500 mt-1 font-medium">Mean Length</div></div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Top Viruses -->
+        <div class="card p-5">
+            <h3 class="text-sm font-semibold text-gray-700 mb-3">Top 10 Virus Species</h3>
+            <div id="chart-top-viruses" style="width:100%;height:300px"></div>
+        </div>
+        <!-- Top Hosts -->
+        <div class="card p-5">
+            <h3 class="text-sm font-semibold text-gray-700 mb-3">Primary Hosts</h3>
+            <div id="chart-top-hosts" style="width:100%;height:300px"></div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Genome Types -->
+        <div class="card p-5">
+            <h3 class="text-sm font-semibold text-gray-700 mb-3">Genome Type Distribution</h3>
+            <div id="chart-genome-types" style="width:100%;height:260px"></div>
+        </div>
+        <!-- Completeness -->
+        <div class="card p-5">
+            <h3 class="text-sm font-semibold text-gray-700 mb-3">Sequence Completeness</h3>
+            <div id="chart-completeness" style="width:100%;height:260px"></div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Timeline -->
+        <div class="card p-5">
+            <h3 class="text-sm font-semibold text-gray-700 mb-3">Research Timeline</h3>
+            <div id="chart-timeline" style="width:100%;height:280px"></div>
+        </div>
+        <!-- Countries -->
+        <div class="card p-5">
+            <h3 class="text-sm font-semibold text-gray-700 mb-3">Top 10 Countries</h3>
+            <div id="chart-countries" style="width:100%;height:280px"></div>
+        </div>
+    </div>
+
+    <!-- Genome Structure -->
+    <div class="card p-5 mb-6">
+        <h3 class="text-sm font-semibold text-gray-700 mb-3">Genome Structure Comparison (ORF Arrangement)</h3>
+        <p class="text-xs text-gray-400 mb-3">ORF arrangement of top 10 longest genomes. Red=RDRP, Blue=Structural proteins, Gray=Other</p>
+        <div id="chart-genome-structure" style="width:100%;height:400px"></div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="flex flex-wrap gap-3 text-sm">
+        <a href="/search?family={{ family_name|urlencode }}" class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-500 transition">Search all records in this family</a>
+        <a href="/phylogeny" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">Phylogeny</a>
+        <a href="/stats" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">Global Stats</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const charts = [];
+function reg(c) { if(c) charts.push(c); return c; }
+
+fetch('/api/family/{{ family_name }}')
+    .then(r => r.json())
+    .then(d => {
+        if (d.error) { document.body.innerHTML = '<div class="empty-state" style="padding:5rem"><div class="empty-icon">🔬</div><div class="empty-title">' + d.error + '</div></div>'; return; }
+
+        const s = d.stats;
+        document.getElementById('stat-isolates').textContent = s.isolate_count?.toLocaleString() || '0';
+        document.getElementById('stat-species').textContent = s.species_count?.toLocaleString() || '0';
+        document.getElementById('stat-hosts').textContent = s.host_count?.toLocaleString() || '0';
+        document.getElementById('stat-countries').textContent = s.country_count?.toLocaleString() || '0';
+        document.getElementById('stat-ictv').textContent = (d.ictv_mapped_count || 0) + '/' + (s.species_count || 0);
+        document.getElementById('stat-year').textContent = (s.min_year || '?') + '-' + (s.max_year || '?');
+        document.getElementById('stat-gc').textContent = (s.avg_gc_content || '--') + '%';
+        document.getElementById('stat-avg-len').textContent = s.avg_genome_length ? (s.avg_genome_length/1000).toFixed(1) + 'kb' : '--';
+
+        // Viruses bar chart
+        const vNames = d.top_viruses.map(v => v.virus_name.replace(/ virus| syndrome/gi,'')).reverse();
+        const vCounts = d.top_viruses.map(v => v.count).reverse();
+        const cv = reg(echarts.init(document.getElementById('chart-top-viruses')));
+        cv.setOption({
+            tooltip: { trigger: 'axis' },
+            grid: { left: '3%', right: '8%', bottom: '3%', top: '3%', containLabel: true },
+            xAxis: { type: 'value' },
+            yAxis: { type: 'category', data: vNames, axisLabel: { fontSize: 11 } },
+            series: [{ type: 'bar', data: vCounts, itemStyle: { color: '#0f766e', borderRadius: [0,4,4,0] }, label: { show: true, position: 'right', fontSize: 11 } }]
+        });
+
+        // Hosts bar chart
+        const hNames = d.top_hosts.map(h => (h.host_name.length > 22 ? h.host_name.slice(0,20)+'...' : h.host_name)).reverse();
+        const hCounts = d.top_hosts.map(h => h.count).reverse();
+        const ch = reg(echarts.init(document.getElementById('chart-top-hosts')));
+        ch.setOption({
+            tooltip: { trigger: 'axis' },
+            grid: { left: '3%', right: '8%', bottom: '3%', top: '3%', containLabel: true },
+            xAxis: { type: 'value' },
+            yAxis: { type: 'category', data: hNames, axisLabel: { fontSize: 11 } },
+            series: [{ type: 'bar', data: hCounts, itemStyle: { color: '#10b981', borderRadius: [0,4,4,0] }, label: { show: true, position: 'right', fontSize: 11 } }]
+        });
+
+        // Genome types pie
+        const gt = reg(echarts.init(document.getElementById('chart-genome-types')));
+        gt.setOption({
+            tooltip: { trigger: 'item' },
+            series: [{ type: 'pie', radius: ['40%','70%'], data: d.genome_types.map(g => ({ name: g.genome_type||'unknown', value: g.count })), label: { fontSize: 11 } }]
+        });
+
+        // Completeness pie
+        const cp = reg(echarts.init(document.getElementById('chart-completeness')));
+        cp.setOption({
+            tooltip: { trigger: 'item' },
+            series: [{ type: 'pie', radius: ['40%','70%'], data: d.completeness.map(g => ({ name: g.completeness||'unknown', value: g.count })), label: { fontSize: 11 } }]
+        });
+
+        // Timeline
+        const tl = reg(echarts.init(document.getElementById('chart-timeline')));
+        tl.setOption({
+            tooltip: { trigger: 'axis' },
+            grid: { left: '3%', right: '4%', bottom: '4%', top: '6%', containLabel: true },
+            xAxis: { type: 'category', data: d.timeline.map(t => t.year) },
+            yAxis: { type: 'value' },
+            series: [{ type: 'bar', data: d.timeline.map(t => t.count), itemStyle: { color: '#f59e0b', borderRadius: [4,4,0,0] } }]
+        });
+
+        // Countries
+        const cn = reg(echarts.init(document.getElementById('chart-countries')));
+        const cData = [...d.countries].reverse();
+        cn.setOption({
+            tooltip: { trigger: 'axis' },
+            grid: { left: '3%', right: '8%', bottom: '3%', top: '3%', containLabel: true },
+            xAxis: { type: 'value' },
+            yAxis: { type: 'category', data: cData.map(c => c.country), axisLabel: { fontSize: 11 } },
+            series: [{ type: 'bar', data: cData.map(c => c.count), itemStyle: { color: '#6366f1', borderRadius: [0,4,4,0] }, label: { show: true, position: 'right', fontSize: 11 } }]
+        });
+
+        window.addEventListener('resize', () => charts.forEach(c => c.resize()));
+
+        // Genome structure chart
+        fetch('/api/family/{{ family_name }}/genome_structure')
+            .then(r => r.json())
+            .then(gs => {
+                if (!gs.isolates || !gs.isolates.length) return;
+                const isoLabels = gs.isolates.map(i => i.accession);
+                const maxLen = Math.max(...gs.isolates.map(i => i.genome_length));
+
+                const catColors = { structural: '#3b82f6', replication: '#ef4444', assembly: '#8b5cf6',
+                    host_interaction: '#f59e0b', metabolism: '#22c55e', unknown: '#94a3b8' };
+
+                const series = gs.isolates.map((iso, idx) => ({
+                    type: 'custom',
+                    name: iso.accession,
+                    data: iso.orfs.map(orf => [idx, orf.start, orf.end, orf.name, orf.category, orf.is_rdrp]),
+                    renderItem: function(params, api) {
+                        const idx = api.value(0), start = api.value(1), end = api.value(2);
+                        const cat = api.value(4); const isRdrp = api.value(5);
+                        const y = api.coord([idx, 0])[1];
+                        const x1 = api.coord([start, 0])[0];
+                        const x2 = api.coord([end, 0])[0];
+                        const h = api.size([0, 1])[1] * 0.55;
+                        const color = isRdrp ? '#ef4444' : (catColors[cat] || '#94a3b8');
+                        return { type: 'rect', shape: { x: Math.max(x1, api.coord([0,0])[0]), y: y - h/2, width: Math.max(x2 - x1, 2), height: h },
+                            style: { fill: color, stroke: '#fff', lineWidth: 0.5 } };
+                    },
+                    itemStyle: { opacity: 0.85 }
+                }));
+
+                const gsChart = reg(echarts.init(document.getElementById('chart-genome-structure')));
+                gsChart.setOption({
+                    tooltip: { formatter: p => `${p.seriesName}<br/>${p.data[3]}: ${p.data[1]}-${p.data[2]} (${p.data[2]-p.data[1]}bp)${p.data[5]?' [RDRP]':''}` },
+                    grid: { left: '15%', right: '5%', bottom: '3%', top: '3%', containLabel: true },
+                    xAxis: { type: 'value', name: 'Genome Position (bp)', axisLabel: { formatter: v => (v/1000).toFixed(0)+'kb' } },
+                    yAxis: { type: 'category', data: isoLabels, axisLabel: { fontSize: 10, fontFamily: 'monospace' } },
+                    series: series,
+                });
+
+                window.addEventListener('resize', () => gsChart.resize());
+            }).catch(() => {});
+    })
+    .catch(() => {
+        document.getElementById('family-stats').innerHTML = '<div class="col-span-full empty-state"><div class="empty-icon">⚠️</div><div class="empty-title text-red-600">Loading failed</div></div>';
+    });
+</script>
+{% endblock %}

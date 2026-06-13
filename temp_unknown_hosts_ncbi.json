@@ -1,0 +1,260 @@
+{
+  "OR270518": {
+    "organism": "Skomarfal virus 30",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Kitrinoviricota; Tolucaviricetes; Tolivirales; Tombusviridae",
+    "host": "Margaritifera falcata",
+    "definition": "MAG: Skomarfal virus 30 isolate MSK6 genomic sequence"
+  },
+  "OR270431": {
+    "organism": "Skomarfal virus 20",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Kitrinoviricota; Tolucaviricetes; Tolivirales",
+    "host": "Margaritifera falcata",
+    "definition": "MAG: Skomarfal virus 20 isolate MSK6 genomic sequence"
+  },
+  "OR270426": {
+    "organism": "Skomarfal virus 40",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Kitrinoviricota; Tolucaviricetes; Tolivirales; Tombusviridae",
+    "host": "Margaritifera falcata",
+    "definition": "MAG: Skomarfal virus 40 isolate MSK8 genomic sequence"
+  },
+  "OR270420": {
+    "organism": "Skomarfal virus 39",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Kitrinoviricota; Tolucaviricetes; Tolivirales",
+    "host": "Margaritifera falcata",
+    "definition": "MAG: Skomarfal virus 39 isolate MSK8 genomic sequence"
+  },
+  "OR270383": {
+    "organism": "Skomarfal virus 38",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Kitrinoviricota; Tolucaviricetes; Tolivirales",
+    "host": "Margaritifera falcata",
+    "definition": "MAG: Skomarfal virus 38 isolate MSK8 genomic sequence"
+  },
+  "PV237091": {
+    "organism": "Muscavirus sp.",
+    "taxonomy": "Viruses; Viruses incertae sedis; Naldaviricetes; Lefavirales; Hytrosaviridae; Muscavirus",
+    "host": null,
+    "definition": "MAG: Muscavirus sp. isolate BlackFly59_1Cwaz genomic sequence"
+  },
+  "PV237079": {
+    "organism": "Muscavirus sp.",
+    "taxonomy": "Viruses; Viruses incertae sedis; Naldaviricetes; Lefavirales; Hytrosaviridae; Muscavirus",
+    "host": null,
+    "definition": "MAG: Muscavirus sp. isolate BlackFly59_WEArJ genomic sequence"
+  },
+  "PV236337": {
+    "organism": "Muscavirus sp.",
+    "taxonomy": "Viruses; Viruses incertae sedis; Naldaviricetes; Lefavirales; Hytrosaviridae; Muscavirus",
+    "host": null,
+    "definition": "MAG: Muscavirus sp. isolate BlackFly18_cioqk genomic sequence"
+  },
+  "PZ132538": {
+    "organism": "Sonnbo virus",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Pisuviricota; Duplopiviricetes; Durnavirales; Partitiviridae",
+    "host": "Culex pipiens",
+    "definition": "MAG: Sonnbo virus metagenome-assembled genome (MAG), partial sequence"
+  },
+  "PZ132537": {
+    "organism": "Sonnbo virus",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Pisuviricota; Duplopiviricetes; Durnavirales; Partitiviridae",
+    "host": "Culex pipiens",
+    "definition": "MAG: Sonnbo virus metagenome-assembled genome (MAG), partial sequence"
+  },
+  "PZ132351": {
+    "organism": "Ripithet virus",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Pisuviricota; Duplopiviricetes; Durnavirales; Partitiviridae",
+    "host": "Aedes albopictus",
+    "definition": "MAG: Ripithet virus metagenome-assembled genome (MAG), partial sequence"
+  },
+  "PZ130431": {
+    "organism": "Chrocawest virus",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Lenarviricota; Howeltoviricetes; Cryppavirales; Mitoviridae",
+    "host": "Haemaphysalis longicornis",
+    "definition": "MAG: Chrocawest virus isolate SD6_1 genomic sequence"
+  },
+  "PZ130246": {
+    "organism": "Chrocacom virus",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Lenarviricota; Howeltoviricetes; Cryppavirales; Mitoviridae",
+    "host": "Haemaphysalis longicornis",
+    "definition": "MAG: Chrocacom virus isolate LX-5_1 genomic sequence"
+  },
+  "PZ130214": {
+    "organism": "Chrocacom virus",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Lenarviricota; Howeltoviricetes; Cryppavirales; Mitoviridae",
+    "host": "Haemaphysalis longicornis",
+    "definition": "MAG: Chrocacom virus isolate 52_6 genomic sequence"
+  },
+  "PZ130190": {
+    "organism": "Chrocacom virus",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Lenarviricota; Howeltoviricetes; Cryppavirales; Mitoviridae",
+    "host": "Haemaphysalis longicornis",
+    "definition": "MAG: Chrocacom virus isolate 44_5 genomic sequence"
+  },
+  "PZ132617": {
+    "organism": "Vittskovle virus",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Negarnaviricota; Haploviricotina; Chunqiuviricetes; Muvirales; Qinviridae",
+    "host": "Culex pipiens",
+    "definition": "MAG: Vittskovle virus metagenome-assembled genome (MAG), partial sequence"
+  },
+  "PZ132597": {
+    "organism": "Vittskovle virus",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Negarnaviricota; Haploviricotina; Chunqiuviricetes; Muvirales; Qinviridae",
+    "host": "Culex pipiens",
+    "definition": "MAG: Vittskovle virus metagenome-assembled genome (MAG), partial sequence"
+  },
+  "PZ132591": {
+    "organism": "Vittskovle virus",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Negarnaviricota; Haploviricotina; Chunqiuviricetes; Muvirales; Qinviridae",
+    "host": "Culex pipiens",
+    "definition": "MAG: Vittskovle virus metagenome-assembled genome (MAG), partial sequence"
+  },
+  "PZ132146": {
+    "organism": "Vinslov virus",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Negarnaviricota; Haploviricotina; Chunqiuviricetes; Muvirales; Qinviridae",
+    "host": "Culex pipiens",
+    "definition": "MAG: Vinslov virus metagenome-assembled genome (MAG), partial sequence"
+  },
+  "PZ132144": {
+    "organism": "Vinslov virus",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Negarnaviricota; Haploviricotina; Chunqiuviricetes; Muvirales; Qinviridae",
+    "host": "Culex pipiens",
+    "definition": "MAG: Vinslov virus metagenome-assembled genome (MAG), partial sequence"
+  },
+  "PZ132142": {
+    "organism": "Vinslov virus",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Negarnaviricota; Haploviricotina; Chunqiuviricetes; Muvirales; Qinviridae",
+    "host": "Culex pipiens",
+    "definition": "MAG: Vinslov virus metagenome-assembled genome (MAG), partial sequence"
+  },
+  "PZ065994": {
+    "organism": "Alpharicinrhavirus sp.",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Negarnaviricota; Haploviricotina; Monjiviricetes; Mononegavirales; Rhabdoviridae; Alpharhabdovirinae; Alpharicinrhavirus",
+    "host": "Ixodida",
+    "definition": "Alpharicinrhavirus sp. strain MTG isolate scaffold_18 cRNA sequence"
+  },
+  "PZ193041": {
+    "organism": "Ohlsrhavirus ohlsdorf",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Negarnaviricota; Haploviricotina; Monjiviricetes; Mononegavirales; Rhabdoviridae; Alpharhabdovirinae; Ohlsrhavirus",
+    "host": "Aedes",
+    "definition": "MAG: Ohlsrhavirus ohlsdorf isolate 113-14-0-contig_3, partial sequence"
+  },
+  "PZ193040": {
+    "organism": "Ohlsrhavirus ohlsdorf",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Negarnaviricota; Haploviricotina; Monjiviricetes; Mononegavirales; Rhabdoviridae; Alpharhabdovirinae; Ohlsrhavirus",
+    "host": "Aedes",
+    "definition": "MAG: Ohlsrhavirus ohlsdorf isolate 113-14-0-contig_2, partial sequence"
+  },
+  "PZ193039": {
+    "organism": "Ohlsrhavirus ohlsdorf",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Negarnaviricota; Haploviricotina; Monjiviricetes; Mononegavirales; Rhabdoviridae; Alpharhabdovirinae; Ohlsrhavirus",
+    "host": "Aedes",
+    "definition": "MAG: Ohlsrhavirus ohlsdorf isolate 113-14-0-contig_1, partial sequence"
+  },
+  "PZ192965": {
+    "organism": "Ohlsrhavirus tongilchon",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Negarnaviricota; Haploviricotina; Monjiviricetes; Mononegavirales; Rhabdoviridae; Alpharhabdovirinae; Ohlsrhavirus",
+    "host": "Aedes",
+    "definition": "MAG: Ohlsrhavirus tongilchon isolate S2-23-0-contig_1, partial sequence"
+  },
+  "PZ192889": {
+    "organism": "Ohlsrhavirus northcreek",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Negarnaviricota; Haploviricotina; Monjiviricetes; Mononegavirales; Rhabdoviridae; Alpharhabdovirinae; Ohlsrhavirus",
+    "host": "Aedes",
+    "definition": "MAG: Ohlsrhavirus northcreek isolate S3-15-0-contig_1, partial sequence"
+  },
+  "PZ192770": {
+    "organism": "Ohlsrhavirus northcreek",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Negarnaviricota; Haploviricotina; Monjiviricetes; Mononegavirales; Rhabdoviridae; Alpharhabdovirinae; Ohlsrhavirus",
+    "host": "Aedes",
+    "definition": "MAG: Ohlsrhavirus northcreek isolate 110-18-0-contig_1, partial sequence"
+  },
+  "NC_137886": {
+    "organism": "Porprismacovirus phasi1",
+    "taxonomy": "Viruses; Floreoviria; Shotokuvirae; Cressdnaviricota; Arfiviricetes; Cremevirales; Smacoviridae; Porprismacovirus",
+    "host": "Chrysolophus pictus",
+    "definition": "MAG: Porprismacovirus phasi1 isolate gps222sma2 genomic sequence"
+  },
+  "NC_137861": {
+    "organism": "Porprismacovirus macro1",
+    "taxonomy": "Viruses; Floreoviria; Shotokuvirae; Cressdnaviricota; Arfiviricetes; Cremevirales; Smacoviridae; Porprismacovirus",
+    "host": "macropusrufus",
+    "definition": "MAG: Porprismacovirus macro1 isolate 167Smaco-1, complete genome"
+  },
+  "PX119451": {
+    "organism": "Inpeasmacovirus",
+    "taxonomy": "Viruses; Floreoviria; Shotokuvirae; Cressdnaviricota; Arfiviricetes; Cremevirales; Smacoviridae",
+    "host": "Procapra picticaudata",
+    "definition": "MAG: Inpeasmacovirus isolate T124_23998, complete genome"
+  },
+  "PX119442": {
+    "organism": "Inpeasmacovirus",
+    "taxonomy": "Viruses; Floreoviria; Shotokuvirae; Cressdnaviricota; Arfiviricetes; Cremevirales; Smacoviridae",
+    "host": "Gazella subgutturosa",
+    "definition": "MAG: Inpeasmacovirus isolate G102_25395, complete genome"
+  },
+  "PX119445": {
+    "organism": "Cosmacovirus",
+    "taxonomy": "Viruses; Floreoviria; Shotokuvirae; Cressdnaviricota; Arfiviricetes; Cremevirales; Smacoviridae",
+    "host": "Gazella subgutturosa",
+    "definition": "MAG: Cosmacovirus isolate G105_51991, complete genome"
+  },
+  "PX119440": {
+    "organism": "Cosmacovirus",
+    "taxonomy": "Viruses; Floreoviria; Shotokuvirae; Cressdnaviricota; Arfiviricetes; Cremevirales; Smacoviridae",
+    "host": "Cervus albirostris",
+    "definition": "MAG: Cosmacovirus isolate C139_73327, complete genome"
+  },
+  "PV335193": {
+    "organism": "Alajuela virus",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Negarnaviricota; Polyploviricotina; Bunyaviricetes; Elliovirales; Peribunyaviridae; Orthobunyavirus; Orthobunyavirus gamboaense",
+    "host": null,
+    "definition": "Alajuela virus strain F17_5/2/BR2021 segment S, complete sequence"
+  },
+  "PV335192": {
+    "organism": "Alajuela virus",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Negarnaviricota; Polyploviricotina; Bunyaviricetes; Elliovirales; Peribunyaviridae; Orthobunyavirus; Orthobunyavirus gamboaense",
+    "host": null,
+    "definition": "Alajuela virus strain F17_5/2/BR2021 segment M, complete sequence"
+  },
+  "PV335191": {
+    "organism": "Alajuela virus",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Negarnaviricota; Polyploviricotina; Bunyaviricetes; Elliovirales; Peribunyaviridae; Orthobunyavirus; Orthobunyavirus gamboaense",
+    "host": null,
+    "definition": "Alajuela virus strain F17_5/2/BR2021 segment L, complete sequence"
+  },
+  "PV269768": {
+    "organism": "Coredo virus",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Negarnaviricota; Polyploviricotina; Bunyaviricetes; Elliovirales; Phasmaviridae; Orthophasmavirus; Orthophasmavirus coredoense",
+    "host": null,
+    "definition": "Coredo virus strain E15_1/19/BR2021 RNA-dependent RNA polymerase (RdRp) gene, partial cds"
+  },
+  "PV269767": {
+    "organism": "Coredo virus",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Negarnaviricota; Polyploviricotina; Bunyaviricetes; Elliovirales; Phasmaviridae; Orthophasmavirus; Orthophasmavirus coredoense",
+    "host": null,
+    "definition": "Coredo virus strain B5_77/9/BR2021 RNA-dependent RNA polymerase (RdRp) gene, partial cds"
+  },
+  "PV269766": {
+    "organism": "Jurua orthophasmavirus",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Negarnaviricota; Polyploviricotina; Bunyaviricetes; Elliovirales; Phasmaviridae; Orthophasmavirus",
+    "host": null,
+    "definition": "Jurua orthophasmavirus strain J27_25/5/BR2022 RNA-dependent RNA polymerase (RdRp) gene, partial cds"
+  },
+  "PV287675": {
+    "organism": "Coredo-like virus 3",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Negarnaviricota; Polyploviricotina; Bunyaviricetes; Elliovirales; Phasmaviridae",
+    "host": null,
+    "definition": "Coredo-like virus 3 isolate J27_24/85/BR2022 RNA-dependent RNA polymerase (RdRp) gene, partial cds"
+  },
+  "PV287674": {
+    "organism": "Coredo-like virus 3",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Negarnaviricota; Polyploviricotina; Bunyaviricetes; Elliovirales; Phasmaviridae",
+    "host": null,
+    "definition": "Coredo-like virus 3 isolate J26_9/180/BR2022 RNA-dependent RNA polymerase (RdRp) gene, partial cds"
+  },
+  "PV287673": {
+    "organism": "Coredo-like virus 3",
+    "taxonomy": "Viruses; Riboviria; Orthornavirae; Negarnaviricota; Polyploviricotina; Bunyaviricetes; Elliovirales; Phasmaviridae",
+    "host": null,
+    "definition": "Coredo-like virus 3 isolate J26_21/216/BR2022 RNA-dependent RNA polymerase (RdRp) gene, partial cds"
+  }
+}

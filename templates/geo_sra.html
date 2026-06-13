@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}GEO / SRA Transcriptomics — Aquatic Invertebrate Virus Knowledge Base{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+    <div class="flex items-center gap-2 text-sm text-gray-400 mb-4">
+        <a href="/enrichment" class="hover:text-primary">Enrichment Hub</a><span>/</span><span class="text-gray-700 font-medium">GEO Transcriptome Datasets</span>
+    </div>
+    <div class="bg-white rounded-xl p-5 mb-6 border border-gray-100">
+        <div class="flex items-center gap-3 mb-2"><span class="text-3xl">&#x1F4CA;</span><div><h1 class="text-2xl font-bold text-gray-800">GEO Transcriptome Datasets</h1><p class="text-sm text-gray-500">NCBI Gene Expression Omnibus — Gene expression data related to aquatic invertebrate virus infection</p></div></div>
+        <div class="grid grid-cols-3 gap-4 mt-4">
+            <div class="text-center p-3 bg-indigo-50 rounded-lg"><div class="text-xl font-bold text-indigo-700" id="s-geo">--</div><div class="text-xs text-gray-500">GEO Datasets</div></div>
+            <div class="text-center p-3 bg-indigo-50 rounded-lg"><div class="text-xl font-bold text-indigo-700" id="s-sra">--</div><div class="text-xs text-gray-500">SRA Runs</div></div>
+            <div class="text-center p-3 bg-indigo-50 rounded-lg"><div class="text-xl font-bold text-indigo-700" id="s-links">--</div><div class="text-xs text-gray-500">Virus Associations</div></div>
+        </div>
+    </div>
+    <div class="bg-white rounded-xl p-4 mb-6 border border-gray-100">
+        <div class="flex flex-wrap gap-3">
+            <input type="text" id="geo-search" placeholder="Search virus name or platform..." class="search-input flex-1 min-w-[200px] px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500">
+            <select id="geo-type-filter" class="px-3 py-2 border border-gray-200 rounded-lg text-sm"><option value="all">All Types</option></select>
+            <button onclick="loadGEO()" class="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition">Refresh</button>
+        </div>
+    </div>
+    <div id="geo-list" class="space-y-2"><div class="text-center text-gray-400 py-10">Loading...</div></div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+let geoData = [], sraData = [];
+function loadGEO() {
+    fetch('/api/enrichment/geo-sra?limit=200')
+        .then(r => r.json())
+        .then(d => {
+            if (d.status !== 'success') return;
+            geoData = d.geo?.data || [];
+            sraData = d.sra?.data || [];
+            document.getElementById('s-geo').textContent = d.geo?.count || 0;
+            document.getElementById('s-sra').textContent = d.sra?.count || 0;
+            document.getElementById('s-links').textContent = geoData.filter(x => x.virus_species_matched).length;
+            const types = new Set(geoData.map(x => x.experiment_type || x.gds_type).filter(Boolean));
+            document.getElementById('geo-type-filter').innerHTML = '<option value="all">All Types</option>' + [...types].sort().map(t => `<option value="${t}">${t}</option>`).join('');
+            applyFilter();
+        });
+}
+function applyFilter() {
+    const s = document.getElementById('geo-search').value.toLowerCase();
+    const t = document.getElementById('geo-type-filter').value;
+    let f = geoData;
+    if (s) f = f.filter(x => (x.title||'').toLowerCase().includes(s) || (x.summary||'').toLowerCase().includes(s) || (x.organism||'').toLowerCase().includes(s) || (x.virus_species_matched||'').toLowerCase().includes(s));
+    if (t !== 'all') f = f.filter(x => (x.experiment_type || x.gds_type) === t);
+    document.getElementById('geo-list').innerHTML = f.length === 0
+        ? '<div class="text-center text-gray-400 py-10">No matching datasets</div>'
+        : f.slice(0, 60).map(x => `
+        <div class="bg-white rounded-lg p-4 border border-gray-100 hover:shadow-sm">
+            <div class="flex justify-between items-start gap-3">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=${x.gse_accession}" target="_blank" class="font-bold text-indigo-600 hover:underline">${x.gse_accession}</a>
+                        <span class="text-xs px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded">${x.gds_type || x.experiment_type || 'Dataset'}</span>
+                        ${x.sample_count ? `<span class="text-xs text-gray-400">${x.sample_count} samples</span>` : ''}
+                    </div>
+                    <p class="text-sm text-gray-700 mt-1">${x.title || '--'}</p>
+                    ${x.summary ? `<p class="text-xs text-gray-500 mt-1 line-clamp-2">${x.summary}</p>` : ''}
+                    <div class="flex flex-wrap gap-1 mt-2">
+                        ${x.organism ? `<span class="text-xs text-gray-400">&#x1FA60; ${x.organism}</span>` : ''}
+                        ${x.virus_species_matched ? `<span class="text-xs text-green-600">&#x2713; Virus Matched</span>` : ''}
+                    </div>
+                </div>
+                <div class="text-xs text-gray-400 text-right flex-shrink-0">${x.submission_date || ''}</div>
+            </div>
+        </div>`).join('');
+}
+document.getElementById('geo-search').addEventListener('input', applyFilter);
+document.getElementById('geo-type-filter').addEventListener('change', applyFilter);
+loadGEO();
+</script>
+{% endblock %}

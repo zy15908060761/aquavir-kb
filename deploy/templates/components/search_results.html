@@ -1,0 +1,248 @@
+<div class="flex gap-5 flex-col lg:flex-row">
+    <!-- Sidebar: Filter Stats -->
+    <div class="hidden lg:block w-60 flex-shrink-0">
+        <div class="card" style="padding: 16px; position: sticky; top: 70px;">
+            <div class="card-h" style="margin-bottom: 12px;">
+                <div class="color-bar color-bar--primary"></div>
+                <span>Filter Summary</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; font-size: 13px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: var(--text-muted);">Total Results</span>
+                    <span class="mono" style="font-weight: 700; color: var(--text-main); font-size: 15px;">{{ total|default(0) }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: var(--text-muted);">Current Page</span>
+                    <span style="font-weight: 600; color: var(--text-secondary);">{{ page|default(1) }} / {{ total_pages|default(1) }}</span>
+                </div>
+                {% if query %}
+                <div style="padding-top: 10px; border-top: 1px solid var(--border-subtle);">
+                    <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600;">Keyword</span>
+                    <div style="font-weight: 600; color: var(--c-primary-600); margin-top: 3px; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ query }}</div>
+                </div>
+                {% endif %}
+                {% if family %}
+                <div style="padding-top: 10px; border-top: 1px solid var(--border-subtle);">
+                    <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600;">Family</span>
+                    <div style="font-weight: 600; color: var(--c-primary-600); margin-top: 3px; font-size: 13px;">{{ family }}</div>
+                </div>
+                {% endif %}
+                {% if phylum %}
+                <div style="padding-top: 10px; border-top: 1px solid var(--border-subtle);">
+                    <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600;">Phylum</span>
+                    <div style="font-weight: 600; color: var(--c-primary-600); margin-top: 3px; font-size: 13px;">{{ phylum }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Result List -->
+    <div class="flex-1 min-w-0">
+        {% if viruses %}
+            <!-- Bulk Action Bar -->
+            <div class="card" style="padding: 12px 16px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                <div style="font-size: 12px; color: var(--text-muted);">
+                    <span style="font-weight: 700; color: var(--text-main); font-family: monospace; font-size: 14px;">{{ total }}</span>
+                    <span> records</span>
+                    {% if total_pages > 1 %}
+                    <span style="margin-left: 4px;">· page {{ page }} / {{ total_pages }}</span>
+                    {% endif %}
+                </div>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    <a href="/api/export?format=csv&q={{ query|urlencode }}&host={{ host|urlencode }}&family={{ family|urlencode }}&country={{ country|urlencode }}&completeness={{ completeness|urlencode }}&year_from={{ year_from|urlencode }}&year_to={{ year_to|urlencode }}"
+                       class="btn btn-sm" style="text-decoration: none; font-size: 11px; padding: 4px 10px;">
+                        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        CSV
+                    </a>
+                    <a href="/api/export?format=fasta&q={{ query|urlencode }}&host={{ host|urlencode }}&family={{ family|urlencode }}&country={{ country|urlencode }}&completeness={{ completeness|urlencode }}&year_from={{ year_from|urlencode }}&year_to={{ year_to|urlencode }}"
+                       class="btn btn-sm" style="text-decoration: none; font-size: 11px; padding: 4px 10px;">
+                        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        FASTA
+                    </a>
+                    <a href="/api/export?format=json&q={{ query|urlencode }}&host={{ host|urlencode }}&family={{ family|urlencode }}&country={{ country|urlencode }}&completeness={{ completeness|urlencode }}&year_from={{ year_from|urlencode }}&year_to={{ year_to|urlencode }}"
+                       class="btn btn-sm btn-primary" style="text-decoration: none; font-size: 11px; padding: 4px 10px;">
+                        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        JSON
+                    </a>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="card" style="padding: 0; overflow: hidden;">
+                <div style="overflow-x: auto;">
+                    <table class="data-table" id="results-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-sort="text" style="white-space: nowrap;">Accession</th>
+                                <th class="sortable" data-sort="text">Virus Name</th>
+                                <th class="sortable" data-sort="text" style="white-space: nowrap;">Taxonomy</th>
+                                <th class="sortable" data-sort="text">Host</th>
+                                <th class="sortable" data-sort="text" style="white-space: nowrap;">Country</th>
+                                <th class="sortable" data-sort="number" style="white-space: nowrap;">Year</th>
+                                <th class="sortable" data-sort="number" style="white-space: nowrap; text-align: right;">Length</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for v in viruses %}
+                            <tr style="cursor: pointer;" onclick="window.location.href='/virus/{{ v.accession }}'">
+                                <td class="cell-mono" style="white-space: nowrap; color: var(--text-muted);" data-value="{{ v.accession }}">{{ v.accession }}</td>
+                                <td data-value="{{ v.canonical_name or v.virus_name or '' }}">
+                                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                        <span style="font-weight: 600; color: var(--text-main); font-size: 13px;">{{ v.canonical_name or v.virus_name or '-' }}</span>
+                                        {% if v.dataset_tier == 'core' %}
+                                        <span class="tag" style="background: var(--c-primary-100); color: var(--c-primary-700); border-color: var(--c-primary-200); font-size: 9px; padding: 1px 5px;" title="Core dataset: complete genome, complete metadata, validated">Core</span>
+                                        {% elif v.dataset_tier == 'extended_hq' %}
+                                        <span class="tag" style="background: rgba(59,130,246,0.08); color: var(--c-genome); border-color: rgba(59,130,246,0.15); font-size: 9px; padding: 1px 5px;" title="High-quality extended: metadata complete">HQ</span>
+                                        {% elif v.dataset_tier == 'unverified' %}
+                                        <span class="tag" style="background: rgba(239,68,68,0.08); color: var(--c-severe); border-color: rgba(239,68,68,0.15); font-size: 9px; padding: 1px 5px;" title="Unverified: data conflicts exist">Unverified</span>
+                                        {% endif %}
+                                    </div>
+                                    {% if v.canonical_name_cn %}
+                                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">{{ v.canonical_name_cn }}</div>
+                                    {% endif %}
+                                    {% if v.entry_type in ('EST', 'patent', 'non_target') %}
+                                    <span class="tag" style="background: rgba(239,68,68,0.08); color: var(--c-severe); border-color: rgba(239,68,68,0.15); font-size: 9px; padding: 1px 5px; margin-top: 3px; display: inline-block;">{{ v.entry_type }}</span>
+                                    {% endif %}
+                                </td>
+                                <td style="white-space: nowrap;" data-value="{{ v.taxon_family or '' }}">
+                                    {% if v.taxon_family %}
+                                    <a href="/family/{{ v.taxon_family|urlencode }}" style="font-weight: 500; color: var(--c-primary-600); text-decoration: none;" onclick="event.stopPropagation()">{{ v.taxon_family }}</a>
+                                    {% else %}<span style="color: var(--text-muted);">-</span>{% endif %}
+                                    {% if v.taxon_genus %}<span style="color: var(--text-muted); font-size: 11px;">/ {{ v.taxon_genus }}</span>{% endif %}
+                                </td>
+                                <td data-value="{{ v.host_name or '' }}">
+                                    {% if v.host_name %}
+                                    <a href="/host/{{ v.host_id }}" style="font-weight: 500; color: var(--c-primary-600); text-decoration: none;" onclick="event.stopPropagation()">{{ v.host_name }}</a>
+                                    {% if v.host_cn %}<span style="color: var(--text-muted); font-size: 11px;">({{ v.host_cn }})</span>{% endif %}
+                                    {% else %}
+                                    <span class="tag" style="font-size: 9px; padding: 1px 5px;">No host</span>
+                                    {% endif %}
+                                </td>
+                                <td style="white-space: nowrap;" data-value="{{ v.country or '' }}">
+                                    {% if v.country %}{{ v.country }}{% else %}<span class="tag" style="font-size: 9px; padding: 1px 5px;">No geo</span>{% endif %}
+                                </td>
+                                <td style="white-space: nowrap;" data-value="{{ v.collection_year or '0' }}">
+                                    {% if v.collection_year %}{{ v.collection_year }}{% else %}<span class="tag" style="font-size: 9px; padding: 1px 5px;">No year</span>{% endif %}
+                                </td>
+                                <td class="cell-num" style="white-space: nowrap;" data-value="{{ v.genome_length or '0' }}">
+                                    {% if v.genome_length %}
+                                        {{ "{:,}".format(v.genome_length) }} bp
+                                        {% if v.genome_length < 100 %}
+                                        <span class="tag" style="background: rgba(239,68,68,0.08); color: var(--c-severe); border-color: rgba(239,68,68,0.15); font-size: 9px; padding: 1px 5px; margin-top: 2px; display: inline-block;" title="Sequence length anomaly (<100bp), possible primer or probe">⚠️ Too short</span>
+                                        {% elif v.genome_length > 500000 %}
+                                        <span class="tag" style="background: rgba(239,68,68,0.08); color: var(--c-severe); border-color: rgba(239,68,68,0.15); font-size: 9px; padding: 1px 5px; margin-top: 2px; display: inline-block;" title="Sequence length anomaly (>500kb), suspected host genome">⚠️ Anomaly</span>
+                                        {% endif %}
+                                    {% else %}<span style="color: var(--text-muted);">-</span>{% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            {% if total_pages > 1 %}
+            <div style="display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 20px;">
+                {% if page > 1 %}
+                <a href="/search?q={{ query|urlencode }}&host={{ host|urlencode }}&family={{ family|urlencode }}&completeness={{ completeness|urlencode }}&country={{ country|urlencode }}&year_from={{ year_from|urlencode }}&year_to={{ year_to|urlencode }}&page={{ page-1 }}"
+                   class="btn btn-sm" style="text-decoration: none;"
+                   hx-get="/search?q={{ query|urlencode }}&host={{ host|urlencode }}&family={{ family|urlencode }}&completeness={{ completeness|urlencode }}&country={{ country|urlencode }}&year_from={{ year_from|urlencode }}&year_to={{ year_to|urlencode }}&page={{ page-1 }}"
+                   hx-target="#results-area" hx-push-url="true">← Prev</a>
+                {% else %}
+                <span class="btn btn-sm" style="opacity: 0.4; cursor: not-allowed; pointer-events: none;">← Prev</span>
+                {% endif %}
+
+                <div style="display: flex; gap: 4px;">
+                    {% set end_page = [total_pages, [1, page-2]|max + 4]|min %}
+                    {% set start_page = [1, end_page-4]|max %}
+                    {% for p in range(start_page, end_page+1) %}
+                        {% if p == page %}
+                        <span class="btn btn-primary btn-sm" style="pointer-events: none; min-width: 32px; justify-content: center;">{{ p }}</span>
+                        {% else %}
+                        <a href="/search?q={{ query|urlencode }}&host={{ host|urlencode }}&family={{ family|urlencode }}&completeness={{ completeness|urlencode }}&country={{ country|urlencode }}&year_from={{ year_from|urlencode }}&year_to={{ year_to|urlencode }}&page={{ p }}"
+                           class="btn btn-sm" style="text-decoration: none; min-width: 32px; justify-content: center;"
+                           hx-get="/search?q={{ query|urlencode }}&host={{ host|urlencode }}&family={{ family|urlencode }}&completeness={{ completeness|urlencode }}&country={{ country|urlencode }}&year_from={{ year_from|urlencode }}&year_to={{ year_to|urlencode }}&page={{ p }}"
+                           hx-target="#results-area" hx-push-url="true">{{ p }}</a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                {% if page < total_pages %}
+                <a href="/search?q={{ query|urlencode }}&host={{ host|urlencode }}&family={{ family|urlencode }}&completeness={{ completeness|urlencode }}&country={{ country|urlencode }}&year_from={{ year_from|urlencode }}&year_to={{ year_to|urlencode }}&page={{ page+1 }}"
+                   class="btn btn-sm" style="text-decoration: none;"
+                   hx-get="/search?q={{ query|urlencode }}&host={{ host|urlencode }}&family={{ family|urlencode }}&completeness={{ completeness|urlencode }}&country={{ country|urlencode }}&year_from={{ year_from|urlencode }}&year_to={{ year_to|urlencode }}&page={{ page+1 }}"
+                   hx-target="#results-area" hx-push-url="true">Next →</a>
+                {% else %}
+                <span class="btn btn-sm" style="opacity: 0.4; cursor: not-allowed; pointer-events: none;">Next →</span>
+                {% endif %}
+            </div>
+            {% endif %}
+        {% else %}
+            <!-- Empty State -->
+            <div class="card" style="padding: 60px 24px; text-align: center;">
+                <div style="width: 64px; height: 64px; background: var(--c-primary-100); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 16px;">🔍</div>
+                <h3 style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
+                    {% if query or family or completeness or country or year_from or year_to %}
+                    No matching results
+                    {% else %}
+                    Start searching
+                    {% endif %}
+                </h3>
+                <p style="font-size: 13px; color: var(--text-muted); max-width: 400px; margin: 0 auto; line-height: 1.5;">
+                    {% if query or family or completeness or country or year_from or year_to %}
+                    Try different keywords or reduce filter criteria. Supports fuzzy search by virus name, accession, family, genus, and host.
+                    {% else %}
+                    Enter a virus name, accession, or family/genus above to explore the database.
+                    {% endif %}
+                </p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+(function() {
+    const table = document.getElementById('results-table');
+    if (!table) return;
+
+    const headers = table.querySelectorAll('th.sortable');
+    headers.forEach(th => {
+        th.addEventListener('click', function() {
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            const colIndex = Array.from(th.parentElement.children).indexOf(th);
+            const sortType = th.dataset.sort || 'text';
+            const currentDir = th.dataset.dir || 'none';
+            const newDir = currentDir === 'asc' ? 'desc' : 'asc';
+
+            headers.forEach(h => {
+                h.dataset.dir = 'none';
+                h.style.color = 'var(--text-secondary)';
+            });
+
+            th.dataset.dir = newDir;
+            th.style.color = 'var(--c-primary-600)';
+
+            rows.sort((a, b) => {
+                const aCell = a.children[colIndex];
+                const bCell = b.children[colIndex];
+                let aVal = (aCell ? aCell.dataset.value || aCell.textContent : '').trim();
+                let bVal = (bCell ? bCell.dataset.value || bCell.textContent : '').trim();
+
+                if (sortType === 'number') {
+                    const aNum = parseFloat(aVal.replace(/,/g, '')) || 0;
+                    const bNum = parseFloat(bVal.replace(/,/g, '')) || 0;
+                    return newDir === 'asc' ? aNum - bNum : bNum - aNum;
+                }
+                return newDir === 'asc'
+                    ? aVal.localeCompare(bVal, 'zh')
+                    : bVal.localeCompare(aVal, 'zh');
+            });
+
+            rows.forEach(row => tbody.appendChild(row));
+        });
+    });
+})();
+</script>

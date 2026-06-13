@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AquaVir-KB v2.0 设计原型</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          primary: { 50: '#f0fdfa', 100: '#ccfbf1', 500: '#14b8a6', 600: '#0d9488', 700: '#0f766e', 800: '#115e59', 900: '#134e4a' },
+          data: {
+            genome: '#3b82f6', host: '#10b981', protein: '#8b5cf6',
+            virulence: '#f59e0b', severe: '#ef4444', geography: '#06b6d4',
+            literature: '#64748b', evidence: '#ec4899'
+          }
+        }
+      }
+    }
+  }
+</script>
+<style>
+  /* Semantic colors as CSS variables */
+  :root {
+    --color-genome: #3b82f6; --color-host: #10b981; --color-protein: #8b5cf6;
+    --color-virulence: #f59e0b; --color-severe: #ef4444; --color-geography: #06b6d4;
+  }
+  .dark { color-scheme: dark; }
+  .bento-card { transition: all 0.2s ease; }
+  .bento-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+  .tab-btn { position: relative; }
+  .tab-btn.active::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+    height: 2px; background: var(--color-primary); border-radius: 1px;
+  }
+  .progressive-section { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+  .progressive-section.open { max-height: 2000px; }
+  .glass { background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); }
+  .dark .glass { background: rgba(15,23,42,0.7); }
+  .animate-count { animation: countUp 0.6s ease-out; }
+  @keyframes countUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .color-bar { width: 3px; border-radius: 2px; }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 transition-colors duration-300">
+
+<!-- ==================== NAVIGATION ==================== -->
+<nav class="sticky top-0 z-50 border-b border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
+  <div class="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
+    <div class="flex items-center gap-2.5">
+      <span class="text-xl">🦐</span>
+      <span class="font-bold text-lg tracking-tight text-primary-700 dark:text-primary-500">AquaVir-KB</span>
+      <span class="hidden sm:inline text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700">v2.0</span>
+    </div>
+    <div class="flex items-center gap-0.5">
+      <a href="#home" class="px-3 py-1.5 rounded-lg text-sm font-medium text-primary-700 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30">Home</a>
+      <a href="#search" class="px-3 py-1.5 rounded-lg text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">Search</a>
+      <a href="#virus" class="px-3 py-1.5 rounded-lg text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">Viruses</a>
+      <a href="#detail" class="px-3 py-1.5 rounded-lg text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">Detail</a>
+      <a href="#hosts" class="px-3 py-1.5 rounded-lg text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">Hosts</a>
+      <a href="#stats" class="px-3 py-1.5 rounded-lg text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">Stats</a>
+      <a href="#download" class="px-3 py-1.5 rounded-lg text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">Download</a>
+      <button onclick="toggleDark()" class="ml-2 px-2.5 py-1.5 rounded-lg text-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Toggle dark mode">
+        <span id="dark-icon">🌙</span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- ==================== SECTION 1: HOME (BENTO GRID) ==================== -->
+<section id="home" class="max-w-7xl mx-auto px-4 py-8">
+  <!-- Hero -->
+  <div class="mb-8 text-center">
+    <h1 class="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-2">
+      AquaVir-KB
+    </h1>
+    <p class="text-lg text-slate-500 dark:text-slate-400 mb-1">
+      Aquatic Invertebrate Virus Knowledge Base
+    </p>
+    <p class="text-sm text-slate-400 dark:text-slate-500">
+      水生无脊椎动物病毒知识库 · 覆盖节肢、软体、刺胞、棘皮、海绵 5 大门类
+    </p>
+    <div class="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 text-xs font-medium border border-emerald-100 dark:border-emerald-800">
+      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+      Free and open to all users — no login required
+    </div>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="max-w-2xl mx-auto mb-8">
+    <div class="flex shadow-lg shadow-slate-200/50 dark:shadow-none rounded-2xl overflow-hidden border-2 border-slate-200 dark:border-slate-700 focus-within:border-primary-500 dark:focus-within:border-primary-400 transition-colors bg-white dark:bg-slate-800">
+      <input type="text" placeholder="Search virus name, accession, family, genus, host..." 
+             class="flex-1 px-5 py-3.5 text-base bg-transparent outline-none text-slate-800 dark:text-slate-100 placeholder:text-slate-400">
+      <button class="px-6 py-3.5 bg-primary-600 hover:bg-primary-700 text-white font-semibold transition-colors flex items-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        Search
+      </button>
+    </div>
+  </div>
+
+  <!-- Quick Filters -->
+  <div class="flex flex-wrap justify-center gap-2 mb-8">
+    <span class="text-sm text-slate-400 self-center mr-1">Browse by host phylum:</span>
+    <button class="px-4 py-1.5 rounded-full text-sm font-medium bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-800 hover:bg-orange-100 transition">🦐 Arthropoda (622)</button>
+    <button class="px-4 py-1.5 rounded-full text-sm font-medium bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800 hover:bg-purple-100 transition">🐚 Mollusca (202)</button>
+    <button class="px-4 py-1.5 rounded-full text-sm font-medium bg-pink-50 dark:bg-pink-900/20 text-pink-700 dark:text-pink-400 border border-pink-200 dark:border-pink-800 hover:bg-pink-100 transition">🪸 Cnidaria (18)</button>
+    <button class="px-4 py-1.5 rounded-full text-sm font-medium bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 hover:bg-amber-100 transition">⭐ Echinodermata (16)</button>
+    <button class="px-4 py-1.5 rounded-full text-sm font-medium bg-cyan-50 dark:bg-cyan-900/20 text-cyan-700 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-800 hover:bg-cyan-100 transition">🧽 Porifera (13)</button>
+  </div>
+
+  <!-- BENTO GRID: Stats -->
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+    <div class="bento-card bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 text-center relative overflow-hidden">
+      <div class="absolute top-0 left-0 w-full h-1 bg-primary-500"></div>
+      <div class="text-2xl font-extrabold text-primary-700 dark:text-primary-400 animate-count">3,531</div>
+      <div class="text-[11px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-medium mt-1">Virus Species</div>
+    </div>
+    <div class="bento-card bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 text-center relative overflow-hidden">
+      <div class="absolute top-0 left-0 w-full h-1 bg-[var(--color-genome)]"></div>
+      <div class="text-2xl font-extrabold text-blue-600 dark:text-blue-400 animate-count">17,867</div>
+      <div class="text-[11px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-medium mt-1">Isolates</div>
+    </div>
+    <div class="bento-card bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 text-center relative overflow-hidden">
+      <div class="absolute top-0 left-0 w-full h-1 bg-[var(--color-host)]"></div>
+      <div class="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 animate-count">278</div>
+      <div class="text-[11px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-medium mt-1">Host Species</div>
+    </div>
+    <div class="bento-card bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 text-center relative overflow-hidden">
+      <div class="absolute top-0 left-0 w-full h-1 bg-[var(--color-protein)]"></div>
+      <div class="text-2xl font-extrabold text-purple-600 dark:text-purple-400 animate-count">29,004</div>
+      <div class="text-[11px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-medium mt-1">Proteins</div>
+    </div>
+    <div class="bento-card bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 text-center relative overflow-hidden">
+      <div class="absolute top-0 left-0 w-full h-1 bg-[var(--color-evidence)]"></div>
+      <div class="text-2xl font-extrabold text-pink-600 dark:text-pink-400 animate-count">353K</div>
+      <div class="text-[11px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-medium mt-1">Evidence Records</div>
+    </div>
+    <div class="bento-card bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 text-center relative overflow-hidden">
+      <div class="absolute top-0 left-0 w-full h-1 bg-[var(--color-literature)]"></div>
+      <div class="text-2xl font-extrabold text-slate-600 dark:text-slate-400 animate-count">9,065</div>
+      <div class="text-[11px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-medium mt-1">References</div>
+    </div>
+  </div>
+
+  <!-- BENTO GRID: Charts & Map -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+    <!-- Phylum Distribution -->
+    <div class="bento-card bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
+      <div class="flex items-center gap-2 mb-4">
+        <div class="color-bar h-5 bg-[var(--color-host)]"></div>
+        <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">Host Phylum Distribution</h3>
+      </div>
+      <div class="space-y-3">
+        <div class="flex items-center gap-3">
+          <div class="w-24 text-xs text-slate-500 dark:text-slate-400">Arthropoda</div>
+          <div class="flex-1 h-6 bg-slate-100 dark:bg-slate-700 rounded-md overflow-hidden">
+            <div class="h-full bg-orange-400 rounded-md flex items-center justify-end pr-2 text-[10px] text-white font-bold" style="width: 76%">622</div>
+          </div>
+          <div class="w-10 text-right text-xs text-slate-400">76%</div>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-24 text-xs text-slate-500 dark:text-slate-400">Mollusca</div>
+          <div class="flex-1 h-6 bg-slate-100 dark:bg-slate-700 rounded-md overflow-hidden">
+            <div class="h-full bg-purple-400 rounded-md flex items-center justify-end pr-2 text-[10px] text-white font-bold" style="width: 25%">202</div>
+          </div>
+          <div class="w-10 text-right text-xs text-slate-400">25%</div>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-24 text-xs text-slate-500 dark:text-slate-400">Cnidaria</div>
+          <div class="flex-1 h-6 bg-slate-100 dark:bg-slate-700 rounded-md overflow-hidden">
+            <div class="h-full bg-pink-400 rounded-md flex items-center justify-end pr-2 text-[10px] text-white font-bold" style="width: 2%">18</div>
+          </div>
+          <div class="w-10 text-right text-xs text-slate-400">2%</div>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-24 text-xs text-slate-500 dark:text-slate-400">Echinodermata</div>
+          <div class="flex-1 h-6 bg-slate-100 dark:bg-slate-700 rounded-md overflow-hidden">
+            <div class="h-full bg-amber-400 rounded-md flex items-center justify-end pr-2 text-[10px] text-white font-bold" style="width: 2%">16</div>
+          </div>
+          <div class="w-10 text-right text-xs text-slate-400">2%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Viruses -->
+    <div class="bento-card bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
+      <div class="flex items-center gap-2 mb-4">
+        <div class="color-bar h-5 bg-[var(--color-genome)]"></div>
+        <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">Top Viruses by Isolates</h3>
+      </div>
+      <div class="space-y-2.5">
+        <div class="flex items-center gap-2 text-sm">
+          <span class="w-6 text-xs text-slate-400 text-right">1</span>
+          <span class="w-1 h-1 rounded-full bg-red-400"></span>
+          <span class="flex-1 text-slate-700 dark:text-slate-300 truncate">White spot syndrome virus</span>
+          <span class="text-xs font-mono text-blue-600 dark:text-blue-400">1,298</span>
+        </div>
+        <div class="flex items-center gap-2 text-sm">
+          <span class="w-6 text-xs text-slate-400 text-right">2</span>
+          <span class="w-1 h-1 rounded-full bg-orange-400"></span>
+          <span class="flex-1 text-slate-700 dark:text-slate-300 truncate">Ostreid herpesvirus 1</span>
+          <span class="text-xs font-mono text-blue-600 dark:text-blue-400">803</span>
+        </div>
+        <div class="flex items-center gap-2 text-sm">
+          <span class="w-6 text-xs text-slate-400 text-right">3</span>
+          <span class="w-1 h-1 rounded-full bg-amber-400"></span>
+          <span class="flex-1 text-slate-700 dark:text-slate-300 truncate">Taura syndrome virus</span>
+          <span class="text-xs font-mono text-blue-600 dark:text-blue-400">492</span>
+        </div>
+        <div class="flex items-center gap-2 text-sm">
+          <span class="w-6 text-xs text-slate-400 text-right">4</span>
+          <span class="w-1 h-1 rounded-full bg-emerald-400"></span>
+          <span class="flex-1 text-slate-700 dark:text-slate-300 truncate">IHHNV</span>
+          <span class="text-xs font-mono text-blue-600 dark:text-blue-400">147</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Map Thumbnail -->
+  <div class="bento-card bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5 mb-6">
+    <div class="flex items-center justify-between mb-3">
+      <div class="flex items-center gap-2">
+        <div class="color-bar h-5 bg-[var(--color-geography)]"></div>
+        <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">Global Sampling Distribution</h3>
+      </div>
+      <span class="text-xs text-slate-400">Click to explore interactive map →</span>
+    </div>
+    <div class="h-40 bg-slate-100 dark:bg-slate-700 rounded-lg flex items-center justify-center relative overflow-hidden cursor-pointer group">
+      <!-- Simplified SVG World Map -->
+      <svg viewBox="0 0 1000 500" class="w-full h-full opacity-40 group-hover:opacity-60 transition-opacity">
+        <rect width="1000" height="500" fill="#e2e8f0" class="dark:fill-slate-600"/>
+        <!-- Simplified continent shapes -->
+        <path d="M150,120 Q200,80 280,100 Q350,110 380,160 Q360,220 300,240 Q200,230 150,180 Z" fill="#94a3b8" class="dark:fill-slate-500"/> <!-- N. America -->
+        <path d="M280,260 Q340,240 380,280 Q370,380 320,420 Q260,400 250,320 Z" fill="#94a3b8" class="dark:fill-slate-500"/> <!-- S. America -->
+        <path d="M450,100 Q520,80 580,110 Q620,150 600,220 Q550,260 480,230 Q430,180 450,120 Z" fill="#94a3b8" class="dark:fill-slate-500"/> <!-- Europe -->
+        <path d="M460,250 Q520,240 560,270 Q580,350 540,400 Q480,410 450,360 Q430,300 460,250 Z" fill="#94a3b8" class="dark:fill-slate-500"/> <!-- Africa -->
+        <path d="M600,100 Q750,80 880,120 Q920,180 850,240 Q750,260 650,220 Q580,170 600,100 Z" fill="#94a3b8" class="dark:fill-slate-500"/> <!-- Asia -->
+        <path d="M750,280 Q850,260 920,300 Q950,380 880,420 Q780,410 730,350 Q700,300 750,280 Z" fill="#94a3b8" class="dark:fill-slate-500"/> <!-- Australia -->
+        <!-- Hot spots -->
+        <circle cx="780" cy="180" r="8" fill="#f59e0b" opacity="0.7"><animate attributeName="r" values="6;10;6" dur="2s" repeatCount="indefinite"/></circle>
+        <circle cx="650" cy="200" r="6" fill="#f59e0b" opacity="0.6"><animate attributeName="r" values="4;8;4" dur="2.5s" repeatCount="indefinite"/></circle>
+        <circle cx="520" cy="280" r="5" fill="#f59e0b" opacity="0.5"/>
+        <circle cx="280" cy="180" r="4" fill="#f59e0b" opacity="0.4"/>
+      </svg>
+      <div class="absolute inset-0 flex items-center justify-center">
+        <span class="text-sm font-medium text-slate-500 dark:text-slate-400 bg-white/80 dark:bg-slate-800/80 px-4 py-2 rounded-lg backdrop-blur-sm">🗺️ 40+ countries · 4,317 sampling records</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Links Bar -->
+  <div class="flex flex-wrap gap-2 justify-center">
+    <a href="#search" class="px-4 py-2 rounded-xl text-sm font-medium bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400 border border-primary-200 dark:border-primary-800 hover:bg-primary-100 transition">🔍 Advanced Search</a>
+    <a href="#blast" class="px-4 py-2 rounded-xl text-sm font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 transition">🧬 BLAST / RdRp</a>
+    <a href="#phylo" class="px-4 py-2 rounded-xl text-sm font-medium bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 transition">🌳 Phylogeny</a>
+    <a href="#map" class="px-4 py-2 rounded-xl text-sm font-medium bg-cyan-50 dark:bg-cyan-900/20 text-cyan-700 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-800 hover:bg-cyan-100 transition">🌍 Map</a>
+    <a href="#network" class="px-4 py-2 rounded-xl text-sm font-medium bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800 hover:bg-purple-100 transition">🕸️ Network</a>
+    <a href="#download" class="px-4 py-2 rounded-xl text-sm font-medium bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-600 hover:bg-slate-100 transition">⬇️ Download</a>
+    <a href="#api" class="px-4 py-2 rounded-xl text-sm font-medium bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800 hover:bg-rose-100 transition">⚡ API Docs</a>
+  </div>
+</section>
+
+<hr class="border-slate-200 dark:border-slate-700 my-8 max-w-7xl mx-auto">
+
+<!-- ==================== SECTION 2: SEARCH PAGE ==================== -->
+<section id="search" class="max-w-7xl mx-auto px-4 py-8">
+  <div class="mb-6">
+    <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Search Results</h2>
+    <p class="text-sm text-slate-500 dark:text-slate-400">1,230 viruses matching "dsDNA" · Page 1 of 62</p>
+  </div>
+
+  <div class="flex flex-col lg:flex-row gap-5">
+    <!-- Left: Filters -->
+    <div class="lg:w-64 shrink-0">
+      <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 sticky top-20 space-y-5">
+        <div>
+          <div class="flex items-center gap-2 mb-3">
+            <div class="color-bar h-4 bg-[var(--color-host)]"></div>
+            <h3 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">Host Phylum</h3>
+          </div>
+          <div class="space-y-1.5">
+            <label class="flex items-center gap-2 text-sm cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg px-2 py-1 transition">
+              <input type="checkbox" checked class="rounded text-primary-600 focus:ring-primary-500">
+              <span class="text-slate-700 dark:text-slate-300">Arthropoda</span>
+              <span class="text-xs text-slate-400 ml-auto">1,050</span>
+            </label>
+            <label class="flex items-center gap-2 text-sm cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg px-2 py-1 transition">
+              <input type="checkbox" checked class="rounded text-primary-600 focus:ring-primary-500">
+              <span class="text-slate-700 dark:text-slate-300">Mollusca</span>
+              <span class="text-xs text-slate-400 ml-auto">180</span>
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center gap-2 mb-3">
+            <div class="color-bar h-4 bg-[var(--color-genome)]"></div>
+            <h3 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">Genome Type</h3>
+          </div>
+          <div class="space-y-1.5">
+            <label class="flex items-center gap-2 text-sm cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg px-2 py-1 transition">
+              <input type="checkbox" checked class="rounded text-primary-600 focus:ring-primary-500">
+              <span class="text-slate-700 dark:text-slate-300">dsDNA</span>
+              <span class="text-xs text-slate-400 ml-auto">182</span>
+            </label>
+            <label class="flex items-center gap-2 text-sm cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg px-2 py-1 transition">
+              <input type="checkbox" class="rounded text-primary-600 focus:ring-primary-500">
+              <span class="text-slate-700 dark:text-slate-300">ssRNA(+)</span>
+              <span class="text-xs text-slate-400 ml-auto">890</span>
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center gap-2 mb-3">
+            <div class="color-bar h-4 bg-[var(--color-virulence)]"></div>
+            <h3 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">Virus Family</h3>
+          </div>
+          <select class="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200">
+            <option>All (1,230)</option>
+            <option>Nimaviridae (5)</option>
+            <option>Malacoherpesviridae (8)</option>
+            <option>Parvoviridae (45)</option>
+          </select>
+        </div>
+
+        <button class="w-full px-4 py-2 text-sm text-red-500 hover:text-red-600 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition font-medium">
+          Clear Filters
+        </button>
+      </div>
+    </div>
+
+    <!-- Right: Results + Bulk Actions -->
+    <div class="flex-1 min-w-0">
+      <!-- Bulk Action Bar -->
+      <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-3 mb-4 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-slate-500 dark:text-slate-400">Selected 0 of 1,230</span>
+        </div>
+        <div class="flex gap-2">
+          <button class="px-3 py-1.5 text-xs font-medium bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg border border-slate-200 dark:border-slate-600 hover:bg-slate-100 transition">Download CSV</button>
+          <button class="px-3 py-1.5 text-xs font-medium bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg border border-slate-200 dark:border-slate-600 hover:bg-slate-100 transition">Download FASTA</button>
+          <button class="px-3 py-1.5 text-xs font-medium bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400 rounded-lg border border-primary-200 dark:border-primary-800 hover:bg-primary-100 transition">Download JSON</button>
+        </div>
+      </div>
+
+      <!-- Results Table -->
+      <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+          <span class="text-xs text-slate-500 dark:text-slate-400">1-20 of 1,230 viruses</span>
+          <div class="text-xs text-slate-400">Sort by isolates ↓</div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b-2 border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
+                <th class="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-400 text-xs uppercase">Virus</th>
+                <th class="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-400 text-xs uppercase">Family</th>
+                <th class="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-400 text-xs uppercase">Genome</th>
+                <th class="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-400 text-xs uppercase">Host</th>
+                <th class="text-right px-4 py-3 font-semibold text-slate-600 dark:text-slate-400 text-xs uppercase">Isolates</th>
+                <th class="text-center px-4 py-3 font-semibold text-slate-600 dark:text-slate-400 text-xs uppercase">Action</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50 dark:divide-slate-700/50">
+              <tr class="hover:bg-primary-50/30 dark:hover:bg-primary-900/10 transition-colors cursor-pointer group">
+                <td class="px-4 py-3">
+                  <div class="font-semibold text-primary-700 dark:text-primary-400">White spot syndrome virus</div>
+                  <div class="text-xs text-slate-400 dark:text-slate-500">白斑综合征病毒 · WSSV</div>
+                </td>
+                <td class="px-4 py-3 text-slate-700 dark:text-slate-300">Nimaviridae</td>
+                <td class="px-4 py-3"><span class="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 rounded-md text-[10px] font-medium">dsDNA</span></td>
+                <td class="px-4 py-3"><span class="px-2 py-0.5 bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400 rounded-md text-[10px] font-medium">Arthropoda</span></td>
+                <td class="px-4 py-3 text-right font-mono text-slate-700 dark:text-slate-300">1,298</td>
+                <td class="px-4 py-3 text-center">
+                  <button class="text-xs px-2.5 py-1 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400 rounded-lg hover:bg-primary-100 transition">Quick View</button>
+                </td>
+              </tr>
+              <tr class="hover:bg-primary-50/30 dark:hover:bg-primary-900/10 transition-colors cursor-pointer">
+                <td class="px-4 py-3">
+                  <div class="font-semibold text-primary-700 dark:text-primary-400">Ostreid herpesvirus 1</div>
+                  <div class="text-xs text-slate-400 dark:text-slate-500">牡蛎疱疹病毒1型 · OsHV-1</div>
+                </td>
+                <td class="px-4 py-3 text-slate-700 dark:text-slate-300">Malacoherpesviridae</td>
+                <td class="px-4 py-3"><span class="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 rounded-md text-[10px] font-medium">dsDNA</span></td>
+                <td class="px-4 py-3"><span class="px-2 py-0.5 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 rounded-md text-[10px] font-medium">Mollusca</span></td>
+                <td class="px-4 py-3 text-right font-mono text-slate-700 dark:text-slate-300">803</td>
+                <td class="px-4 py-3 text-center">
+                  <button class="text-xs px-2.5 py-1 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400 rounded-lg hover:bg-primary-100 transition">Quick View</button>
+                </td>
+              </tr>
+              <tr class="hover:bg-primary-50/30 dark:hover:bg-primary-900/10 transition-colors cursor-pointer">
+                <td class="px-4 py-3">
+                  <div class="font-semibold text-primary-700 dark:text-primary-400">Taura syndrome virus</div>
+                  <div class="text-xs text-slate-400 dark:text-slate-500">桃拉综合征病毒 · TSV</div>
+                </td>
+                <td class="px-4 py-3 text-slate-700 dark:text-slate-300">Aparvaviridae</td>
+                <td class="px-4 py-3"><span class="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 rounded-md text-[10px] font-medium">ssRNA(+)</span></td>
+                <td class="px-4 py-3"><span class="px-2 py-0.5 bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400 rounded-md text-[10px] font-medium">Arthropoda</span></td>
+                <td class="px-4 py-3 text-right font-mono text-slate-700 dark:text-slate-300">492</td>
+                <td class="px-4 py-3 text-center">
+                  <button class="text-xs px-2.5 py-1 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400 rounded-lg hover:bg-primary-100 transition">Quick View</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="border-slate-200 dark:border-slate-700 my-8 max-w-7xl mx-auto">
+
+<!-- ==================== SECTION 3: VIRUS DETAIL (Progressive Disclosure) ==================== -->
+<section id="detail" class="max-w-7xl mx-auto px-4 py-8">
+  <div class="mb-6">
+    <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Virus Detail — Progressive Disclosure</h2>
+    <p class="text-sm text-slate-500 dark:text-slate-400">Layer 1: Hero Summary → Layer 2: Topic Tabs → Layer 3: Inline Expand</p>
+  </div>
+
+  <!-- Layer 1: Hero Summary Card -->
+  <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 mb-5 shadow-sm">
+    <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
+      <div class="min-w-0">
+        <div class="flex items-center gap-2 mb-2 flex-wrap">
+          <h1 class="text-2xl font-bold text-slate-900 dark:text-white">White spot syndrome virus</h1>
+          <span class="text-lg text-slate-400 dark:text-slate-500 font-mono">WSSV</span>
+          <span class="text-lg text-slate-500 dark:text-slate-400">白斑综合征病毒</span>
+        </div>
+        <div class="flex items-center gap-2 mb-3 flex-wrap">
+          <span class="px-2.5 py-1 rounded-full bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400 text-sm font-medium">Nimaviridae</span>
+          <span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs">Whispovirus</span>
+          <span class="px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 text-xs font-medium">dsDNA</span>
+          <span class="px-2 py-0.5 rounded bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400 text-xs font-medium">Arthropoda</span>
+          <span class="px-2 py-0.5 rounded bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-xs font-bold">⚠️ HIGH VIRULENCE</span>
+        </div>
+        <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+          Global pandemic since 1992. Causes systemic tissue necrosis in penaeid shrimp with mortality rates of 90–100%. 
+          Annual economic losses exceeding $1 billion. Detected in 40+ countries across 5 continents.
+        </p>
+      </div>
+      <div class="flex gap-2 shrink-0">
+        <a href="#" class="px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg text-sm text-slate-700 dark:text-slate-300 transition">NCBI ↗</a>
+        <button class="px-3 py-1.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium transition">⬇ FASTA</button>
+      </div>
+    </div>
+
+    <!-- Key Metrics Bar -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-5 pt-5 border-t border-slate-100 dark:border-slate-700">
+      <div class="text-center p-3 rounded-lg bg-slate-50 dark:bg-slate-700/50">
+        <div class="text-xl font-bold text-blue-600 dark:text-blue-400">1,298</div>
+        <div class="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-medium mt-1">Isolates</div>
+      </div>
+      <div class="text-center p-3 rounded-lg bg-slate-50 dark:bg-slate-700/50">
+        <div class="text-xl font-bold text-emerald-600 dark:text-emerald-400">98</div>
+        <div class="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-medium mt-1">Host Species</div>
+      </div>
+      <div class="text-center p-3 rounded-lg bg-slate-50 dark:bg-slate-700/50">
+        <div class="text-xl font-bold text-purple-600 dark:text-purple-400">156</div>
+        <div class="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-medium mt-1">Proteins</div>
+      </div>
+      <div class="text-center p-3 rounded-lg bg-slate-50 dark:bg-slate-700/50">
+        <div class="text-xl font-bold text-amber-600 dark:text-amber-400">5,570</div>
+        <div class="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-medium mt-1">Evidence</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Layer 2: Tab Navigation (Sticky) -->
+  <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 mb-5 sticky top-14 z-40 glass overflow-x-auto">
+    <div class="flex gap-0 min-w-max px-2">
+      <button class="tab-btn active px-5 py-3.5 text-sm font-semibold text-primary-700 dark:text-primary-400 border-b-[2px] border-primary-500 whitespace-nowrap" onclick="switchTab('overview')">📋 Overview</button>
+      <button class="tab-btn px-5 py-3.5 text-sm font-medium text-slate-500 dark:text-slate-400 border-b-[2px] border-transparent hover:text-slate-700 dark:hover:text-slate-200 whitespace-nowrap" onclick="switchTab('genome')">🧬 Genome</button>
+      <button class="tab-btn px-5 py-3.5 text-sm font-medium text-slate-500 dark:text-slate-400 border-b-[2px] border-transparent hover:text-slate-700 dark:hover:text-slate-200 whitespace-nowrap" onclick="switchTab('hosts')">🦐 Hosts <span class="text-xs text-slate-400">(98)</span></button>
+      <button class="tab-btn px-5 py-3.5 text-sm font-medium text-slate-500 dark:text-slate-400 border-b-[2px] border-transparent hover:text-slate-700 dark:hover:text-slate-200 whitespace-nowrap" onclick="switchTab('proteins')">🧪 Proteins <span class="text-xs text-slate-400">(156)</span></button>
+      <button class="tab-btn px-5 py-3.5 text-sm font-medium text-slate-500 dark:text-slate-400 border-b-[2px] border-transparent hover:text-slate-700 dark:hover:text-slate-200 whitespace-nowrap" onclick="switchTab('evidence')">📊 Evidence</button>
+      <button class="tab-btn px-5 py-3.5 text-sm font-medium text-slate-500 dark:text-slate-400 border-b-[2px] border-transparent hover:text-slate-700 dark:hover:text-slate-200 whitespace-nowrap" onclick="switchTab('literature')">📚 Literature</button>
+      <button class="tab-btn px-5 py-3.5 text-sm font-medium text-slate-500 dark:text-slate-400 border-b-[2px] border-transparent hover:text-slate-700 dark:hover:text-slate-200 whitespace-nowrap" onclick="switchTab('geography')">🌍 Geography</button>
+    </div>
+  </div>
+
+  <!-- Layer 2: Tab Content (Lazy Loaded) -->
+  <div id="tab-overview" class="tab-content block">
+    <!-- Genome Summary (Compact) -->
+    <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5 mb-4">
+      <div class="flex items-center gap-2 mb-4">
+        <div class="color-bar h-5 bg-[var(--color-genome)]"></div>
+        <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">Genome Summary</h3>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div class="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3 text-center">
+          <div class="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider font-medium">Length</div>
+          <div class="font-mono font-bold text-slate-800 dark:text-slate-200 text-sm mt-1">305,107 bp</div>
+        </div>
+        <div class="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3 text-center">
+          <div class="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider font-medium">Type</div>
+          <div class="font-bold text-slate-800 dark:text-slate-200 text-sm mt-1">dsDNA</div>
+        </div>
+        <div class="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3 text-center">
+          <div class="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider font-medium">GC%</div>
+          <div class="font-mono font-bold text-slate-800 dark:text-slate-200 text-sm mt-1">41.0%</div>
+        </div>
+        <div class="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3 text-center">
+          <div class="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider font-medium">Completeness</div>
+          <div class="font-bold text-emerald-600 dark:text-emerald-400 text-sm mt-1">Complete</div>
+        </div>
+        <div class="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3 text-center">
+          <div class="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider font-medium">Country</div>
+          <div class="font-bold text-slate-800 dark:text-slate-200 text-sm mt-1">China</div>
+        </div>
+        <div class="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3 text-center">
+          <div class="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider font-medium">Year</div>
+          <div class="font-mono font-bold text-slate-800 dark:text-slate-200 text-sm mt-1">1992</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pathogenicity (Prominent, because HIGH) -->
+    <div class="bg-amber-50 dark:bg-amber-900/10 rounded-xl border border-amber-200 dark:border-amber-800/30 p-5 mb-4">
+      <div class="flex items-center gap-2 mb-4">
+        <div class="color-bar h-5 bg-[var(--color-virulence)]"></div>
+        <h3 class="text-sm font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wide">Pathogenicity</h3>
+        <span class="ml-auto px-2 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded text-[10px] font-bold">HIGH ALERT</span>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-white dark:bg-slate-800 rounded-lg p-4 text-center border border-amber-100 dark:border-amber-800/20">
+          <div class="text-gray-500 dark:text-slate-400 text-sm">Virulence Level</div>
+          <div class="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">HIGH</div>
+        </div>
+        <div class="bg-white dark:bg-slate-800 rounded-lg p-4 text-center border border-amber-100 dark:border-amber-800/20">
+          <div class="text-gray-500 dark:text-slate-400 text-sm">Mortality Rate</div>
+          <div class="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">90–100%</div>
+        </div>
+        <div class="bg-white dark:bg-slate-800 rounded-lg p-4 text-center border border-amber-100 dark:border-amber-800/20">
+          <div class="text-gray-500 dark:text-slate-400 text-sm">Symptoms</div>
+          <div class="text-sm font-medium text-slate-700 dark:text-slate-300 mt-1">Systemic tissue necrosis; latency at low temperatures</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Diagnostic Methods (Layer 3: Inline Expand) -->
+    <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5 mb-4">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <div class="color-bar h-5 bg-[var(--color-evidence)]"></div>
+          <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">Diagnostic Methods</h3>
+        </div>
+        <button onclick="toggleSection('diag-section')" id="diag-btn" class="text-xs text-primary-600 dark:text-primary-400 font-medium hover:underline">Show all 4 →</button>
+      </div>
+      <!-- Visible by default: first 2 -->
+      <div class="space-y-2">
+        <div class="flex items-center gap-3 p-3 rounded-lg border border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
+          <span class="w-8 h-8 rounded-lg bg-pink-50 dark:bg-pink-900/20 flex items-center justify-center text-sm">🧬</span>
+          <div class="flex-1">
+            <div class="text-sm font-medium text-slate-800 dark:text-slate-200">Nested PCR</div>
+            <div class="text-xs text-slate-500 dark:text-slate-400">Target: VP28 gene · LOD: 10 copies</div>
+          </div>
+          <span class="px-2 py-0.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded text-[10px] font-medium">High confidence</span>
+        </div>
+        <div class="flex items-center gap-3 p-3 rounded-lg border border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
+          <span class="w-8 h-8 rounded-lg bg-pink-50 dark:bg-pink-900/20 flex items-center justify-center text-sm">🧪</span>
+          <div class="flex-1">
+            <div class="text-sm font-medium text-slate-800 dark:text-slate-200">qPCR (TaqMan)</div>
+            <div class="text-xs text-slate-500 dark:text-slate-400">Target: VP19 / VP28 · Field-deployable</div>
+          </div>
+          <span class="px-2 py-0.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded text-[10px] font-medium">High confidence</span>
+        </div>
+      </div>
+      <!-- Hidden by default: Layer 3 expansion -->
+      <div id="diag-section" class="progressive-section">
+        <div class="space-y-2 mt-2">
+          <div class="flex items-center gap-3 p-3 rounded-lg border border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
+            <span class="w-8 h-8 rounded-lg bg-pink-50 dark:bg-pink-900/20 flex items-center justify-center text-sm">🔬</span>
+            <div class="flex-1">
+              <div class="text-sm font-medium text-slate-800 dark:text-slate-200">LAMP</div>
+              <div class="text-xs text-slate-500 dark:text-slate-400">Loop-mediated isothermal amplification · On-site detection</div>
+            </div>
+            <span class="px-2 py-0.5 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 rounded text-[10px] font-medium">Medium</span>
+          </div>
+          <div class="flex items-center gap-3 p-3 rounded-lg border border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
+            <span class="w-8 h-8 rounded-lg bg-pink-50 dark:bg-pink-900/20 flex items-center justify-center text-sm">📋</span>
+            <div class="flex-1">
+              <div class="text-sm font-medium text-slate-800 dark:text-slate-200">Immunochromatographic strip</div>
+              <div class="text-xs text-slate-500 dark:text-slate-400">Rapid field test · 15 min result</div>
+            </div>
+            <span class="px-2 py-0.5 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 rounded text-[10px] font-medium">Medium</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Key Hosts (Preview, click to expand) -->
+    <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <div class="color-bar h-5 bg-[var(--color-host)]"></div>
+          <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">Key Hosts</h3>
+        </div>
+        <button onclick="toggleSection('host-section')" id="host-btn" class="text-xs text-primary-600 dark:text-primary-400 font-medium hover:underline">Show all 98 hosts →</button>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div class="p-3 rounded-lg border border-green-200 dark:border-green-800/30 bg-green-50/30 dark:bg-green-900/10">
+          <div class="font-medium text-slate-800 dark:text-slate-200 italic text-sm">Litopenaeus vannamei</div>
+          <div class="text-xs text-slate-500 dark:text-slate-400">凡纳滨对虾 · 南美白对虾</div>
+          <div class="flex gap-1.5 mt-2">
+            <span class="px-1.5 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded text-[10px]">Confirmed</span>
+            <span class="px-1.5 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded text-[10px]">90-100% mortality</span>
+          </div>
+        </div>
+        <div class="p-3 rounded-lg border border-green-200 dark:border-green-800/30 bg-green-50/30 dark:bg-green-900/10">
+          <div class="font-medium text-slate-800 dark:text-slate-200 italic text-sm">Penaeus monodon</div>
+          <div class="text-xs text-slate-500 dark:text-slate-400">斑节对虾 · 草虾 · 黑虎虾</div>
+          <div class="flex gap-1.5 mt-2">
+            <span class="px-1.5 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded text-[10px]">Confirmed</span>
+            <span class="px-1.5 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded text-[10px]">90-100% mortality</span>
+          </div>
+        </div>
+        <div class="p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-700/20">
+          <div class="font-medium text-slate-800 dark:text-slate-200 italic text-sm">Procambarus clarkii</div>
+          <div class="text-xs text-slate-500 dark:text-slate-400">克氏原螯虾 · 小龙虾</div>
+          <div class="flex gap-1.5 mt-2">
+            <span class="px-1.5 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded text-[10px]">Confirmed</span>
+          </div>
+        </div>
+      </div>
+      <!-- Expanded hosts (Layer 3) -->
+      <div id="host-section" class="progressive-section">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
+          <div class="p-3 rounded-lg border border-amber-200 dark:border-amber-800/30 bg-amber-50/30 dark:bg-amber-900/10">
+            <div class="font-medium text-slate-800 dark:text-slate-200 italic text-sm">Eriocheir sinensis</div>
+            <div class="text-xs text-slate-500 dark:text-slate-400">中华绒螯蟹 · 大闸蟹</div>
+            <div class="flex gap-1.5 mt-2">
+              <span class="px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded text-[10px]">Outbreak</span>
+            </div>
+          </div>
+          <div class="p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-700/20">
+            <div class="font-medium text-slate-800 dark:text-slate-200 italic text-sm">Macrobrachium rosenbergii</div>
+            <div class="text-xs text-slate-500 dark:text-slate-400">罗氏沼虾</div>
+            <div class="flex gap-1.5 mt-2">
+              <span class="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 rounded text-[10px]">Metagenomic</span>
+            </div>
+          </div>
+          <div class="p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-700/20 flex items-center justify-center text-slate-400 dark:text-slate-500 text-xs">
+            + 92 more hosts
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="border-slate-200 dark:border-slate-700 my-8 max-w-7xl mx-auto">
+
+<!-- ==================== SECTION 4: COMPARISON (Current vs New) ==================== -->
+<section id="compare" class="max-w-7xl mx-auto px-4 py-8">
+  <div class="mb-6">
+    <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Design Comparison</h2>
+    <p class="text-sm text-slate-500 dark:text-slate-400">What changes and why</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Current -->
+    <div class="bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="px-2 py-0.5 bg-slate-200 dark:bg-slate-700 rounded text-xs font-bold text-slate-600 dark:text-slate-400">CURRENT</span>
+      </div>
+      <div class="space-y-3 text-sm text-slate-600 dark:text-slate-400">
+        <div class="flex items-start gap-2">
+          <span class="text-red-500 mt-0.5">✗</span>
+          <div>
+            <div class="font-medium text-slate-800 dark:text-slate-200">Information Overload</div>
+            <div class="text-xs">Detail page shows ALL content at once (~3,000 words/screen). Users cannot find key info.</div>
+          </div>
+        </div>
+        <div class="flex items-start gap-2">
+          <span class="text-red-500 mt-0.5">✗</span>
+          <div>
+            <div class="font-medium text-slate-800 dark:text-slate-200">No Dark Mode</div>
+            <div class="text-xs">NAR reviewers often work at night. Bright white screen causes eye strain.</div>
+          </div>
+        </div>
+        <div class="flex items-start gap-2">
+          <span class="text-red-500 mt-0.5">✗</span>
+          <div>
+            <div class="font-medium text-slate-800 dark:text-slate-200">Single Color Theme</div>
+            <div class="text-xs">Everything is Teal. Genome, host, protein, geography all look the same. No visual hierarchy.</div>
+          </div>
+        </div>
+        <div class="flex items-start gap-2">
+          <span class="text-red-500 mt-0.5">✗</span>
+          <div>
+            <div class="font-medium text-slate-800 dark:text-slate-200">No Bulk Actions</div>
+            <div class="text-xs">Search results cannot be downloaded in batch. Each record must be accessed individually.</div>
+          </div>
+        </div>
+        <div class="flex items-start gap-2">
+          <span class="text-red-500 mt-0.5">✗</span>
+          <div>
+            <div class="font-medium text-slate-800 dark:text-slate-200">Vertical Dashboard Stack</div>
+            <div class="text-xs">Home page is a long scroll of cards. No visual rhythm, no data storytelling.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- New -->
+    <div class="bg-white dark:bg-slate-800 rounded-xl border border-primary-200 dark:border-primary-800/30 p-5">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="px-2 py-0.5 bg-primary-100 dark:bg-primary-900/30 rounded text-xs font-bold text-primary-700 dark:text-primary-400">NEW v2.0</span>
+      </div>
+      <div class="space-y-3 text-sm text-slate-600 dark:text-slate-400">
+        <div class="flex items-start gap-2">
+          <span class="text-green-500 mt-0.5">✓</span>
+          <div>
+            <div class="font-medium text-slate-800 dark:text-slate-200">Progressive Disclosure</div>
+            <div class="text-xs">Layer 1: Hero summary (key data only). Layer 2: Topic tabs (lazy load). Layer 3: Inline expand.</div>
+          </div>
+        </div>
+        <div class="flex items-start gap-2">
+          <span class="text-green-500 mt-0.5">✓</span>
+          <div>
+            <div class="font-medium text-slate-800 dark:text-slate-200">Dark Mode</div>
+            <div class="text-xs">System preference detection + manual toggle. Full dark palette (Slate-900 base, not inverted).</div>
+          </div>
+        </div>
+        <div class="flex items-start gap-2">
+          <span class="text-green-500 mt-0.5">✓</span>
+          <div>
+            <div class="font-medium text-slate-800 dark:text-slate-200">Semantic Color System</div>
+            <div class="text-xs">Genome = Blue, Host = Green, Protein = Purple, Virulence = Orange/Red, Geography = Cyan.</div>
+          </div>
+        </div>
+        <div class="flex items-start gap-2">
+          <span class="text-green-500 mt-0.5">✓</span>
+          <div>
+            <div class="font-medium text-slate-800 dark:text-slate-200">Bulk Download Bar</div>
+            <div class="text-xs">CSV / FASTA / JSON download buttons on every search result page. Standard for NAR databases.</div>
+          </div>
+        </div>
+        <div class="flex items-start gap-2">
+          <span class="text-green-500 mt-0.5">✓</span>
+          <div>
+            <div class="font-medium text-slate-800 dark:text-slate-200">Bento Grid Homepage</div>
+            <div class="text-xs">Modular card grid. Each data type has its own visual block. Map thumbnail + chart preview.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== FOOTER ==================== -->
+<footer class="border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 mt-12">
+  <div class="max-w-7xl mx-auto px-4 py-6 text-center">
+    <div class="flex flex-wrap justify-center gap-4 text-sm text-slate-500 dark:text-slate-400 mb-3">
+      <a href="#" class="hover:text-primary-600 transition">Cite Us</a>
+      <a href="#" class="hover:text-primary-600 transition">API Docs</a>
+      <a href="#" class="hover:text-primary-600 transition">Data Availability</a>
+      <a href="#" class="hover:text-primary-600 transition">GitHub</a>
+      <a href="#" class="hover:text-primary-600 transition">Contact</a>
+    </div>
+    <p class="text-xs text-slate-400 dark:text-slate-500">
+      AquaVir-KB © 2025 · CC-BY 4.0 · Built for NAR Database Submission
+    </p>
+  </div>
+</footer>
+
+<!-- ==================== SCRIPTS ==================== -->
+<script>
+  // Dark mode toggle
+  function toggleDark() {
+    const html = document.documentElement;
+    if (html.classList.contains('dark')) {
+      html.classList.remove('dark');
+      localStorage.theme = 'light';
+      document.getElementById('dark-icon').textContent = '🌙';
+    } else {
+      html.classList.add('dark');
+      localStorage.theme = 'dark';
+      document.getElementById('dark-icon').textContent = '☀️';
+    }
+  }
+
+  // Auto-detect preference
+  if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark');
+    document.getElementById('dark-icon').textContent = '☀️';
+  }
+
+  // Tab switching
+  function switchTab(name) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('block'));
+    const target = document.getElementById('tab-' + name);
+    if (target) { target.classList.remove('hidden'); target.classList.add('block'); }
+    
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.remove('active', 'text-primary-700', 'dark:text-primary-400', 'border-primary-500');
+      btn.classList.add('text-slate-500', 'dark:text-slate-400', 'border-transparent');
+    });
+    // Find the button that triggered this (approximate)
+    event.target.closest('.tab-btn').classList.add('active', 'text-primary-700', 'dark:text-primary-400', 'border-primary-500');
+    event.target.closest('.tab-btn').classList.remove('text-slate-500', 'dark:text-slate-400', 'border-transparent');
+  }
+
+  // Progressive disclosure
+  function toggleSection(id) {
+    const el = document.getElementById(id);
+    const btn = document.getElementById(id.replace('-section', '-btn'));
+    if (el.classList.contains('open')) {
+      el.classList.remove('open');
+      btn.textContent = btn.textContent.replace('←', '→').replace('Show less', 'Show all');
+    } else {
+      el.classList.add('open');
+      btn.textContent = btn.textContent.replace('→', '←').replace('Show all', 'Show less');
+    }
+  }
+</script>
+
+</body>
+</html>

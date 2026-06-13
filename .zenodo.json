@@ -1,0 +1,37 @@
+{
+    "metadata": {
+        "title": "AquaVir-KB: A Comprehensive Knowledge Base for Aquatic Invertebrate Viruses",
+        "description": "AquaVir-KB is a literature-traceable knowledge base for aquatic invertebrate viruses, containing 1,647 virus species across 8 phyla, 14,540 target viral isolates, 27,096 proteins, and 353,160 structured evidence records text-mined from 9,065 publications. The database provides multi-dimensional evidence stratification (origin, strength, curation status), ICTV-aligned taxonomy, protein functional annotation, phylogenetic classification, and geographic distribution data.",
+        "creators": [
+            {
+                "name": "Zhou, Y.",
+                "affiliation": "[Institution TBD]",
+                "orcid": "[TBD]"
+            }
+        ],
+        "license": "CC-BY-4.0",
+        "keywords": [
+            "aquatic invertebrate viruses",
+            "knowledge base",
+            "evidence grading",
+            "virus-host associations",
+            "metagenomics",
+            "aquaculture pathogens",
+            "ICTV taxonomy",
+            "literature mining"
+        ],
+        "version": "1.0.0",
+        "publication_date": "2026-06-05",
+        "communities": [
+            {"identifier": "zenodo"},
+            {"identifier": "nucleic-acids-research"}
+        ],
+        "related_identifiers": [
+            {
+                "identifier": "https://github.com/zy15908060761/CDB",
+                "relation": "isSupplementTo",
+                "resource_type": "software"
+            }
+        ]
+    }
+}

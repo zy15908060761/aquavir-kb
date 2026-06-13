@@ -1,0 +1,10 @@
+Creative Commons Attribution 4.0 International Public License
+
+The curated database exports, documentation, and metadata in this repository are released under the Creative Commons Attribution 4.0 International License (CC BY 4.0).
+
+You are free to share and adapt the material for any purpose, including commercial use, provided that appropriate credit is given, a link to the license is provided, and changes are indicated.
+
+Full license text:
+https://creativecommons.org/licenses/by/4.0/legalcode
+
+Third-party records, accession metadata, and external annotations may remain subject to their original source terms. Users are responsible for respecting source-specific restrictions when reusing external data.

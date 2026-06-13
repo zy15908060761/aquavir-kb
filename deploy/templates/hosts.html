@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Host Browser - AquaVir-KB{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-extrabold text-slate-800">Host Browser</h1>
+        <p class="text-slate-500 mt-2 text-sm">Browse aquatic invertebrate host species, filter by phylum/group</p>
+    </div>
+
+    <div class="flex flex-col lg:flex-row gap-6">
+        <!-- Left: Filter Panel -->
+        <div class="lg:w-56 shrink-0">
+            <div class="card p-6 sticky top-20 space-y-5 shadow-md">
+                <!-- Host Phylum -->
+                <div>
+                    <div class="flex items-center gap-2.5 mb-3">
+                        <span class="w-1 h-4 bg-teal-500 rounded-full"></span>
+                        <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Host Phylum</h3>
+                    </div>
+                    <div class="space-y-1.5">
+                        {% for ph in phyla %}
+                        <label class="flex items-center gap-2 text-sm cursor-pointer hover:bg-slate-50 rounded-lg px-2 py-1 transition-colors">
+                            <input type="checkbox" name="phylum" value="{{ ph.name }}" class="filter-check rounded text-teal-600 focus:ring-teal-500"
+                                   {% if ph.name in selected_phyla %}checked{% endif %}>
+                            <span class="text-slate-700">{{ ph.name }}</span>
+                            <span class="text-xs text-slate-400 ml-auto">{{ ph.count }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Host Group -->
+                <div>
+                    <div class="flex items-center gap-2.5 mb-3">
+                        <span class="w-1 h-4 bg-blue-500 rounded-full"></span>
+                        <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Host Group</h3>
+                    </div>
+                    <div class="space-y-1.5">
+                        {% for hg in host_groups %}
+                        <label class="flex items-center gap-2 text-sm cursor-pointer hover:bg-slate-50 rounded-lg px-2 py-1 transition-colors">
+                            <input type="checkbox" name="host_group" value="{{ hg.name }}" class="filter-check rounded text-teal-600 focus:ring-teal-500"
+                                   {% if hg.name in selected_groups %}checked{% endif %}>
+                            <span class="text-slate-700">{{ hg.name }}</span>
+                            <span class="text-xs text-slate-400 ml-auto">{{ hg.count }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Aquaculture Importance -->
+                <div>
+                    <div class="flex items-center gap-2.5 mb-3">
+                        <span class="w-1 h-4 bg-emerald-500 rounded-full"></span>
+                        <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Aquaculture Importance</h3>
+                    </div>
+                    <div class="space-y-1.5">
+                        {% for aq in aquaculture_statuses %}
+                        <label class="flex items-center gap-2 text-sm cursor-pointer hover:bg-slate-50 rounded-lg px-2 py-1 transition-colors">
+                            <input type="checkbox" name="aquaculture" value="{{ aq.name }}" class="filter-check rounded text-teal-600 focus:ring-teal-500"
+                                   {% if aq.name in selected_aquaculture %}checked{% endif %}>
+                            <span class="text-slate-700">{{ aq.name }}</span>
+                            <span class="text-xs text-slate-400 ml-auto">{{ aq.count }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <button onclick="clearFilters()" class="w-full px-4 py-2.5 text-sm text-red-500 hover:text-red-600 border border-red-200 rounded-xl hover:bg-red-50 transition-all duration-200 font-medium">
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    Clear Filters
+                </button>
+            </div>
+        </div>
+
+        <!-- Right: Host Cards -->
+        <div class="flex-1 min-w-0">
+            <div class="card p-0 shadow-md overflow-hidden">
+                <div class="px-5 py-3.5 border-b border-slate-100 bg-slate-50/50">
+                    <span class="text-sm text-slate-500">Total <strong class="text-slate-800 font-mono">{{ hosts|length }}</strong> hosts</span>
+                </div>
+
+                {% if hosts %}
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b-2 border-slate-100">
+                                <th class="text-left px-4 py-3.5 font-bold text-slate-600 text-xs uppercase tracking-wider">Scientific Name</th>
+                                <th class="text-left px-4 py-3.5 font-bold text-slate-600 text-xs uppercase tracking-wider">Common Name</th>
+                                <th class="text-left px-4 py-3.5 font-bold text-slate-600 text-xs uppercase tracking-wider">Phylum</th>
+                                <th class="text-left px-4 py-3.5 font-bold text-slate-600 text-xs uppercase tracking-wider">Group</th>
+                                <th class="text-left px-4 py-3.5 font-bold text-slate-600 text-xs uppercase tracking-wider">Habitat</th>
+                                <th class="text-left px-4 py-3.5 font-bold text-slate-600 text-xs uppercase tracking-wider">Aquaculture</th>
+                                <th class="text-right px-4 py-3.5 font-bold text-slate-600 text-xs uppercase tracking-wider">Viral Infections</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-50">
+                            {% for h in hosts %}
+                            <tr class="table-row cursor-pointer even:bg-slate-50/30 hover:bg-teal-50/30 transition-colors" onclick="window.location.href='/host/{{ h.host_id }}'">
+                                <td class="px-4 py-3.5">
+                                    <span class="font-semibold italic text-teal-700">{{ h.scientific_name }}</span>
+                                </td>
+                                <td class="px-4 py-3.5 text-slate-600">{{ h.common_name_cn or '-' }}</td>
+                                <td class="px-4 py-3.5">
+                                    {% if h.phylum %}<span class="inline-block px-2 py-0.5 bg-teal-50 text-teal-700 rounded-lg text-[10px] font-medium">{{ h.phylum }}</span>{% else %}<span class="text-slate-300">-</span>{% endif %}
+                                </td>
+                                <td class="px-4 py-3.5 text-slate-600">{{ h.host_group or '-' }}</td>
+                                <td class="px-4 py-3.5 text-xs text-slate-600">{{ h.habitat or '-' }}</td>
+                                <td class="px-4 py-3.5">
+                                    {% if h.aquaculture_status %}
+                                    <span class="inline-block px-2 py-0.5 rounded-lg text-[10px] font-medium {% if 'major' in h.aquaculture_status %}bg-teal-50 text-teal-700{% else %}bg-blue-50 text-blue-700{% endif %}">{{ h.aquaculture_status }}</span>
+                                    {% else %}<span class="text-slate-300">-</span>{% endif %}
+                                </td>
+                                <td class="px-4 py-3.5 text-right font-mono font-semibold text-slate-700">{{ h.virus_count or 0 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="py-14 text-center">
+                    <div class="text-4xl mb-3 text-slate-300">
+                        <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    </div>
+                    <div class="text-base font-semibold text-slate-600">No matching host records</div>
+                    <div class="text-sm text-slate-400 mt-1">Try adjusting filter criteria</div>
+                </div>
+                {% endif %}
+
+                {% if total_pages > 1 %}
+                <div class="px-5 py-3.5 border-t border-slate-100 flex justify-center gap-1.5 bg-slate-50/30">
+                    {% if page > 1 %}
+                    <a href="{{ url_for_page(page-1) }}" class="px-3.5 py-2 border border-slate-200 rounded-xl text-sm font-medium hover:bg-white hover:border-teal-500 transition-all duration-200 text-slate-600">&#8592; Prev</a>
+                    {% endif %}
+                    {% for p in page_range %}
+                    <a href="{{ url_for_page(p) }}" class="px-3.5 py-2 border rounded-xl text-sm font-medium transition-all duration-200 {% if p == page %}bg-teal-600 text-white border-teal-600 shadow-md shadow-teal-200{% else %}border-slate-200 text-slate-600 hover:bg-white hover:border-teal-500{% endif %}">{{ p }}</a>
+                    {% endfor %}
+                    {% if page < total_pages %}
+                    <a href="{{ url_for_page(page+1) }}" class="px-3.5 py-2 border border-slate-200 rounded-xl text-sm font-medium hover:bg-white hover:border-teal-500 transition-all duration-200 text-slate-600">Next &#8594;</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.querySelectorAll('.filter-check').forEach(cb => {
+        cb.addEventListener('change', () => {
+            const params = new URLSearchParams();
+            document.querySelectorAll('.filter-check:checked').forEach(c => {
+                params.append(c.name, c.value);
+            });
+            window.location.search = params.toString();
+        });
+    });
+
+    function clearFilters() {
+        window.location.href = '/hosts';
+    }
+</script>
+{% endblock %}

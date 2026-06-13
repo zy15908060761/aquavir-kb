@@ -1,0 +1,411 @@
+{% extends "base.html" %}
+
+{% block title %}{{ host.scientific_name }} - AquaVir-KB{% endblock %}
+
+{% block breadcrumbs %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+    <nav class="flex text-xs text-gray-400 space-x-1 flex-wrap">
+        <a href="/" class="hover:text-teal-600 transition">Home</a>
+        <span>/</span><a href="/search" class="hover:text-teal-600 transition">Search</a>
+        <span>/</span><span class="text-gray-600 italic truncate max-w-xs">{{ host.scientific_name }}</span>
+    </nav>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Tab Navigation -->
+    <div class="card overflow-hidden sticky top-14 z-40 mb-6 glass border-white/60 shadow-md">
+        <div class="flex gap-0 overflow-x-auto px-4">
+            <a href="#section-host-overview" class="tab-nav-link whitespace-nowrap px-5 py-3.5 text-sm font-semibold text-teal-600 border-b-[3px] border-teal-500">Overview</a>
+            <a href="#section-host-viruses" class="tab-nav-link whitespace-nowrap px-5 py-3.5 text-sm font-medium text-slate-500 border-b-[3px] border-transparent hover:text-slate-700">Associated Viruses</a>
+            <a href="#section-host-biology" class="tab-nav-link whitespace-nowrap px-5 py-3.5 text-sm font-medium text-slate-500 border-b-[3px] border-transparent hover:text-slate-700">Biology</a>
+            <a href="#section-host-geo" class="tab-nav-link whitespace-nowrap px-5 py-3.5 text-sm font-medium text-slate-500 border-b-[3px] border-transparent hover:text-slate-700">Geographic Distribution</a>
+        </div>
+    </div>
+    <!-- Header -->
+    <div id="section-host-overview" class="card p-6 mb-6">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div class="min-w-0">
+                <div class="flex items-center gap-3 mb-2 flex-wrap">
+                    <h1 class="text-2xl font-bold text-gray-800 italic">{{ host.scientific_name }}</h1>
+                    {% if host.common_name_cn %}
+                    <span class="text-lg text-gray-500">{{ host.common_name_cn }}</span>
+                    {% endif %}
+                    {% if host.host_group %}
+                    <span class="bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm font-medium">{{ host.host_group }}</span>
+                    {% endif %}
+                    {% if host.aquaculture_status %}
+                    <span class="px-2 py-1 rounded-lg text-xs font-medium bg-blue-100 text-blue-700">{{ host.aquaculture_status }}</span>
+                    {% endif %}
+                </div>
+                <div class="flex flex-wrap gap-3 text-sm text-gray-500">
+                    {% if host.taxon_order %}<span>Order: {{ host.taxon_order }}</span>{% endif %}
+                    {% if host.taxon_family %}<span>Family: {{ host.taxon_family }}</span>{% endif %}
+                    {% if host.habitat %}<span>Habitat: {{ host.habitat }}</span>{% endif %}
+                    {% if host.iucn_status %}<span class="text-gray-400">IUCN: {{ host.iucn_status }}</span>{% endif %}
+                </div>
+            </div>
+            <div class="flex gap-2 flex-wrap">
+                {% if infection_stats.total_records %}
+                <span class="px-3 py-1.5 rounded-lg text-sm font-medium bg-teal-100 text-teal-700">
+                    {{ infection_stats.total_records }} infection records
+                </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left: Host Profile -->
+        <div class="lg:col-span-1 space-y-6">
+            <!-- Basic Info -->
+            <div class="card overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100">
+                    <h3 class="font-semibold text-gray-700 text-sm uppercase tracking-wide">Host Profile</h3>
+                </div>
+                <div class="p-5 space-y-4">
+                    <div>
+                        <div class="text-xs text-gray-400 uppercase tracking-wide">Scientific Name</div>
+                        <div class="text-sm font-medium text-gray-800 italic mt-0.5">{{ host.scientific_name }}</div>
+                    </div>
+                    {% if host.common_name_cn %}
+                    <div>
+                        <div class="text-xs text-gray-400 uppercase tracking-wide">Chinese Common Name</div>
+                        <div class="text-sm font-medium text-gray-800 mt-0.5">{{ host.common_name_cn }}</div>
+                    </div>
+                    {% endif %}
+                    <div class="grid grid-cols-2 gap-4">
+                        {% if host.taxon_order %}
+                        <div>
+                            <div class="text-xs text-gray-400 uppercase tracking-wide">Order</div>
+                            <div class="text-sm font-medium text-gray-800 mt-0.5">{{ host.taxon_order }}</div>
+                        </div>
+                        {% endif %}
+                        {% if host.taxon_family %}
+                        <div>
+                            <div class="text-xs text-gray-400 uppercase tracking-wide">Family</div>
+                            <div class="text-sm font-medium text-gray-800 mt-0.5">{{ host.taxon_family }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% if host.host_group %}
+                    <div>
+                        <div class="text-xs text-gray-400 uppercase tracking-wide">Host Group</div>
+                        <div class="text-sm font-medium text-gray-800 mt-0.5">{{ host.host_group }}</div>
+                    </div>
+                    {% endif %}
+                    {% if host.habitat %}
+                    <div>
+                        <div class="text-xs text-gray-400 uppercase tracking-wide">Habitat</div>
+                        <div class="text-sm font-medium text-gray-800 mt-0.5">{{ host.habitat }}</div>
+                    </div>
+                    {% endif %}
+                    {% if host.aquaculture_status %}
+                    <div>
+                        <div class="text-xs text-gray-400 uppercase tracking-wide">Aquaculture Status</div>
+                        <div class="text-sm font-medium text-gray-800 mt-0.5">{{ host.aquaculture_status }}</div>
+                    </div>
+                    {% endif %}
+                    {% if host.iucn_status %}
+                    <div>
+                        <div class="text-xs text-gray-400 uppercase tracking-wide">IUCN Status</div>
+                        <div class="text-sm font-medium text-gray-800 mt-0.5">
+                            {% if host.iucn_status == 'Least Concern' %}
+                            <span class="text-green-600">{{ host.iucn_status }}</span>
+                            {% elif host.iucn_status in ('Vulnerable', 'Endangered', 'Critically Endangered') %}
+                            <span class="text-red-600">{{ host.iucn_status }}</span>
+                            {% elif host.iucn_status == 'Not Evaluated' %}
+                            <span class="text-gray-400">{{ host.iucn_status }}</span>
+                            {% else %}
+                            {{ host.iucn_status }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if host.ncbi_taxid %}
+                    <div>
+                        <div class="text-xs text-gray-400 uppercase tracking-wide">NCBI TaxID</div>
+                        <div class="text-sm font-medium text-gray-800 mt-0.5 font-mono">
+                            <a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={{ host.ncbi_taxid }}" target="_blank" class="text-teal-600 hover:text-teal-500">{{ host.ncbi_taxid }} ↗</a>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if host.lineage %}
+                    <div>
+                        <div class="text-xs text-gray-400 uppercase tracking-wide">NCBI Taxonomic Lineage</div>
+                        <div class="text-xs text-gray-600 mt-1 font-mono leading-relaxed">{{ host.lineage }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Data Sources -->
+            <div class="card overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100">
+                    <h3 class="font-semibold text-gray-700 text-sm uppercase tracking-wide">External Data</h3>
+                </div>
+                <div class="p-5 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">GBIF Distribution Records</span>
+                        {% if gbif_count > 0 %}
+                        <span class="text-sm font-semibold text-green-600">{{ gbif_count }} records</span>
+                        {% else %}
+                        <span class="text-sm text-gray-400">None</span>
+                        {% endif %}
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">OBIS Marine Records</span>
+                        {% if obis_count > 0 %}
+                        <span class="text-sm font-semibold text-blue-600">{{ obis_count }} records</span>
+                        {% else %}
+                        <span class="text-sm text-gray-400">None</span>
+                        {% endif %}
+                    </div>
+                    <div class="pt-2 border-t border-gray-100">
+                        <a href="/enrichment/host-ecology" class="text-sm text-teal-600 hover:text-teal-500">View Host Ecology Enrichment Data →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Main Content -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div class="card p-4 text-center">
+                    <div class="text-2xl font-bold text-teal-600">{{ infection_stats.unique_isolates }}</div>
+                    <div class="text-xs text-gray-500 mt-1">Associated Isolates</div>
+                </div>
+                <div class="card p-4 text-center">
+                    <div class="text-2xl font-bold text-red-500">{{ infection_stats.unique_viruses }}</div>
+                    <div class="text-xs text-gray-500 mt-1">Associated Virus Species</div>
+                </div>
+                <div class="card p-4 text-center">
+                    <div class="text-2xl font-bold text-blue-600">{{ geo_distribution|length }}</div>
+                    <div class="text-xs text-gray-500 mt-1">Countries</div>
+                </div>
+                <div class="card p-4 text-center">
+                    <div class="text-2xl font-bold text-purple-600">{{ infection_stats.total_records }}</div>
+                    <div class="text-xs text-gray-500 mt-1">Infection Records</div>
+                </div>
+            </div>
+
+            <!-- Associated Viruses -->
+            <div id="section-host-viruses" class="card overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center">
+                    <h3 class="font-semibold text-gray-700 text-sm uppercase tracking-wide">Associated Viruses ({{ viruses|length }})</h3>
+                </div>
+                {% if viruses %}
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="text-left px-4 py-3 font-semibold text-gray-700">Virus Name</th>
+                                <th class="text-left px-4 py-3 font-semibold text-gray-700">Family</th>
+                                <th class="text-right px-4 py-3 font-semibold text-gray-700">Isolates</th>
+                                <th class="text-center px-4 py-3 font-semibold text-gray-700">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            {% for v in viruses %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3">
+                                    <div class="font-medium text-gray-800">{{ v.virus_name }}</div>
+                                    {% if v.chinese_name %}
+                                    <div class="text-xs text-gray-400">{{ v.chinese_name }}</div>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-3">
+                                    {% if v.virus_family %}
+                                    <a href="/search?family={{ v.virus_family|urlencode }}" class="text-teal-600 hover:text-teal-500">{{ v.virus_family }}</a>
+                                    {% else %}
+                                    <span class="text-gray-400">-</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-3 text-right font-mono text-gray-700">{{ v.isolate_count }}</td>
+                                <td class="px-4 py-3 text-center">
+                                    <a href="/search?q={{ v.virus_name|urlencode }}" class="text-xs px-3 py-1.5 bg-teal-50 text-teal-700 rounded-lg hover:bg-teal-100 transition">View Isolates</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="p-8 text-center text-gray-400">
+                    <div class="text-4xl mb-3">🔬</div>
+                    <p>No virus infection records</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Biology -->
+            <div id="section-host-biology" class="card overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100">
+                    <h3 class="font-semibold text-gray-700 text-sm uppercase tracking-wide">Biological Characteristics</h3>
+                </div>
+                <div class="p-5">
+                    {% if host_biology and host_biology is mapping %}
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {% if host_biology.habitat_type %}
+                        <div class="border border-gray-100 rounded-lg p-3">
+                            <div class="text-xs text-gray-400 uppercase">Habitat Type</div>
+                            <div class="text-sm font-medium text-gray-800 mt-1">{{ host_biology.habitat_type }}</div>
+                        </div>
+                        {% endif %}
+                        {% if host_biology.depth_range_min is not none %}
+                        <div class="border border-gray-100 rounded-lg p-3">
+                            <div class="text-xs text-gray-400 uppercase">Depth Range</div>
+                            <div class="text-sm font-medium text-gray-800 mt-1">{{ host_biology.depth_range_min }} - {{ host_biology.depth_range_max }} m</div>
+                        </div>
+                        {% endif %}
+                        {% if host_biology.temperature_tolerance_min is not none %}
+                        <div class="border border-gray-100 rounded-lg p-3">
+                            <div class="text-xs text-gray-400 uppercase">Temperature Tolerance</div>
+                            <div class="text-sm font-medium text-gray-800 mt-1">{{ host_biology.temperature_tolerance_min }} - {{ host_biology.temperature_tolerance_max }}°C</div>
+                        </div>
+                        {% endif %}
+                        {% if host_biology.max_body_length_cm %}
+                        <div class="border border-gray-100 rounded-lg p-3">
+                            <div class="text-xs text-gray-400 uppercase">Max Body Length</div>
+                            <div class="text-sm font-medium text-gray-800 mt-1">{{ host_biology.max_body_length_cm }} cm</div>
+                        </div>
+                        {% endif %}
+                        {% if host_biology.trophic_level %}
+                        <div class="border border-gray-100 rounded-lg p-3">
+                            <div class="text-xs text-gray-400 uppercase">Trophic Level</div>
+                            <div class="text-sm font-medium text-gray-800 mt-1">{{ host_biology.trophic_level }}</div>
+                        </div>
+                        {% endif %}
+                        {% if host_biology.feeding_type %}
+                        <div class="border border-gray-100 rounded-lg p-3">
+                            <div class="text-xs text-gray-400 uppercase">Feeding Mode</div>
+                            <div class="text-sm font-medium text-gray-800 mt-1">{{ host_biology.feeding_type }}</div>
+                        </div>
+                        {% endif %}
+                        {% if host_biology.generation_time_days %}
+                        <div class="border border-gray-100 rounded-lg p-3">
+                            <div class="text-xs text-gray-400 uppercase">Generation Time</div>
+                            <div class="text-sm font-medium text-gray-800 mt-1">{{ host_biology.generation_time_days }} days</div>
+                        </div>
+                        {% endif %}
+                        {% if host_biology.longevity_days %}
+                        <div class="border border-gray-100 rounded-lg p-3">
+                            <div class="text-xs text-gray-400 uppercase">Lifespan</div>
+                            <div class="text-sm font-medium text-gray-800 mt-1">{{ host_biology.longevity_days }} days</div>
+                        </div>
+                        {% endif %}
+                        {% if host_biology.aquaculture_production_tonnes %}
+                        <div class="border border-gray-100 rounded-lg p-3">
+                            <div class="text-xs text-gray-400 uppercase">Aquaculture Yield</div>
+                            <div class="text-sm font-medium text-gray-800 mt-1">{{ host_biology.aquaculture_production_tonnes }} tons</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% if host_biology.salinity_tolerance %}
+                    <div class="mt-3 text-sm text-gray-600">
+                        <span class="text-gray-400 text-xs uppercase">Salinity Tolerance: </span>{{ host_biology.salinity_tolerance }}
+                    </div>
+                    {% endif %}
+                    {% elif host_ecology %}
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {% for trait in host_ecology %}
+                        <div class="border border-gray-100 rounded-lg p-3">
+                            <div class="text-xs text-gray-400 uppercase">{{ trait.category or trait.trait_name or 'Property' }}</div>
+                            <div class="text-sm font-medium text-gray-800 mt-1">{{ trait.trait_value or trait.description or '-' }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-8 text-gray-400">
+                        <div class="text-3xl mb-2">🌿</div>
+                        <p>No ecological data available</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Geographic Distribution -->
+            <div id="section-host-geo" class="card overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100">
+                    <h3 class="font-semibold text-gray-700 text-sm uppercase tracking-wide">Geographic Distribution</h3>
+                </div>
+                {% if geo_distribution %}
+                <div class="p-5">
+                    <div id="host-geo-map" class="h-80 bg-slate-50 rounded-xl border border-slate-200 mb-4"></div>
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                        {% for g in geo_distribution[:20] %}
+                        <div class="border border-gray-100 rounded-lg p-3 hover:bg-gray-50 transition">
+                            <div class="text-sm font-medium text-gray-800">{{ g.country }}</div>
+                            <div class="text-xs text-gray-500 mt-0.5">{{ g.count }} records</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if geo_distribution|length > 20 %}
+                    <p class="text-xs text-gray-400 mt-3">Plus {{ geo_distribution|length - 20 }} other countries/regions</p>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="p-8 text-center text-gray-400">
+                    <div class="text-4xl mb-3">🗺️</div>
+                    <p>No geographic distribution data</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const hostTabLinks = document.querySelectorAll('.host-tab-link');
+const hostSections = ['section-host-overview','section-host-viruses','section-host-biology','section-host-geo'].map(id => document.getElementById(id)).filter(Boolean);
+window.addEventListener('scroll', () => {
+    let current = hostSections[0]?.id;
+    hostSections.forEach(sec => { if (sec.getBoundingClientRect().top < 120) current = sec.id; });
+    hostTabLinks.forEach(link => {
+        link.classList.toggle('text-teal-600', link.getAttribute('href') === '#' + current);
+        link.classList.toggle('border-teal-600', link.getAttribute('href') === '#' + current);
+        link.classList.toggle('text-gray-500', link.getAttribute('href') !== '#' + current);
+        link.classList.toggle('border-transparent', link.getAttribute('href') !== '#' + current);
+    });
+});
+hostTabLinks.forEach(link => {
+    link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+});
+{% if geo_distribution %}
+// Render host geo map
+(function() {
+    const mapDom = document.getElementById('host-geo-map');
+    if (!mapDom || typeof echarts === 'undefined') return;
+    const geoData = {{ geo_distribution|tojson }};
+    if (!geoData || geoData.length === 0) return;
+    const maxVal = Math.max(...geoData.map(d => d.count));
+    fetch('/static/world.json')
+        .then(r => { if (!r.ok) throw new Error('fail'); return r.json(); })
+        .then(worldJson => {
+            echarts.registerMap('world', worldJson);
+            const chart = echarts.init(mapDom);
+            chart.setOption({
+                tooltip: { trigger: 'item', formatter: p => p.value ? p.name + ': ' + p.value + ' records' : p.name },
+                visualMap: { min: 0, max: maxVal, inRange: { color: ['#e0f3f8','#abd9e9','#4575b4','#313695'] }, show: false },
+                series: [{
+                    type: 'map', map: 'world', roam: true,
+                    itemStyle: { areaColor: '#f0f0f0', borderColor: '#ccc' },
+                    emphasis: { label: { show: true }, itemStyle: { areaColor: '#f39c12' } },
+                    data: geoData.map(d => ({ name: d.country, value: d.count }))
+                }]
+            });
+            window.addEventListener('resize', () => chart.resize());
+        })
+        .catch(() => { mapDom.style.display = 'none'; });
+})();
+{% endif %}
+</script>
+{% endblock %}

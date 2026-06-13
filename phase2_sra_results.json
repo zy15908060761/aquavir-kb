@@ -1,0 +1,66 @@
+{
+  "generated_at": "2026-05-30T22:28:25.349750",
+  "total_new_runs": 0,
+  "by_phylum": {
+    "Cnidaria_coral_virome": {
+      "phylum": "Cnidaria",
+      "new_runs": 0,
+      "sample_accessions": [],
+      "bioprojects": []
+    },
+    "Cnidaria_jellyfish_virome": {
+      "phylum": "Cnidaria",
+      "new_runs": 0,
+      "sample_accessions": [],
+      "bioprojects": []
+    },
+    "Porifera_sponge_virome": {
+      "phylum": "Porifera",
+      "new_runs": 0,
+      "sample_accessions": [],
+      "bioprojects": []
+    },
+    "Echinoderm_urchin_virome": {
+      "phylum": "Echinodermata",
+      "new_runs": 0,
+      "sample_accessions": [],
+      "bioprojects": []
+    },
+    "Echinoderm_cucumber_virome": {
+      "phylum": "Echinodermata",
+      "new_runs": 0,
+      "sample_accessions": [],
+      "bioprojects": []
+    },
+    "Annelida_worm_virome": {
+      "phylum": "Annelida",
+      "new_runs": 0,
+      "sample_accessions": [],
+      "bioprojects": []
+    },
+    "Nematoda_virome": {
+      "phylum": "Nematoda",
+      "new_runs": 0,
+      "sample_accessions": [],
+      "bioprojects": []
+    },
+    "Platyhelminthes_virome": {
+      "phylum": "Platyhelminthes",
+      "new_runs": 0,
+      "sample_accessions": [],
+      "bioprojects": []
+    },
+    "Rotifera_virome": {
+      "phylum": "Rotifera",
+      "new_runs": 0,
+      "sample_accessions": [],
+      "bioprojects": []
+    },
+    "Mollusk_bivalve_virome": {
+      "phylum": "Mollusca",
+      "new_runs": 0,
+      "sample_accessions": [],
+      "bioprojects": []
+    }
+  }
+}

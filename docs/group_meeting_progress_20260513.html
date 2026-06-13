@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>水生无脊椎动物病毒库进展 2026-05-13</title>
+  <style>
+    :root{--ink:#172033;--muted:#5d667a;--line:#d9dde7;--bg:#f7f8fb;--panel:#fff;--teal:#087f8c;--green:#2f7d32;--blue:#2357a6;--red:#b13a32;--amber:#9a6500;--violet:#6b4bb6}
+    *{box-sizing:border-box}body{margin:0;font-family:"Microsoft YaHei","Segoe UI",Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+    header{background:#172033;color:white;padding:30px 34px 24px;border-bottom:5px solid var(--teal)}header h1{margin:0 0 8px;font-size:34px;letter-spacing:0}header p{margin:0;color:#d8deea}
+    nav{position:sticky;top:0;z-index:2;display:flex;gap:8px;overflow-x:auto;padding:10px 28px;background:rgba(255,255,255,.96);border-bottom:1px solid var(--line)}
+    nav a{white-space:nowrap;text-decoration:none;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:14px;background:#fff}
+    main{max-width:1180px;margin:0 auto;padding:22px 24px 48px}section{background:var(--panel);border:1px solid var(--line);border-radius:8px;margin:18px 0;padding:24px;box-shadow:0 1px 2px rgba(23,32,51,.05)}
+    h2{margin:0 0 14px;font-size:25px}h3{margin:18px 0 8px;font-size:18px}.sub{margin-top:-6px;color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .card{border:1px solid var(--line);border-radius:8px;padding:14px;background:#fff;min-height:112px}.metric{font-size:30px;font-weight:800;margin:4px 0}.label{color:var(--muted);font-size:14px}
+    .teal{color:var(--teal)}.green{color:var(--green)}.blue{color:var(--blue)}.red{color:var(--red)}.amber{color:var(--amber)}.violet{color:var(--violet)}
+    table{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px}th,td{border-bottom:1px solid var(--line);padding:8px 7px;text-align:left;vertical-align:top}th{background:#eef2f7}
+    .tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:2px 8px;margin:2px;font-size:13px;background:#fff}.routes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+    .route{border:1px solid var(--line);border-radius:6px;padding:10px;background:#fbfcff}.route b{display:block;margin-bottom:4px}
+    footer{max-width:1180px;margin:0 auto 30px;padding:0 24px;color:var(--muted);font-size:13px}
+    @media(max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.two,.routes{grid-template-columns:1fr}header h1{font-size:27px}section{padding:18px}}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>水生无脊椎动物病毒、宿主与证据库进展</h1>
+    <p>数据读取时间：2026-05-13 10:48；主库大小约 233.2 MB</p>
+  </header>
+  <nav>
+    <a href="#overview">当前进展</a>
+    <a href="#virology">病毒与宿主</a>
+    <a href="#evidence">证据层</a>
+    <a href="#expansion">扩展进展</a>
+    <a href="#frontend">前端功能</a>
+    <a href="#limits">当前限制</a>
+    <a href="#strategy">优化策略</a>
+    <a href="#next">下一步计划</a>
+  </nav>
+  <main>
+    <section id="overview">
+      <h2>当前进展</h2>
+      <p class="sub">当前数据库围绕病毒条目、分离株/序列、宿主、感染记录、证据和文献进行组织。</p>
+      <div class="grid">
+        <div class="card"><div class="label">病毒条目</div><div class="metric teal">1,246</div><div class="label">virus_master</div></div>
+        <div class="card"><div class="label">分离株/序列记录</div><div class="metric blue">6,687</div><div class="label">viral_isolates</div></div>
+        <div class="card"><div class="label">蛋白记录</div><div class="metric green">22,823</div><div class="label">viral_proteins</div></div>
+        <div class="card"><div class="label">宿主记录</div><div class="metric violet">157</div><div class="label">目标宿主 123 个</div></div>
+      </div>
+      <div class="grid" style="margin-top:12px">
+        <div class="card"><div class="label">感染/关联记录</div><div class="metric teal">3,835</div><div class="label">infection_records</div></div>
+        <div class="card"><div class="label">证据记录</div><div class="metric blue">3,243</div><div class="label">evidence_records</div></div>
+        <div class="card"><div class="label">参考文献</div><div class="metric green">322</div><div class="label">PMID 170；DOI 256</div></div>
+        <div class="card"><div class="label">地理覆盖</div><div class="metric violet">48</div><div class="label">国家/地区</div></div>
+      </div>
+    </section>
+
+    <section id="virology">
+      <h2>病毒与宿主</h2>
+      <div class="two">
+        <div>
+          <h3>代表性病毒记录量</h3>
+          <table>
+            <tr><th>病毒</th><th>记录量</th><th>病毒学意义</th></tr>
+            <tr><td>White spot syndrome virus</td><td>1,298</td><td>对虾白斑综合征，当前最核心病原</td></tr>
+            <tr><td>Taura syndrome virus</td><td>492</td><td>对虾陶拉综合征</td></tr>
+            <tr><td>IHHNV</td><td>147</td><td>传染性皮下和造血组织坏死病毒</td></tr>
+            <tr><td>Crab associated circular virus</td><td>113</td><td>蟹相关环状病毒</td></tr>
+            <tr><td>Yellow head virus</td><td>105</td><td>黄头病相关，Roniviridae</td></tr>
+            <tr><td>Macrobrachium rosenbergii nodavirus</td><td>83</td><td>罗氏沼虾白尾病相关</td></tr>
+            <tr><td>Ostreid herpesvirus 1</td><td>74</td><td>软体动物扩展的关键病毒</td></tr>
+          </table>
+        </div>
+        <div>
+          <h3>主要宿主记录</h3>
+          <table>
+            <tr><th>宿主</th><th>记录量</th><th>类别</th></tr>
+            <tr><td>凡纳滨对虾</td><td>765</td><td>对虾养殖宿主</td></tr>
+            <tr><td>斑节对虾</td><td>461</td><td>对虾养殖宿主</td></tr>
+            <tr><td>克氏原螯虾</td><td>261</td><td>淡水螯虾</td></tr>
+            <tr><td>甲壳动物未定类群</td><td>205</td><td>待细化宿主</td></tr>
+            <tr><td>卤虫属</td><td>182</td><td>需区分饵料/环境/感染证据</td></tr>
+            <tr><td>棘冠海星</td><td>130</td><td>棘皮动物扩展对象</td></tr>
+            <tr><td>软体动物未定类群</td><td>126</td><td>待细化宿主</td></tr>
+            <tr><td>罗氏沼虾</td><td>100</td><td>MrNV 等病毒相关</td></tr>
+          </table>
+        </div>
+      </div>
+      <h3>病毒类群组成</h3>
+      <p>
+        <span class="tag">Unclassified: 753</span>
+        <span class="tag">Marnaviridae: 153</span>
+        <span class="tag">Picornaviridae: 140</span>
+        <span class="tag">Yanviridae: 43</span>
+        <span class="tag">Solemoviridae: 40</span>
+        <span class="tag">Astroviridae: 19</span>
+        <span class="tag">Nodaviridae: 5</span>
+        <span class="tag">Malacoherpesviridae: 4</span>
+      </p>
+    </section>
+
+    <section id="evidence">
+      <h2>病毒学证据层</h2>
+      <p class="sub">宿主感染、疾病暴发、传播、致病性和环境关联证据。</p>
+      <table>
+        <tr><th>证据类型</th><th>数量</th><th>内容</th></tr>
+        <tr><td>自然感染</td><td>1,052</td><td>野外或养殖环境中检测到病毒和宿主关联</td></tr>
+        <tr><td>死亡率</td><td>686</td><td>和死亡/发病结局相关</td></tr>
+        <tr><td>诊断</td><td>386</td><td>PCR、qPCR、组织病理等检测证据</td></tr>
+        <tr><td>宿主范围</td><td>239</td><td>支持病毒可关联哪些宿主</td></tr>
+        <tr><td>传播</td><td>174</td><td>横向传播、垂直传播或跨宿主传播</td></tr>
+        <tr><td>致病性</td><td>169</td><td>实验感染或病理表现相关</td></tr>
+        <tr><td>暴发</td><td>152</td><td>养殖或野外暴发事件</td></tr>
+        <tr><td>毒力</td><td>125</td><td>毒力或严重程度相关</td></tr>
+        <tr><td>温度相关</td><td>59</td><td>环境温度、耐受性或热处理相关</td></tr>
+      </table>
+      <h3>宿主关联方式</h3>
+      <table>
+        <tr><th>关联方式</th><th>数量</th></tr>
+        <tr><td>疾病暴发</td><td>2,276</td></tr>
+        <tr><td>宏病毒组共出现</td><td>830</td></tr>
+        <tr><td>按宿主门类推断</td><td>360</td></tr>
+        <tr><td>NCBI 注释来源</td><td>317</td></tr>
+        <tr><td>按名称推断</td><td>44</td></tr>
+        <tr><td>确认感染</td><td>7</td></tr>
+        <tr><td>环境样本</td><td>1</td></tr>
+      </table>
+    </section>
+
+    <section id="expansion">
+      <h2>扩展计划、对象和当前进展</h2>
+      <div class="two">
+        <div>
+          <h3>目标宿主组成</h3>
+          <table>
+            <tr><th>宿主范围</th><th>数量</th></tr>
+            <tr><td>目标甲壳类宿主</td><td>88</td></tr>
+            <tr><td>目标软体动物宿主</td><td>21</td></tr>
+            <tr><td>其他目标水生无脊椎宿主</td><td>14</td></tr>
+            <tr><td>环境/非物种级记录</td><td>22</td></tr>
+            <tr><td>实验宿主</td><td>6</td></tr>
+            <tr><td>脊椎动物或非水生记录</td><td>6</td></tr>
+          </table>
+        </div>
+        <div>
+          <h3>宿主门类覆盖</h3>
+          <table>
+            <tr><th>门类</th><th>宿主记录数</th></tr>
+            <tr><td>Arthropoda</td><td>111</td></tr>
+            <tr><td>Mollusca</td><td>21</td></tr>
+            <tr><td>Echinodermata</td><td>7</td></tr>
+            <tr><td>Cnidaria</td><td>3</td></tr>
+            <tr><td>Porifera</td><td>1</td></tr>
+          </table>
+        </div>
+      </div>
+      <h3>分批扩展对象</h3>
+      <table>
+        <tr><th>批次</th><th>扩展对象</th><th>数据内容</th></tr>
+        <tr><td>第一批</td><td>软体动物重点病原</td><td>OsHV-1、OsHV-1 microvariant、鲍疱疹病毒、AVNV</td></tr>
+        <tr><td>第二批</td><td>多宿主/跨宿主病毒</td><td>CMNV、MDNV，补宿主和传播证据</td></tr>
+        <tr><td>第三批</td><td>珊瑚和海绵病毒组</td><td>候选病毒组记录、宿主和采样来源</td></tr>
+        <tr><td>第四批</td><td>棘皮动物少量病原</td><td>代表性记录和文献空白</td></tr>
+      </table>
+    </section>
+
+    <section id="frontend">
+      <h2>前端功能</h2>
+      <div class="routes">
+        <div class="route"><b>搜索</b>按病毒名、accession、病毒科属、宿主学名或中文名检索。</div>
+        <div class="route"><b>病毒详情</b>同页查看分类、宿主、分离株、蛋白、文献和证据。</div>
+        <div class="route"><b>统计</b>主要病毒、主要宿主、基因组类型、证据覆盖和完整性。</div>
+        <div class="route"><b>地图</b>查看采样国家、地区和地理分布。</div>
+        <div class="route"><b>宿主-病毒网络</b>查看病毒和宿主之间的关联。</div>
+        <div class="route"><b>RdRp / 蛋白</b>支持后续序列比对、功能注释和结构分析。</div>
+      </div>
+    </section>
+
+    <section id="limits">
+      <h2>当前限制</h2>
+      <div class="grid">
+        <div class="card"><div class="label">未定/未分类病毒条目</div><div class="metric amber">753</div><div class="label">需逐步补分类和来源</div></div>
+        <div class="card"><div class="label">无 PMID/DOI 文献</div><div class="metric amber">48</div><div class="label">需补可追溯标识</div></div>
+        <div class="card"><div class="label">未定宿主记录较多</div><div class="metric red">Unknown</div><div class="label">需细化到物种或类群</div></div>
+        <div class="card"><div class="label">宏病毒组候选较多</div><div class="metric red">718</div><div class="label">需区分候选关联和致病证据</div></div>
+      </div>
+      <table>
+        <tr><th>问题</th><th>病毒学影响</th><th>处理方式</th></tr>
+        <tr><td>病毒、宿主、文献对应关系需校对</td><td>可能影响宿主范围和证据引用</td><td>按重点病毒逐条核对</td></tr>
+        <tr><td>PMID/DOI 不完整</td><td>证据可追溯性不够</td><td>补文献标识和原文来源</td></tr>
+        <tr><td>疑似宿主转录本或非目标记录</td><td>可能混入非病毒基因组记录</td><td>从发表集剔除或单独标记</td></tr>
+        <tr><td>宏病毒组候选很多</td><td>不能直接等同于致病病毒</td><td>和经典病原分开解释</td></tr>
+      </table>
+    </section>
+
+    <section id="strategy">
+      <h2>后续优化构建策略</h2>
+      <div class="two">
+        <div>
+          <h3>数据层优化</h3>
+          <table>
+            <tr><th>方向</th><th>具体动作</th></tr>
+            <tr><td>经典病原可信集</td><td>优先整理 WSSV、YHV、TSV、IHHNV、IMNV、MrNV、CMNV 的宿主、地理、死亡率、诊断和传播证据</td></tr>
+            <tr><td>宿主标准化</td><td>把 Unknown、未定类群、非物种级宿主尽量细化到物种或明确类群</td></tr>
+            <tr><td>文献证据追踪</td><td>补 PMID/DOI，证据记录回到原文核对，区分自然感染、实验感染、共出现和环境样本</td></tr>
+            <tr><td>非目标记录清理</td><td>剔除或单独标记宿主转录本、mRNA/cDNA/EST、环境污染和非目标宿主记录</td></tr>
+          </table>
+        </div>
+        <div>
+          <h3>系统层优化</h3>
+          <table>
+            <tr><th>方向</th><th>具体动作</th></tr>
+            <tr><td>前端检索</td><td>优化病毒名、缩写、中文名、宿主名和 accession 的联合检索</td></tr>
+            <tr><td>病毒详情页</td><td>突出宿主范围、证据等级、文献来源、蛋白和地理分布</td></tr>
+            <tr><td>下载包</td><td>生成稳定版本号、FASTA、元数据表、宿主-病毒网络和校验文件</td></tr>
+            <tr><td>可复现流程</td><td>保留导入脚本、数据来源、更新时间、质量检查报告和备份</td></tr>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="next">
+      <h2>下一步计划</h2>
+      <div class="two">
+        <div>
+          <h3>甲壳类经典病原高可信整理</h3>
+          <ol>
+            <li>优先整理 WSSV、YHV、TSV、IHHNV、IMNV、MrNV、CMNV。</li>
+            <li>补齐宿主范围、地理分布、死亡率、诊断方法和传播证据。</li>
+            <li>把自动整理的证据升级成人工核对、可引用证据。</li>
+          </ol>
+        </div>
+        <div>
+          <h3>水生无脊椎扩展</h3>
+          <ol>
+            <li>软体动物优先：OsHV-1、鲍疱疹病毒、AVNV、CMNV、MDNV。</li>
+            <li>珊瑚和海绵作为病毒组生态方向。</li>
+            <li>棘皮动物作为少量病原和知识空白方向。</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer>依据本地 SQLite 主库生成：F:\甲壳动物数据库\crustacean_virus_core.db；报告日期：2026-05-13。</footer>
+</body>
+</html>

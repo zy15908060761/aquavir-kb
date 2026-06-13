@@ -1,0 +1,626 @@
+{% extends "base.html" %}
+
+{% block title %}Statistical Insights - AquaVir-KB{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-extrabold text-slate-800">📊 Statistical Insights</h1>
+        <p class="text-slate-500 mt-2 text-sm">Multi-dimensional exploration of distribution patterns in the aquatic invertebrate virus knowledge base</p>
+    </div>
+
+    <!-- Data Quality Panel -->
+    <div class="card p-6 mb-6">
+        <div class="flex items-center gap-2.5 mb-5">
+            <span class="w-1.5 h-5 bg-gradient-to-b from-slate-400 to-slate-600 rounded-full"></span>
+            <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Data Quality Overview</h3>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-5 mb-6">
+            <div class="text-center p-4 rounded-xl bg-primary-light/60 border border-teal-100/50 card-hover">
+                <div class="text-2xl font-extrabold text-teal-700 font-mono" id="qc-core">--</div>
+                <div class="text-xs text-slate-500 mt-1.5 font-medium">Core Dataset</div>
+                <div class="text-[10px] text-teal-500 mt-0.5">Fully validated</div>
+            </div>
+            <div class="text-center p-4 rounded-xl bg-blue-50/60 border border-blue-100/50 card-hover">
+                <div class="text-2xl font-extrabold text-blue-700 font-mono" id="qc-ext-hq">--</div>
+                <div class="text-xs text-slate-500 mt-1.5 font-medium">High-Quality Extended</div>
+                <div class="text-[10px] text-blue-500 mt-0.5">Complete metadata</div>
+            </div>
+            <div class="text-center p-4 rounded-xl bg-slate-50/60 border border-slate-100/50 card-hover">
+                <div class="text-2xl font-extrabold text-slate-600 font-mono" id="qc-ext">--</div>
+                <div class="text-xs text-slate-500 mt-1.5 font-medium">Basic Extended</div>
+                <div class="text-[10px] text-slate-400 mt-0.5">Partial metadata missing</div>
+            </div>
+            <div class="text-center p-4 rounded-xl bg-red-50/60 border border-red-100/50 card-hover">
+                <div class="text-2xl font-extrabold text-red-600 font-mono" id="qc-unv">--</div>
+                <div class="text-xs text-slate-500 mt-1.5 font-medium">Unverified</div>
+                <div class="text-[10px] text-red-500 mt-0.5">Conflicts pending resolution</div>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-5">
+            <div class="text-center p-3">
+                <div class="text-2xl font-extrabold text-slate-800 font-mono" id="qc-ictv">--%</div>
+                <div class="text-xs text-slate-500 mt-1 font-medium">ICTV Mapping Rate</div>
+                <div class="w-full bg-slate-100 rounded-full h-2 mt-2.5 overflow-hidden">
+                    <div class="bg-gradient-to-r from-teal-400 to-teal-600 h-2 rounded-full progress-shimmer transition-all duration-700" id="qc-ictv-bar" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="text-center p-3">
+                <div class="text-2xl font-extrabold text-slate-800 font-mono" id="qc-geo">--%</div>
+                <div class="text-xs text-slate-500 mt-1 font-medium">Geographic Coverage</div>
+                <div class="w-full bg-slate-100 rounded-full h-2 mt-2.5 overflow-hidden">
+                    <div class="bg-gradient-to-r from-blue-400 to-blue-600 h-2 rounded-full progress-shimmer transition-all duration-700" id="qc-geo-bar" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="text-center p-3">
+                <div class="text-2xl font-extrabold text-slate-800 font-mono" id="qc-host">--%</div>
+                <div class="text-xs text-slate-500 mt-1 font-medium">Host Info Coverage</div>
+                <div class="w-full bg-slate-100 rounded-full h-2 mt-2.5 overflow-hidden">
+                    <div class="bg-gradient-to-r from-emerald-400 to-emerald-600 h-2 rounded-full progress-shimmer transition-all duration-700" id="qc-host-bar" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="text-center p-3">
+                <div class="text-2xl font-extrabold text-slate-800 font-mono" id="qc-diff">--%</div>
+                <div class="text-xs text-slate-500 mt-1 font-medium">Differential Data Coverage</div>
+                <div class="w-full bg-slate-100 rounded-full h-2 mt-2.5 overflow-hidden">
+                    <div class="bg-gradient-to-r from-purple-400 to-purple-600 h-2 rounded-full progress-shimmer transition-all duration-700" id="qc-diff-bar" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+        <div class="mt-5 pt-4 border-t border-slate-100 text-xs text-slate-400 flex flex-wrap gap-x-5 gap-y-1">
+            <span id="feat-ext-lit" class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-slate-300"></span>External Literature Match: Reserved</span>
+            <span id="feat-media" class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-slate-300"></span>Media Resources: Reserved</span>
+        </div>
+    </div>
+
+    <!-- Data Completeness Heatmap -->
+    <div class="card p-6 mb-6">
+        <div class="flex items-center gap-2.5 mb-1">
+            <span class="w-1.5 h-5 bg-gradient-to-b from-teal-400 to-teal-600 rounded-full"></span>
+            <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Metadata Completeness Heatmap (by Family)</h3>
+        </div>
+        <p class="text-xs text-slate-400 mb-4 ml-4">Completeness percentage across 7 metadata dimensions per virus family (darker = more complete)</p>
+        <div id="chart-completeness-heatmap" style="width:100%;height:520px"></div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8" id="summary-cards">
+        <div class="card-hover p-5 text-center card-accent border-l-primary">
+            <div class="text-2xl font-extrabold text-teal-600 font-mono" id="sum-viruses">--</div>
+            <div class="text-xs text-slate-500 mt-1.5 font-medium">Viral Isolates</div>
+        </div>
+        <div class="card-hover p-5 text-center card-accent border-l-blue-500">
+            <div class="text-2xl font-extrabold text-blue-600 font-mono" id="sum-hosts">--</div>
+            <div class="text-xs text-slate-500 mt-1.5 font-medium">Host Species</div>
+        </div>
+        <div class="card-hover p-5 text-center card-accent border-l-purple-500">
+            <div class="text-2xl font-extrabold text-purple-600 font-mono" id="sum-proteins">--</div>
+            <div class="text-xs text-slate-500 mt-1.5 font-medium">Protein Annotations</div>
+        </div>
+        <div class="card-hover p-5 text-center card-accent border-l-violet-500">
+            <div class="text-2xl font-extrabold text-violet-600 font-mono" id="sum-structures">--</div>
+            <div class="text-xs text-slate-500 mt-1.5 font-medium">3D Protein Structures</div>
+        </div>
+        <div class="card-hover p-5 text-center card-accent border-l-orange-500">
+            <div class="text-2xl font-extrabold text-orange-600 font-mono" id="sum-rdrp">--</div>
+            <div class="text-xs text-slate-500 mt-1.5 font-medium">RDRP Sequences</div>
+        </div>
+    </div>
+
+    <!-- Expansion Progress -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div class="card p-6">
+            <div class="flex items-center gap-2.5 mb-1">
+                <span class="w-1.5 h-5 bg-gradient-to-b from-emerald-400 to-emerald-600 rounded-full"></span>
+                <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Host Phylum Distribution</h3>
+            </div>
+            <p class="text-xs text-slate-400 mb-4 ml-4">Species count distribution across host phyla (expansion progress)</p>
+            <div id="chart-phylum" style="width:100%;height:320px"></div>
+        </div>
+        <div class="card p-6">
+            <div class="flex items-center gap-2.5 mb-1">
+                <span class="w-1.5 h-5 bg-gradient-to-b from-indigo-400 to-indigo-600 rounded-full"></span>
+                <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Expansion Progress Tracking</h3>
+            </div>
+            <p class="text-xs text-slate-400 mb-4 ml-4">Key metrics for aquatic invertebrate database expansion</p>
+            <div class="space-y-5" id="expansion-progress">
+                <div>
+                    <div class="flex justify-between text-sm mb-1.5">
+                        <span class="text-slate-600 font-medium">Phyla Covered</span>
+                        <span class="font-extrabold text-slate-800 font-mono" id="xp-phyla">--</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-1.5">
+                        <span class="text-slate-600 font-medium">Evidence Coverage Rate</span>
+                        <span class="font-extrabold text-slate-800 font-mono" id="xp-evidence">--%</span>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                        <div class="bg-gradient-to-r from-indigo-400 to-indigo-600 h-2.5 rounded-full progress-shimmer transition-all duration-700" id="xp-evidence-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-1.5">
+                        <span class="text-slate-600 font-medium">Virus Species with 3D Structures</span>
+                        <span class="font-extrabold text-slate-800 font-mono" id="xp-structures">--</span>
+                    </div>
+                </div>
+                <div id="xp-host-detail" class="text-xs text-slate-500 mt-4 pt-4 border-t border-slate-100"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts: Top viruses + Top hosts -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div class="card p-6">
+            <div class="flex items-center gap-2.5 mb-1">
+                <span class="w-1.5 h-5 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full"></span>
+                <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Top 10 Viruses by Records</h3>
+            </div>
+            <p class="text-xs text-slate-400 mb-4 ml-4">Isolate/fragment counts aggregated by canonical name</p>
+            <div id="chart-viruses" style="width:100%;height:340px"></div>
+        </div>
+        <div class="card p-6">
+            <div class="flex items-center gap-2.5 mb-1">
+                <span class="w-1.5 h-5 bg-gradient-to-b from-emerald-400 to-emerald-600 rounded-full"></span>
+                <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Top 10 Hosts by Infection Records</h3>
+            </div>
+            <p class="text-xs text-slate-400 mb-4 ml-4">Infection record counts per aquatic invertebrate host</p>
+            <div id="chart-hosts" style="width:100%;height:340px"></div>
+        </div>
+    </div>
+
+    <!-- Diagnostic Methods Matrix -->
+    <div class="card p-6 mb-6">
+        <div class="flex items-center gap-2.5 mb-1">
+            <span class="w-1.5 h-5 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full"></span>
+            <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Diagnostic Methods Matrix</h3>
+        </div>
+        <p class="text-xs text-slate-400 mb-4 ml-4">Curated diagnostic methods by technical category (n=<span id="diag-curated-count" class="font-semibold text-slate-600">--</span>), gray = placeholder pending refinement (n=<span id="diag-placeholder-count" class="font-semibold text-slate-600">--</span>)</p>
+        <div class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-4" id="diag-matrix">
+            <!-- JS will populate -->
+        </div>
+        <div class="text-xs text-slate-400 border-t border-slate-100 pt-4 flex flex-wrap gap-x-5 gap-y-1.5">
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-green-500"></span>Field-deployable</span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>Visual readout</span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>Lab only</span>
+        </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="card p-6 mb-6">
+        <div class="flex items-center gap-2.5 mb-1">
+            <span class="w-1.5 h-5 bg-gradient-to-b from-teal-400 to-teal-600 rounded-full"></span>
+            <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Research Activity Timeline</h3>
+        </div>
+        <p class="text-xs text-slate-400 mb-4 ml-4">Yearly distribution trends for major virus isolate records</p>
+        <div id="chart-timeline" style="width:100%;height:380px"></div>
+    </div>
+
+    <!-- Virulence + Temperature -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div class="card p-6">
+            <div class="flex items-center gap-2.5 mb-1">
+                <span class="w-1.5 h-5 bg-gradient-to-b from-red-400 to-red-600 rounded-full"></span>
+                <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Virulence Profile Comparison</h3>
+            </div>
+            <p class="text-xs text-slate-400 mb-4 ml-4">Maximum mortality rates and virulence levels for curated viruses</p>
+            <div id="chart-virulence" style="width:100%;height:340px"></div>
+        </div>
+        <div class="card p-6">
+            <div class="flex items-center gap-2.5 mb-1">
+                <span class="w-1.5 h-5 bg-gradient-to-b from-amber-400 to-amber-600 rounded-full"></span>
+                <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Temperature Tolerance Comparison</h3>
+            </div>
+            <p class="text-xs text-slate-400 mb-4 ml-4">Optimal temperature ranges for curated viruses</p>
+            <div id="chart-temperature" style="width:100%;height:340px"></div>
+        </div>
+    </div>
+
+    <!-- Proteomics -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div class="card p-6">
+            <div class="flex items-center gap-2.5 mb-1">
+                <span class="w-1.5 h-5 bg-gradient-to-b from-violet-400 to-violet-600 rounded-full"></span>
+                <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Protein Functional Categories</h3>
+            </div>
+            <p class="text-xs text-slate-400 mb-4 ml-4">Viral protein distribution based on functional annotation</p>
+            <div id="chart-protein-categories" style="width:100%;height:320px"></div>
+        </div>
+        <div class="card p-6">
+            <div class="flex items-center gap-2.5 mb-1">
+                <span class="w-1.5 h-5 bg-gradient-to-b from-indigo-400 to-indigo-600 rounded-full"></span>
+                <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Top 10 Viruses by Protein Annotations</h3>
+            </div>
+            <p class="text-xs text-slate-400 mb-4 ml-4">CDS/ORF annotation counts per virus species</p>
+            <div id="chart-protein-top" style="width:100%;height:320px"></div>
+        </div>
+    </div>
+
+    <!-- Genome Stats -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div class="card p-6">
+            <div class="flex items-center gap-2.5 mb-1">
+                <span class="w-1.5 h-5 bg-gradient-to-b from-emerald-400 to-emerald-600 rounded-full"></span>
+                <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">GC Content Distribution</h3>
+            </div>
+            <div id="chart-gc" style="width:100%;height:300px"></div>
+        </div>
+        <div class="card p-6">
+            <div class="flex items-center gap-2.5 mb-1">
+                <span class="w-1.5 h-5 bg-gradient-to-b from-lime-400 to-lime-600 rounded-full"></span>
+                <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Genome Length Distribution</h3>
+            </div>
+            <div id="chart-length" style="width:100%;height:300px"></div>
+        </div>
+    </div>
+
+    <!-- Completeness -->
+    <div class="card p-6 mb-6">
+        <div class="flex items-center gap-2.5 mb-1">
+            <span class="w-1.5 h-5 bg-gradient-to-b from-slate-400 to-slate-600 rounded-full"></span>
+            <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Sequence Completeness Distribution</h3>
+        </div>
+        <div id="chart-completeness" style="width:100%;height:280px"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // ── Academic ECharts color palette ──
+    const ACADEMIC_COLORS = ['#0d9488','#3b82f6','#f59e0b','#8b5cf6','#ef4444','#10b981','#f97316','#6366f1','#ec4899','#14b8a6','#84cc16','#06b6d4'];
+    const ACADEMIC_COLORS_SOFT = ['#99f6e4','#bfdbfe','#fde68a','#ddd6fe','#fecaca','#a7f3d0','#fed7aa','#c7d2fe','#fbcfe8','#99f6e4','#d9f99d','#a5f3fc'];
+
+    const charts = [];
+    function reg(chart) { if(chart) charts.push(chart); return chart; }
+    let statsData = {};
+
+    async function initStats() {
+        // Load summary
+        try {
+            statsData = await (await fetch('/api/stats')).json();
+            const s = statsData;
+            const strictIso = s.strict_target_isolates || s.viral_isolates || 0;
+            const strictHosts = s.strict_target_hosts || s.crustacean_hosts || 0;
+            const totalIso = s.total_isolates || 0;
+            const totalHosts = s.total_hosts || 0;
+            const sumViruses = document.getElementById('sum-viruses');
+            sumViruses.textContent = strictIso.toLocaleString();
+            if (totalIso && totalIso !== strictIso) {
+                sumViruses.title = 'Curated subset: ' + strictIso.toLocaleString() + ' | Full DB total: ' + totalIso.toLocaleString();
+            }
+            const sumHosts = document.getElementById('sum-hosts');
+            sumHosts.textContent = strictHosts.toLocaleString();
+            if (totalHosts && totalHosts !== strictHosts) {
+                sumHosts.title = 'Curated subset: ' + strictHosts.toLocaleString() + ' | Full DB total: ' + totalHosts.toLocaleString();
+            }
+            document.getElementById('sum-proteins').textContent = (s.viral_proteins||0).toLocaleString();
+            document.getElementById('sum-structures').textContent = (s.proteins_with_structure||0).toLocaleString();
+            document.getElementById('sum-rdrp').textContent = (s.rdrp_count||0).toLocaleString();
+            // Data quality panel
+            const ictvRate = s.ictv_mapping_rate || 0;
+            document.getElementById('qc-ictv').textContent = ictvRate + '%';
+            document.getElementById('qc-ictv-bar').style.width = Math.min(ictvRate, 100) + '%';
+            const targetTotal = s.analysis_target_isolates_total || s.viral_isolates || 0;
+            const geoRate = targetTotal ? Math.round((s.target_country_covered || s.geo_covered_isolates || 0) / targetTotal * 100) : 0;
+            document.getElementById('qc-geo').textContent = geoRate + '%';
+            document.getElementById('qc-geo-bar').style.width = Math.min(geoRate, 100) + '%';
+            const hostRate = targetTotal ? Math.round((s.target_host_covered || s.host_covered_isolates || 0) / targetTotal * 100) : 0;
+            document.getElementById('qc-host').textContent = hostRate + '%';
+            document.getElementById('qc-host-bar').style.width = Math.min(hostRate, 100) + '%';
+            const diffRate = s.virus_species ? Math.round(((s.virulence_covered || 0) + (s.temperature_covered || 0)) / 2 / s.virus_species * 100) : 0;
+            document.getElementById('qc-diff').textContent = diffRate + '%';
+            document.getElementById('qc-diff-bar').style.width = Math.min(diffRate, 100) + '%';
+            document.getElementById('qc-core').textContent = (s.core_dataset_count||0).toLocaleString();
+            document.getElementById('qc-ext-hq').textContent = (s.extended_hq_count||0).toLocaleString();
+            document.getElementById('qc-ext').textContent = (s.extended_count||0).toLocaleString();
+            document.getElementById('qc-unv').textContent = (s.unverified_count||0).toLocaleString();
+            document.getElementById('diag-curated-count').textContent = s.diagnostic_curated_count || 0;
+            document.getElementById('diag-placeholder-count').textContent = s.diagnostic_placeholder_count || 0;
+            const diagMatrix = document.getElementById('diag-matrix');
+            if (s.diagnostic_categories) {
+                const catLabels = {
+                    'nucleic_acid_amplification': 'NA Amplification',
+                    'nucleic_acid_hybridization': 'NA Hybridization',
+                    'immunoassay': 'Immunoassay',
+                    'sequencing': 'Sequencing',
+                    'crispr_cas': 'CRISPR',
+                    'other': 'Other'
+                };
+                const catStyles = {
+                    'nucleic_acid_amplification': 'bg-blue-50 text-blue-700 border-blue-200',
+                    'nucleic_acid_hybridization': 'bg-purple-50 text-purple-700 border-purple-200',
+                    'immunoassay': 'bg-green-50 text-green-700 border-green-200',
+                    'sequencing': 'bg-slate-50 text-slate-700 border-slate-200',
+                    'crispr_cas': 'bg-red-50 text-red-700 border-red-200',
+                    'other': 'bg-amber-50 text-amber-700 border-amber-200'
+                };
+                diagMatrix.innerHTML = Object.entries(s.diagnostic_categories).map(([cat, count]) => `
+                    <div class="border rounded-xl p-4 text-center card-hover ${catStyles[cat] || 'bg-slate-50 text-slate-600 border-slate-200'}">
+                        <div class="text-2xl font-extrabold font-mono">${count}</div>
+                        <div class="text-xs mt-1.5 font-medium">${catLabels[cat] || cat}</div>
+                    </div>
+                `).join('');
+            }
+            const extLit = document.getElementById('feat-ext-lit');
+            if (s.feature_ext_lit > 0) { extLit.querySelector('span').classList.replace('bg-slate-300','bg-green-400'); extLit.lastChild.textContent = 'External Literature Match: Enabled (' + s.feature_ext_lit + ')'; }
+            const media = document.getElementById('feat-media');
+            if (s.feature_media > 0) { media.querySelector('span').classList.replace('bg-slate-300','bg-green-400'); media.lastChild.textContent = 'Media Resources: Enabled (' + s.feature_media + ')'; }
+
+            initPhylaChart();
+            initExpansionProgress();
+        } catch(e) {}
+
+        // Top viruses
+        try {
+            const vData = await (await fetch('/api/top_viruses?limit=10')).json();
+            const rows = [...vData].reverse();
+            const c = reg(echarts.init(document.getElementById('chart-viruses')));
+            c.setOption({
+                tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: '{b}: {c} records' },
+                grid: { left: '3%', right: '8%', bottom: '3%', top: '3%', containLabel: true },
+                xAxis: { type: 'value', axisLabel: { fontSize: 11, color: '#94a3b8' } },
+                yAxis: {
+                    type: 'category',
+                    data: rows.map(d => d.virus_name.length > 30 ? d.virus_name.slice(0, 28)+'...' : d.virus_name),
+                    axisLabel: { fontSize: 11, color: '#64748b', width: 160, overflow: 'truncate' }
+                },
+                series: [{
+                    type: 'bar', data: rows.map(d => d.count),
+                    itemStyle: { color: new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:'#3b82f6'},{offset:1,color:'#60a5fa'}]), borderRadius: [0, 6, 6, 0] },
+                    label: { show: true, position: 'right', fontSize: 11, color: '#64748b' },
+                    emphasis: { itemStyle: { color: new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:'#2563eb'},{offset:1,color:'#3b82f6'}]) } }
+                }]
+            });
+            c.on('click', p => { const r = rows[p.dataIndex]; if(r) window.location.href = '/search?q=' + encodeURIComponent(r.virus_name); });
+        } catch(e) {}
+
+        // Top hosts
+        try {
+            const hData = await (await fetch('/api/top_hosts?limit=10')).json();
+            const rows = [...hData].reverse();
+            const c = reg(echarts.init(document.getElementById('chart-hosts')));
+            c.setOption({
+                tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: p => {
+                    const r = rows[p.dataIndex];
+                    return `${r.host_name}${r.common_name_cn?' ('+r.common_name_cn+')':''}<br/>Infection records: ${r.count}`;
+                }},
+                grid: { left: '3%', right: '8%', bottom: '3%', top: '3%', containLabel: true },
+                xAxis: { type: 'value', axisLabel: { fontSize: 11, color: '#94a3b8' } },
+                yAxis: {
+                    type: 'category',
+                    data: rows.map(d => {
+                        const n = d.host_name + (d.common_name_cn ? ' ('+d.common_name_cn+')' : '');
+                        return n.length > 30 ? n.slice(0, 28)+'...' : n;
+                    }),
+                    axisLabel: { fontSize: 11, color: '#64748b', width: 160, overflow: 'truncate' }
+                },
+                series: [{
+                    type: 'bar', data: rows.map(d => d.count),
+                    itemStyle: { color: new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:'#10b981'},{offset:1,color:'#34d399'}]), borderRadius: [0, 6, 6, 0] },
+                    label: { show: true, position: 'right', fontSize: 11, color: '#64748b' },
+                    emphasis: { itemStyle: { color: new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:'#059669'},{offset:1,color:'#10b981'}]) } }
+                }]
+            });
+            c.on('click', p => { const r = rows[p.dataIndex]; if(r) window.location.href = '/search?host=' + encodeURIComponent(r.host_name); });
+        } catch(e) {}
+
+        // Timeline
+        try {
+            const [tRes, tvRes] = await Promise.all([fetch('/api/timeline'), fetch('/api/timeline?by_virus=true')]);
+            const tData = await tRes.json(); const tvData = await tvRes.json();
+            const years = [...new Set([...tvData.map(d=>d.year), ...tData.map(d=>d.year)])].sort();
+            const virusNames = [...new Set(tvData.map(d=>d.virus_name))];
+            const series = virusNames.map((vname, i) => ({
+                name: vname, type: 'line', smooth: true,
+                data: years.map(y => { const f = tvData.find(d=>d.year===y && d.virus_name===vname); return f ? f.count : 0; }),
+                lineStyle: { color: ACADEMIC_COLORS[i%ACADEMIC_COLORS.length], width: 2.5 },
+                itemStyle: { color: ACADEMIC_COLORS[i%ACADEMIC_COLORS.length] },
+                symbol: 'circle', symbolSize: 6,
+                emphasis: { symbolSize: 10 }
+            }));
+            series.push({
+                name: 'Total', type: 'line', smooth: true,
+                data: years.map(y => { const f = tData.find(d=>d.year===y); return f ? f.count : 0; }),
+                lineStyle: { color: '#0f766e', width: 3, type: 'dashed' },
+                itemStyle: { color: '#0f766e' }, symbol: 'diamond', symbolSize: 8
+            });
+            const c = reg(echarts.init(document.getElementById('chart-timeline')));
+            c.setOption({
+                tooltip: { trigger: 'axis' },
+                legend: { type: 'scroll', bottom: 0, textStyle: { fontSize: 11, color: '#64748b' } },
+                grid: { left: '3%', right: '4%', bottom: '18%', top: '8%', containLabel: true },
+                xAxis: { type: 'category', data: years, axisLabel: { rotate: 45, fontSize: 11, color: '#94a3b8' }, axisLine: { lineStyle: { color: '#e2e8f0' } } },
+                yAxis: { type: 'value', axisLabel: { fontSize: 11, color: '#94a3b8' }, splitLine: { lineStyle: { color: '#f1f5f9' } } },
+                series
+            });
+        } catch(e) {}
+
+        // Virulence
+        try {
+            const vData = await (await fetch('/api/virulence')).json();
+            const c = reg(echarts.init(document.getElementById('chart-virulence')));
+            c.setOption({
+                tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: p => {
+                    const d = p[0]; return `${d.name}<br/>Mortality: ${d.data.mortality_min||0}-${d.data.mortality_max||0}%`;
+                }},
+                grid: { left: '3%', right: '10%', bottom: '3%', top: '8%', containLabel: true },
+                xAxis: { type: 'value', max: 100, axisLabel: { formatter: '{value}%', fontSize: 11, color: '#94a3b8' }, splitLine: { lineStyle: { color: '#f1f5f9' } } },
+                yAxis: { type: 'category', data: vData.map(d => d.virus_name.replace(/ virus| syndrome/gi,'')).reverse(), axisLabel: { fontSize: 11, color: '#64748b' } },
+                series: [{
+                    type: 'bar',
+                    data: vData.map(d => ({ value: d.mortality_rate_max||0, mortality_min: d.mortality_rate_min, mortality_max: d.mortality_rate_max, itemStyle: { color: d.virulence_label==='high'||d.virulence_label===1 ? '#ef4444' : '#10b981' } })).reverse(),
+                    label: { show: true, position: 'right', formatter: p => p.data.mortality_max+'%', fontSize: 11, color: '#64748b' },
+                    barMaxWidth: 24,
+                    itemStyle: { borderRadius: [0, 6, 6, 0] }
+                }]
+            });
+        } catch(e) {}
+
+        // Temperature
+        try {
+            const tData = await (await fetch('/api/temperature')).json();
+            const c = reg(echarts.init(document.getElementById('chart-temperature')));
+            c.setOption({
+                tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: p => {
+                    const d = p[0]; return `${d.name}<br/>Optimum: ${d.data.opt_min}-${d.data.opt_max}°C`;
+                }},
+                grid: { left: '3%', right: '10%', bottom: '3%', top: '8%', containLabel: true },
+                xAxis: { type: 'value', min: 0, max: 70, axisLabel: { formatter: '{value}°C', fontSize: 11, color: '#94a3b8' }, splitLine: { lineStyle: { color: '#f1f5f9' } } },
+                yAxis: { type: 'category', data: tData.map(d => d.virus_name.replace(/ virus| syndrome/gi,'')).reverse(), axisLabel: { fontSize: 11, color: '#64748b' } },
+                series: [{
+                    type: 'custom',
+                    renderItem: (params, api) => {
+                        const idx = api.value(0);
+                        const start = api.coord([api.value(1), idx]);
+                        const end = api.coord([api.value(2), idx]);
+                        const h = api.size([0,1])[1] * 0.4;
+                        return { type: 'rect', shape: { x: start[0], y: start[1]-h/2, width: Math.max(end[0]-start[0], 2), height: h }, style: { fill: '#0ea5e9', opacity: 0.8, borderRadius: 3 } };
+                    },
+                    data: tData.map((d,i) => [i, d.optimal_temp_min||0, d.optimal_temp_max||0]).reverse()
+                }]
+            });
+        } catch(e) {}
+
+        // Protein categories
+        try {
+            const pData = await (await fetch('/api/stats/proteins')).json();
+            if (pData.total_proteins > 0) {
+                const catColors = { structural: '#3b82f6', replication: '#10b981', assembly: '#8b5cf6', host_interaction: '#ef4444', metabolism: '#f59e0b', unknown: '#94a3b8' };
+                const catLabels = { structural: 'Structural', replication: 'Replication/Transcription', assembly: 'Packaging/Assembly', host_interaction: 'Host Interaction', metabolism: 'Metabolic Enzyme', unknown: 'Unknown Function' };
+                const c = reg(echarts.init(document.getElementById('chart-protein-categories')));
+                c.setOption({
+                    tooltip: { trigger: 'item', formatter: p => `${p.name}: ${p.value} (${p.percent}%)` },
+                    series: [{ type: 'pie', radius: ['42%', '72%'], center: ['50%','45%'],
+                        data: pData.categories.map(c => ({ name: catLabels[c.category]||c.category, value: c.count, itemStyle: { color: catColors[c.category]||'#94a3b8' } })),
+                        label: { fontSize: 12, color: '#64748b', formatter: p => `${p.name}\n${p.value}` },
+                        emphasis: { itemStyle: { shadowBlur: 12, shadowOffsetX: 0, shadowColor: 'rgba(0,0,0,0.15)' } }
+                    }]
+                });
+                const c2 = reg(echarts.init(document.getElementById('chart-protein-top')));
+                c2.setOption({
+                    tooltip: { trigger: 'axis' },
+                    grid: { left: '3%', right: '5%', bottom: '8%', top: '8%', containLabel: true },
+                    xAxis: { type: 'category', data: pData.top_viruses.map(d => d.virus.replace(/ virus| syndrome/gi,'').slice(0,12)), axisLabel: { rotate: 30, fontSize: 11, color: '#94a3b8' }, axisLine: { lineStyle: { color: '#e2e8f0' } } },
+                    yAxis: { type: 'value', axisLabel: { color: '#94a3b8' }, splitLine: { lineStyle: { color: '#f1f5f9' } } },
+                    series: [{ type: 'bar', data: pData.top_viruses.map(d => d.protein_count), itemStyle: { color: new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'#8b5cf6'},{offset:1,color:'#10b981'}]), borderRadius: [6,6,0,0] }, label: { show: true, position: 'top', fontSize: 11, color: '#64748b' } }]
+                });
+            }
+        } catch(e) {}
+
+        // Genome stats
+        try {
+            const gData = await (await fetch('/api/stats/genomes')).json();
+            const cGC = reg(echarts.init(document.getElementById('chart-gc')));
+            cGC.setOption({
+                tooltip: { trigger: 'axis' },
+                grid: { left: '3%', right: '5%', bottom: '3%', top: '10%', containLabel: true },
+                xAxis: { type: 'category', data: gData.gc_distribution.map(d=>d.range), axisLabel: { fontSize: 11, color: '#94a3b8' }, axisLine: { lineStyle: { color: '#e2e8f0' } } },
+                yAxis: { type: 'value', axisLabel: { color: '#94a3b8' }, splitLine: { lineStyle: { color: '#f1f5f9' } } },
+                series: [{ type: 'bar', data: gData.gc_distribution.map(d=>d.count), itemStyle: { color: new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'#34d399'},{offset:1,color:'#10b981'}]), borderRadius: [6,6,0,0] }, label: { show: true, position: 'top', fontSize: 11, color: '#64748b' } }]
+            });
+            const cLen = reg(echarts.init(document.getElementById('chart-length')));
+            cLen.setOption({
+                tooltip: { trigger: 'axis' },
+                grid: { left: '3%', right: '5%', bottom: '3%', top: '10%', containLabel: true },
+                xAxis: { type: 'category', data: gData.length_distribution.map(d=>d.range), axisLabel: { fontSize: 11, color: '#94a3b8' }, axisLine: { lineStyle: { color: '#e2e8f0' } } },
+                yAxis: { type: 'value', axisLabel: { color: '#94a3b8' }, splitLine: { lineStyle: { color: '#f1f5f9' } } },
+                series: [{ type: 'bar', data: gData.length_distribution.map(d=>d.count), itemStyle: { color: new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'#a3e635'},{offset:1,color:'#84cc16'}]), borderRadius: [6,6,0,0] }, label: { show: true, position: 'top', fontSize: 11, color: '#64748b' } }]
+            });
+            const cComp = reg(echarts.init(document.getElementById('chart-completeness')));
+            const compColors = { complete_genome: '#10b981', partial_sequence: '#f59e0b', gene_fragment: '#ef4444', EST: '#94a3b8', unknown: '#cbd5e1' };
+            cComp.setOption({
+                tooltip: { trigger: 'axis' },
+                grid: { left: '3%', right: '5%', bottom: '3%', top: '10%', containLabel: true },
+                xAxis: { type: 'category', data: gData.completeness_distribution.map(d=>d.status), axisLabel: { fontSize: 11, color: '#94a3b8' }, axisLine: { lineStyle: { color: '#e2e8f0' } } },
+                yAxis: { type: 'value', axisLabel: { color: '#94a3b8' }, splitLine: { lineStyle: { color: '#f1f5f9' } } },
+                series: [{ type: 'bar', data: gData.completeness_distribution.map(d=>({value:d.count, itemStyle:{color:compColors[d.status]||'#94a3b8', borderRadius:[6,6,0,0]}})), label: { show: true, position: 'top', fontSize: 11, color: '#64748b' } }]
+            });
+        } catch(e) {}
+
+        window.addEventListener('resize', () => charts.forEach(c => c && c.resize()));
+    }
+
+    const initPhylaChart = () => {
+        const phylaData = statsData.viruses_by_phylum || statsData.hosts_by_phylum || {};
+        const entries = Object.entries(phylaData).sort((a,b) => b[1] - a[1]);
+        if (entries.length === 0) return;
+        const c = reg(echarts.init(document.getElementById('chart-phylum')));
+        const phylumColors = {
+            'Arthropoda': '#3b82f6', 'Mollusca': '#8b5cf6', 'Cnidaria': '#ec4899',
+            'Echinodermata': '#f59e0b', 'Porifera': '#06b6d4', 'Annelida': '#84cc16',
+            'Nematoda': '#ef4444', 'Platyhelminthes': '#a855f7', 'Rotifera': '#14b8a6',
+            'multiple': '#94a3b8', 'non_target (algae)': '#65a30d', 'non_aquatic': '#78716c'
+        };
+        c.setOption({
+            tooltip: { trigger: 'item', formatter: p => `${p.name}: ${p.value} virus species (${p.percent}%)` },
+            series: [{
+                type: 'pie', radius: ['45%', '78%'], center: ['50%', '50%'],
+                data: entries.map(([name, count]) => ({
+                    name, value: count,
+                    itemStyle: { color: phylumColors[name] || undefined, borderRadius: 6, borderColor: '#fff', borderWidth: 3 }
+                })),
+                label: { fontSize: 11, color: '#64748b', formatter: '{b}: {c}' },
+                emphasis: { itemStyle: { shadowBlur: 14, shadowOffsetX: 0, shadowColor: 'rgba(0,0,0,0.25)' }, scaleSize: 12 }
+            }]
+        });
+    };
+
+    const initExpansionProgress = () => {
+        const ech = document.getElementById('xp-phyla');
+        if (ech) ech.textContent = (statsData.phyla_covered || Object.keys(statsData.viruses_by_phylum || {}).length || 0).toLocaleString();
+        const ev = document.getElementById('xp-evidence');
+        const evBar = document.getElementById('xp-evidence-bar');
+        const evidencePct = statsData.evidence_coverage_pct || 0;
+        if (ev) ev.textContent = evidencePct.toFixed(1) + '%';
+        if (evBar) evBar.style.width = Math.min(evidencePct, 100) + '%';
+        const st = document.getElementById('xp-structures');
+        if (st) st.textContent = (statsData.proteins_with_structure || 0).toLocaleString();
+        const hd = document.getElementById('xp-host-detail');
+        if (hd && statsData.viruses_by_phylum) {
+            hd.innerHTML = Object.entries(statsData.viruses_by_phylum)
+                .sort((a,b) => b[1] - a[1])
+                .map(([ph, cnt]) => `<span class="inline-block mr-3 mb-1.5"><strong class="text-slate-700">${ph}</strong>: <span class="text-slate-500">${cnt} virus species</span></span>`)
+                .join('');
+        } else if (hd && statsData.hosts_by_phylum) {
+            hd.innerHTML = Object.entries(statsData.hosts_by_phylum)
+                .sort((a,b) => b[1] - a[1])
+                .map(([ph, cnt]) => `<span class="inline-block mr-3 mb-1.5"><strong class="text-slate-700">${ph}</strong>: <span class="text-slate-500">${cnt} species</span></span>`)
+                .join('');
+        }
+    };
+
+    // Fetch expansion status
+    fetch('/api/expansion/status')
+        .then(r => r.json())
+        .then(exp => {
+            const st = document.getElementById('xp-structures');
+            if (st && exp.species_with_structures) {
+                st.textContent = (statsData.proteins_with_structure || 0).toLocaleString()
+                    + ' / ' + exp.species_with_structures.toLocaleString() + ' species';
+                st.title = 'Total protein structures / Virus species with at least one 3D structure';
+            }
+        }).catch(() => {});
+
+    // Heatmap
+    fetch('/api/stats/completeness_release')
+        .then(r => r.json())
+        .then(d => {
+            const heat = reg(echarts.init(document.getElementById('chart-completeness-heatmap')));
+            heat.setOption({
+                tooltip: { formatter: p => `${d.families[p.data[1]]}<br/>${d.dimensions[p.data[0]]}: ${p.data[2]}%` },
+                grid: { left: '18%', right: '5%', bottom: '8%', top: '5%' },
+                xAxis: { type: 'category', data: d.dimensions, axisLabel: { fontSize: 11, color: '#64748b', rotate: 30 }, position: 'top' },
+                yAxis: { type: 'category', data: d.families, axisLabel: { fontSize: 10, color: '#64748b' } },
+                visualMap: { min: 0, max: 100, calculable: true, orient: 'horizontal', left: 'center', bottom: 0,
+                    inRange: { color: ['#fef0ed','#fcc5c0','#fb6a4a','#de2d26','#a50f15'] },
+                    text: ['100%', '0%'], textStyle: { color: '#64748b' } },
+                series: [{ type: 'heatmap', data: d.data, label: { show: false }, emphasis: { itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0,0,0,0.3)' } } }]
+            });
+        }).catch(() => {});
+
+    document.addEventListener('DOMContentLoaded', initStats);
+</script>
+{% endblock %}

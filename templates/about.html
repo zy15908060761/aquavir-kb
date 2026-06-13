@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}About - AquaVir-KB{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <h1 class="text-3xl font-extrabold text-slate-800 mb-2">ℹ️ About AquaVir-KB</h1>
+    <p class="text-slate-500 mb-8 text-sm">Aquatic Invertebrate Virus Knowledge Base</p>
+
+    <div class="space-y-6">
+        <div class="card p-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-3">Project Overview</h2>
+            <p class="text-gray-600 leading-relaxed">
+                AquaVir-KB is the world's first comprehensive knowledge base dedicated to aquatic invertebrate viruses. The database integrates multi-dimensional data including virus taxonomy, host associations, literature evidence, protein functional annotations, geographic distribution, and phylogenetic analysis. It covers eight host phyla: Arthropoda, Mollusca, Cnidaria, Echinodermata, Porifera, Annelida, Platyhelminthes, and Rotifera, and includes over 1,600 virus species and more than 17,800 isolates.
+            </p>
+            <p class="text-gray-600 leading-relaxed mt-3">
+                Formerly CrustaVirus DB v1 (crustacean virus database), expanded in 2026 to cover all aquatic invertebrate viruses.
+            </p>
+        </div>
+
+        <div class="card p-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-3">Data Usage Terms</h2>
+            <div class="prose prose-sm text-gray-600">
+                <p>AquaVir-KB data is licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" class="text-teal-600">CC BY 4.0</a>. You are free to:</p>
+                <ul class="list-disc pl-5 mt-2 space-y-1">
+                    <li>Share — copy and redistribute the data</li>
+                    <li>Adapt — remix, transform, and build upon the data</li>
+                    <li>for any purpose, including commercial use</li>
+                </ul>
+                <p class="mt-2">But must: Attribute — give appropriate credit, provide a link to the license, and indicate if changes were made.</p>
+            </div>
+        </div>
+
+        <div class="card p-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-3">Team</h2>
+            <p class="text-gray-600 leading-relaxed">
+                [First Author], [Co-authors]
+            </p>
+            <p class="text-gray-600 leading-relaxed mt-2">
+                [First Author Institution], [Co-author Institutions]
+            </p>
+            <p class="text-gray-600 leading-relaxed mt-2">
+                Corresponding author: <a href="mailto:corresponding@institution.edu" class="text-teal-600">corresponding@institution.edu</a>
+            </p>
+        </div>
+
+        <div class="card p-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-3">Funding</h2>
+            <p class="text-gray-600 leading-relaxed">
+                This work was supported by [Funding agency and grant number].
+            </p>
+        </div>
+
+        <div class="card p-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-3">Sustainability</h2>
+            <p class="text-gray-600 leading-relaxed">
+                AquaVir-KB is committed to long-term operation. The database will be maintained at this URL for at least 5 years following publication (through 2031). Data is archived with Zenodo (DOI: [ZENODO_DOI]) ensuring permanent availability. The source code is available on GitHub.
+            </p>
+            <p class="text-gray-600 leading-relaxed mt-2">
+                Data updates are integrated from NCBI GenBank, ICTV, and literature mining on a quarterly basis. All curation workflows are documented and reproducible.
+            </p>
+        </div>
+
+        <div class="card p-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-3">Current Release</h2>
+            <div class="text-sm text-gray-600 space-y-1">
+                <p><strong>Version:</strong> 1.0.0 (2026)</p>
+                <p><strong>Target virus species:</strong> 1,601 | <strong>Evidence records:</strong> 353,160 | <strong>Viral isolates:</strong> 17,867 | <strong>Proteins:</strong> 29,004 | <strong>References:</strong> 9,065</p>
+                <p><strong>Host phyla covered:</strong> 8 | <strong>Countries:</strong> 64 | <strong>Complete genomes:</strong> 180</p>
+                <p style="margin-top:4px"><strong>Zenodo DOI:</strong> <a href="https://doi.org/[ZENODO_DOI]" class="text-teal-600 hover:underline">https://doi.org/[ZENODO_DOI]</a> <span class="text-xs text-gray-400">(permanent data archive)</span></p>
+            </div>
+        </div>
+
+        <div class="card p-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-3">How to Cite</h2>
+            <p class="text-gray-600 leading-relaxed mb-3">If you use AquaVir-KB in your research, please cite:</p>
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm text-gray-700">
+                <p><em>[AUTHORS]. (2026). AquaVir-KB: a comprehensive knowledge base for aquatic invertebrate viruses. Submitted to Nucleic Acids Research.</em></p>
+            </div>
+            <p class="text-gray-600 leading-relaxed mt-2">A CITATION.cff file is available in the data download area.</p>
+        </div>
+
+        <div class="card p-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-3">Data Sources</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                <div class="border border-gray-100 rounded-lg p-3 text-center">
+                    <div class="font-medium text-gray-800">NCBI GenBank</div>
+                    <div class="text-xs text-gray-400 mt-1">Sequences & Isolates</div>
+                </div>
+                <div class="border border-gray-100 rounded-lg p-3 text-center">
+                    <div class="font-medium text-gray-800">UniProt</div>
+                    <div class="text-xs text-gray-400 mt-1">Protein Annotations</div>
+                </div>
+                <div class="border border-gray-100 rounded-lg p-3 text-center">
+                    <div class="font-medium text-gray-800">ICTV</div>
+                    <div class="text-xs text-gray-400 mt-1">Virus Taxonomy</div>
+                </div>
+                <div class="border border-gray-100 rounded-lg p-3 text-center">
+                    <div class="font-medium text-gray-800">Europe PMC</div>
+                    <div class="text-xs text-gray-400 mt-1">Full-text Literature</div>
+                </div>
+                <div class="border border-gray-100 rounded-lg p-3 text-center">
+                    <div class="font-medium text-gray-800">InterPro</div>
+                    <div class="text-xs text-gray-400 mt-1">Protein Domains</div>
+                </div>
+                <div class="border border-gray-100 rounded-lg p-3 text-center">
+                    <div class="font-medium text-gray-800">GBIF / OBIS</div>
+                    <div class="text-xs text-gray-400 mt-1">Host distribution</div>
+                </div>
+                <div class="border border-gray-100 rounded-lg p-3 text-center">
+                    <div class="font-medium text-gray-800">AlphaFold / ESMFold</div>
+                    <div class="text-xs text-gray-400 mt-1">3D Protein Structures</div>
+                </div>
+                <div class="border border-gray-100 rounded-lg p-3 text-center">
+                    <div class="font-medium text-gray-800">KEGG / STRING</div>
+                    <div class="text-xs text-gray-400 mt-1">Pathways & Interactions</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-3">Technology Stack</h2>
+            <div class="text-sm text-gray-600 space-y-1">
+                <p><strong>Backend:</strong> Python FastAPI + SQLite (targeting PostgreSQL migration)</p>
+                <p><strong>Frontend:</strong> Jinja2 + Tailwind CSS + HTMX + ECharts</p>
+                <p><strong>Data Pipeline:</strong> ~60 Python scripts (NCBI / UniProt / InterPro / KEGG / EPMC / SRA)</p>
+                <p><strong>Deployment:</strong> Docker Compose + Nginx + HTTPS</p>
+                <p><strong>Versioning:</strong> Zenodo DOI</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

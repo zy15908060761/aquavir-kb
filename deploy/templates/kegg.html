@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}KEGG Pathways — Aquatic Invertebrate Virus Knowledge Base{% endblock %}
+{% block extra_head %}
+<style>
+    .ko-card { border-left: 4px solid #0f766e; transition: all 0.2s; }
+    .ko-card:hover { box-shadow: 0 4px 16px -4px rgba(0,0,0,0.1); }
+    .pathway-tag { font-size: 0.7rem; }
+    .search-highlight { background: #fef3c7; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 text-sm text-gray-400 mb-4">
+        <a href="/enrichment" class="hover:text-primary">Enrichment Hub</a>
+        <span>/</span>
+        <span class="text-gray-700 font-medium">KEGG Pathways</span>
+        <a href="/api/enrichment/kegg?limit=10" class="ml-auto text-xs text-primary hover:underline" target="_blank">API</a>
+    </div>
+
+    <!-- Header -->
+    <div class="bg-white rounded-xl p-5 mb-6 border border-gray-100">
+        <div class="flex items-center gap-3 mb-2">
+            <span class="text-3xl">&#x1F5FA;&#xFE0F;</span>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">KEGG Pathways &amp; Enzyme Annotations</h1>
+                <p class="text-sm text-gray-500">Kyoto Encyclopedia of Genes and Genomes — Viral protein KO classification and pathway mapping</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4" id="kegg-summary">
+            <div class="text-center p-3 bg-teal-50 rounded-lg"><div class="text-xl font-bold text-primary">--</div><div class="text-xs text-gray-500">Total KO Annotations</div></div>
+            <div class="text-center p-3 bg-teal-50 rounded-lg"><div class="text-xl font-bold text-primary">--</div><div class="text-xs text-gray-500">Unique KO IDs</div></div>
+            <div class="text-center p-3 bg-teal-50 rounded-lg"><div class="text-xl font-bold text-primary">--</div><div class="text-xs text-gray-500">KEGG Pathways</div></div>
+            <div class="text-center p-3 bg-teal-50 rounded-lg"><div class="text-xl font-bold text-primary">--</div><div class="text-xs text-gray-500">Protein-Pathway Links</div></div>
+        </div>
+    </div>
+
+    <!-- Search & Filter -->
+    <div class="bg-white rounded-xl p-4 mb-6 border border-gray-100">
+        <div class="flex flex-wrap gap-3 items-center">
+            <input type="text" id="kegg-search" placeholder="Search EC number or KO ID..." class="search-input flex-1 min-w-[200px] px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary">
+            <select id="kegg-filter" class="px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                <option value="all">All Annotations</option>
+                <option value="has_ko">Has KO Number</option>
+                <option value="has_ec">Has EC Number</option>
+                <option value="pathway_linked">Pathway Linked</option>
+            </select>
+            <button onclick="loadKEGGData()" class="px-4 py-2 bg-primary text-white text-sm rounded-lg hover:bg-primary-dark transition">Refresh</button>
+        </div>
+    </div>
+
+    <!-- KO List -->
+    <div id="kegg-list" class="space-y-2">
+        <div class="text-center text-gray-400 py-10">Loading...</div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="flex justify-center gap-2 mt-6" id="kegg-pagination"></div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let allData = [];
+let page = 0;
+const PAGE_SIZE = 30;
+
+function loadKEGGData() {
+    fetch('/api/enrichment/kegg?limit=1000')
+        .then(r => r.json())
+        .then(d => {
+            if (d.status !== 'success') return;
+            allData = d.data;
+            // Also fetch pathways
+            fetch('/api/enrichment/kegg/pathways?limit=500')
+                .then(r => r.json())
+                .then(pd => {
+                    if (pd.status === 'success') {
+                        window.pathwayData = pd.data;
+                        updateSummary(pd.data);
+                    }
+                    applyFilter();
+                });
+        });
+}
+
+function updateSummary(pathways) {
+    const summary = document.getElementById('kegg-summary');
+    const totalKO = allData.length;
+    const uniqueKO = new Set(allData.filter(x => x.ko_id).map(x => x.ko_id)).size;
+    const pathCount = pathways.length;
+    const linkCount = pathways.reduce((s, p) => s + (p.ko_count || 0), 0) || allData.filter(x => x.ko_id).length;
+    summary.children[0].querySelector('.text-xl').textContent = totalKO.toLocaleString();
+    summary.children[1].querySelector('.text-xl').textContent = uniqueKO.toLocaleString();
+    summary.children[2].querySelector('.text-xl').textContent = pathCount.toLocaleString();
+    summary.children[3].querySelector('.text-xl').textContent = '--'; // links from server
+}
+
+function applyFilter() {
+    const search = document.getElementById('kegg-search').value.toLowerCase();
+    const filter = document.getElementById('kegg-filter').value;
+    let filtered = allData;
+    if (search) {
+        filtered = filtered.filter(x =>
+            (x.ko_id && x.ko_id.toLowerCase().includes(search)) ||
+            (x.ec_number && x.ec_number.toLowerCase().includes(search)) ||
+            (x.ko_name && x.ko_name.toLowerCase().includes(search))
+        );
+    }
+    if (filter === 'has_ko') filtered = filtered.filter(x => x.ko_id);
+    if (filter === 'has_ec') filtered = filtered.filter(x => x.ec_number);
+    if (filter === 'pathway_linked') filtered = filtered.filter(x => x.ko_id);
+    renderPage(filtered);
+}
+
+function renderPage(filtered) {
+    const start = page * PAGE_SIZE;
+    const batch = filtered.slice(start, start + PAGE_SIZE);
+    const list = document.getElementById('kegg-list');
+    if (batch.length === 0) {
+        list.innerHTML = '<div class="text-center text-gray-400 py-10">No matching results</div>';
+    } else {
+        list.innerHTML = batch.map(x => `
+            <div class="ko-card bg-white rounded-lg p-4 border border-gray-100">
+                <div class="flex justify-between items-start flex-wrap gap-2">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            ${x.ko_id ? `<a href="https://www.genome.jp/dbget-bin/www_bget?ko:${x.ko_id}" target="_blank" class="font-bold text-primary hover:underline">${x.ko_id}</a>` : '<span class="text-gray-400">No KO</span>'}
+                            ${x.ec_number ? `<span class="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs rounded-full">EC:${x.ec_number}</span>` : ''}
+                        </div>
+                        <p class="text-sm text-gray-600 mt-1">${x.ko_name || x.ec_number || '--'}</p>
+                        ${x.ko_definition ? `<p class="text-xs text-gray-400 mt-1 line-clamp-2">${x.ko_definition}</p>` : ''}
+                    </div>
+                    ${x.ncbi_protein_acc ? `<div class="text-xs text-gray-400 text-right"><a href="/api/virus/${x.ncbi_protein_acc}" class="hover:text-primary">${x.ncbi_protein_acc}</a></div>` : ''}
+                </div>
+            </div>
+        `).join('');
+    }
+    // Pagination
+    const pages = Math.ceil(filtered.length / PAGE_SIZE);
+    document.getElementById('kegg-pagination').innerHTML = pages > 1 ? Array.from({length: pages}, (_, i) =>
+        `<button onclick="page=${i};applyFilter()" class="px-3 py-1 rounded text-sm ${i===page?'bg-primary text-white':'bg-gray-100 hover:bg-gray-200'}">${i+1}</button>`
+    ).join('') : '';
+}
+
+document.getElementById('kegg-search').addEventListener('input', () => { page=0; applyFilter(); });
+document.getElementById('kegg-filter').addEventListener('change', () => { page=0; applyFilter(); });
+loadKEGGData();
+</script>
+{% endblock %}

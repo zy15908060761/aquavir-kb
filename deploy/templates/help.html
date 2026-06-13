@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Help & Tutorial - AquaVir-KB{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+  <h1 class="text-3xl font-bold text-slate-800 mb-6">Help &amp; Tutorial</h1>
+
+  <div class="space-y-6">
+    <div class="card p-5">
+      <h2 class="text-lg font-semibold text-slate-700 mb-3">Getting Started</h2>
+      <p class="text-sm text-slate-600 mb-3">AquaVir-KB is a comprehensive knowledge base for viruses infecting aquatic invertebrates. You can search, browse, and download data without any registration.</p>
+      <ol class="list-decimal list-inside text-sm text-slate-600 space-y-2">
+        <li><strong>Search:</strong> Type a virus name (e.g. "White spot syndrome virus"), host (e.g. "Penaeus"), accession (e.g. "NC_003225"), or family (e.g. "Nimaviridae") in the search bar.</li>
+        <li><strong>Browse:</strong> Use the Viruses, Hosts, or Taxonomy links to explore the database by category.</li>
+        <li><strong>Filter:</strong> On the search page, use the filters (phylum, family, genome completeness, country) to narrow results.</li>
+        <li><strong>Download:</strong> Bulk download FASTA sequences, metadata tables, and evidence records from the Download page — all under CC BY 4.0.</li>
+      </ol>
+    </div>
+
+    <div class="card p-5">
+      <h2 class="text-lg font-semibold text-slate-700 mb-3">API Access</h2>
+      <p class="text-sm text-slate-600 mb-3">AquaVir-KB provides a REST API for programmatic access. Full documentation is available at <a href="/docs" class="text-teal-600 underline">/docs</a> (Swagger UI).</p>
+      <p class="text-sm text-slate-600 mb-2"><strong>Quick examples:</strong></p>
+      <pre class="bg-slate-900 text-green-400 text-xs p-3 rounded overflow-x-auto">
+# Search for viruses
+curl "https://aquavirdb.com/api/search?q=white+spot&page=1&page_size=10"
+
+# Get virus detail
+curl "https://aquavirdb.com/api/virus/NC_003225"
+
+# Get statistics
+curl "https://aquavirdb.com/api/stats"
+
+# Download all sequences
+wget "https://aquavirdb.com/api/download/all_sequences.fasta"
+      </pre>
+    </div>
+
+    <div class="card p-5">
+      <h2 class="text-lg font-semibold text-slate-700 mb-3">Key Features</h2>
+      <ul class="list-disc list-inside text-sm text-slate-600 space-y-1">
+        <li><strong>BLAST Search:</strong> Run BLASTP/BLASTX against RdRp proteins — <a href="/rdrp" class="text-teal-600 underline">RdRp BLAST</a></li>
+        <li><strong>Phylogeny:</strong> Interactive phylogenetic trees for virus families — <a href="/phylogeny" class="text-teal-600 underline">Phylogeny</a></li>
+        <li><strong>Geographic Map:</strong> Visualize virus distribution by country — <a href="/map" class="text-teal-600 underline">Map</a></li>
+        <li><strong>Host-Virus Network:</strong> Interactive bipartite network of host-virus associations — <a href="/network" class="text-teal-600 underline">Network</a></li>
+        <li><strong>Statistics:</strong> Comprehensive database statistics and charts — <a href="/stats" class="text-teal-600 underline">Statistics</a></li>
+      </ul>
+    </div>
+
+    <div class="card p-5">
+      <h2 class="text-lg font-semibold text-slate-700 mb-3">Data Formats</h2>
+      <table class="w-full text-sm">
+        <tr class="border-b"><td class="py-2 font-medium">FASTA</td><td class="py-2 text-slate-600">Nucleotide/protein sequences, gzip-compatible</td></tr>
+        <tr class="border-b"><td class="py-2 font-medium">XLSX</td><td class="py-2 text-slate-600">Microsoft Excel format for metadata and evidence tables</td></tr>
+        <tr class="border-b"><td class="py-2 font-medium">CSV</td><td class="py-2 text-slate-600">Comma-separated values for network graphs and tabular data</td></tr>
+        <tr><td class="py-2 font-medium">TSV</td><td class="py-2 text-slate-600">Tab-separated values for evidence records</td></tr>
+      </table>
+    </div>
+
+    <div class="card p-5">
+      <h2 class="text-lg font-semibold text-slate-700 mb-3">Citing AquaVir-KB</h2>
+      <p class="text-sm text-slate-600">If you use AquaVir-KB in your research, please cite our paper and the database URL. See the <a href="/about" class="text-teal-600 underline">About page</a> for complete citation information and the <a href="/download" class="text-teal-600 underline">Download page</a> for the CITATION.cff file.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

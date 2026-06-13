@@ -1,0 +1,616 @@
+{% extends "base.html" %}
+
+{% block title %}{{ virus.canonical_name or virus.virus_name or virus.accession }} - AquaVir-KB{% endblock %}
+
+{% block breadcrumbs %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+    <nav class="flex text-xs text-gray-400 gap-1 flex-wrap">
+        <a href="/" class="hover:text-teal-600 transition">Home</a>
+        <span>/</span>
+        <a href="/search" class="hover:text-teal-600 transition">Search</a>
+        <span>/</span>
+        <span class="text-gray-600 truncate max-w-xs">{{ virus.canonical_name or virus.virus_name or virus.accession }}</span>
+    </nav>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8 space-y-6">
+    <!-- Tab Navigation - glass sticky -->
+    <div class="card overflow-hidden sticky top-14 z-40 glass border-white/60 shadow-md">
+        <div class="flex gap-0 overflow-x-auto px-4">
+            <a href="#section-genome" class="tab-nav-link whitespace-nowrap px-5 py-3.5 text-sm font-semibold text-teal-600 border-b-[3px] border-teal-500">Overview</a>
+            <a href="#section-isolates" class="tab-nav-link whitespace-nowrap px-5 py-3.5 text-sm font-medium text-slate-500 border-b-[3px] border-transparent hover:text-slate-700">Isolates</a>
+            <a href="#section-hosts" class="tab-nav-link whitespace-nowrap px-5 py-3.5 text-sm font-medium text-slate-500 border-b-[3px] border-transparent hover:text-slate-700">Hosts</a>
+            <a href="#section-proteins" class="tab-nav-link whitespace-nowrap px-5 py-3.5 text-sm font-medium text-slate-500 border-b-[3px] border-transparent hover:text-slate-700">Proteins</a>
+            <a href="#section-diagnostics" class="tab-nav-link whitespace-nowrap px-5 py-3.5 text-sm font-medium text-slate-500 border-b-[3px] border-transparent hover:text-slate-700">Evidence & Diagnostics</a>
+            <a href="#section-literature" class="tab-nav-link whitespace-nowrap px-5 py-3.5 text-sm font-medium text-slate-500 border-b-[3px] border-transparent hover:text-slate-700">Literature</a>
+            <a href="#section-geography" class="tab-nav-link whitespace-nowrap px-5 py-3.5 text-sm font-medium text-slate-500 border-b-[3px] border-transparent hover:text-slate-700">Geographic Distribution</a>
+            <a href="#section-taxonomy" class="tab-nav-link whitespace-nowrap px-5 py-3.5 text-sm font-medium text-slate-500 border-b-[3px] border-transparent hover:text-slate-700">Taxonomy</a>
+        </div>
+    </div>
+    <section id="section-genome" class="card p-6">
+        <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+            <div class="min-w-0">
+                <div class="flex flex-wrap items-center gap-2 mb-2">
+                    <h1 class="text-2xl font-bold text-gray-800">{{ virus.canonical_name or virus.virus_name or "Unknown virus" }}</h1>
+                    {% if virus.virus_family %}
+                    <a href="/family/{{ virus.virus_family|urlencode }}" class="px-2.5 py-1 rounded-full bg-teal-50 text-teal-700 text-sm font-medium">{{ virus.virus_family }}</a>
+                    {% endif %}
+                    {% if virus.virus_host_phylum %}
+                    <span class="px-2.5 py-1 rounded-full text-sm font-medium
+                        {%- if virus.virus_host_phylum == 'Arthropoda' %} bg-orange-50 text-orange-700
+                        {%- elif virus.virus_host_phylum == 'Mollusca' %} bg-blue-50 text-blue-700
+                        {%- elif virus.virus_host_phylum == 'Cnidaria' %} bg-pink-50 text-pink-700
+                        {%- elif virus.virus_host_phylum == 'Echinodermata' %} bg-purple-50 text-purple-700
+                        {%- elif virus.virus_host_phylum == 'Porifera' %} bg-yellow-50 text-yellow-700
+                        {%- elif virus.virus_host_phylum == 'Annelida' %} bg-green-50 text-green-700
+                        {%- else %} bg-gray-50 text-gray-700{% endif %}">
+                        {{ virus.virus_host_phylum }}
+                    </span>
+                    {% endif %}
+                    <span class="px-2 py-1 rounded bg-gray-100 text-gray-600 text-xs">{{ virus.dataset_tier or "unclassified tier" }}</span>
+                </div>
+                <p class="font-mono text-sm text-gray-500">{{ virus.accession }}</p>
+                {% if virus.canonical_name_cn %}
+                <p class="text-sm text-gray-500 mt-1">{{ virus.canonical_name_cn }}</p>
+                {% endif %}
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <a href="https://www.ncbi.nlm.nih.gov/nuccore/{{ virus.accession }}" target="_blank" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded text-sm text-gray-700">NCBI</a>
+                {% if has_sequence %}
+                <a href="/api/virus/{{ virus.accession }}/sequence" download="{{ virus.accession }}.fasta" class="px-3 py-1.5 bg-teal-600 hover:bg-teal-500 rounded text-sm text-white">FASTA</a>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 card p-6">
+            <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-teal-400 to-teal-600 rounded-full"></span>Genome And Source</h2>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-sm">
+                <div class="bg-slate-50 rounded-xl p-3.5 text-center card-hover">
+                    <div class="text-xs text-slate-400 uppercase tracking-wide font-medium">Length</div>
+                    <div class="font-mono font-bold text-slate-800 mt-1 text-sm">{{ "{:,}".format(virus.genome_length) if virus.genome_length else "N/A" }}</div>
+                </div>
+                <div class="bg-slate-50 rounded-xl p-3.5 text-center card-hover">
+                    <div class="text-xs text-slate-400 uppercase tracking-wide font-medium">Type</div>
+                    <div class="font-bold text-slate-800 mt-1 text-sm">{{ virus.genome_type or "N/A" }}</div>
+                </div>
+                <div class="bg-slate-50 rounded-xl p-3.5 text-center card-hover">
+                    <div class="text-xs text-slate-400 uppercase tracking-wide font-medium">GC%</div>
+                    <div class="font-mono font-bold text-slate-800 mt-1 text-sm">{{ "{:.1f}%".format(virus.gc_content) if virus.gc_content else "N/A" }}</div>
+                </div>
+                <div class="bg-slate-50 rounded-xl p-3.5 text-center card-hover">
+                    <div class="text-xs text-slate-400 uppercase tracking-wide font-medium">Completeness</div>
+                    <div class="font-bold text-slate-800 mt-1 text-sm">{{ virus.completeness or "N/A" }}</div>
+                </div>
+                <div class="bg-slate-50 rounded-xl p-3.5 text-center card-hover">
+                    <div class="text-xs text-slate-400 uppercase tracking-wide font-medium">Country</div>
+                    <div class="font-bold text-slate-800 mt-1 text-sm truncate" title="{{ virus.country or '' }}">{{ virus.country or "N/A" }}</div>
+                </div>
+                <div class="bg-slate-50 rounded-xl p-3.5 text-center card-hover">
+                    <div class="text-xs text-slate-400 uppercase tracking-wide font-medium">Year</div>
+                    <div class="font-mono font-bold text-slate-800 mt-1 text-sm">{{ virus.collection_year or "N/A" }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-6">
+            <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-teal-400 to-teal-600 rounded-full"></span>Curation Status</h2>
+            <div class="grid grid-cols-2 gap-3 text-sm">
+                <div class="bg-teal-50 rounded-xl p-3.5 text-center">
+                    <div class="text-2xl font-extrabold text-teal-700 font-mono">{{ isolate_count }}</div>
+                    <div class="text-xs text-slate-500 mt-1">Isolates</div>
+                </div>
+                <div class="bg-blue-50 rounded-xl p-3.5 text-center">
+                    <div class="text-2xl font-extrabold text-blue-700 font-mono">{{ host_count }}</div>
+                    <div class="text-xs text-slate-500 mt-1">Hosts</div>
+                </div>
+                <div class="bg-purple-50 rounded-xl p-3.5 text-center">
+                    <div class="text-2xl font-extrabold text-purple-700 font-mono">{{ protein_count or 0 }}</div>
+                    <div class="text-xs text-slate-500 mt-1">Proteins</div>
+                </div>
+                <div class="bg-emerald-50 rounded-xl p-3.5 text-center">
+                    <div class="text-2xl font-extrabold {{ 'text-emerald-700' if has_sequence else 'text-slate-400' }} font-mono">{{ "✓" if has_sequence else "—" }}</div>
+                    <div class="text-xs text-slate-500 mt-1">Sequence</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% if pathogenicity %}
+    <section class="card p-6">
+        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-teal-400 to-teal-600 rounded-full"></span>Pathogenicity</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {% set vl = pathogenicity|selectattr("virulence_level")|first %}
+            <div class="border border-gray-100 rounded-lg p-4 text-center">
+                <div class="text-gray-500 text-sm">Virulence Level</div>
+                <div class="text-xl font-bold mt-1 {% if vl and vl.virulence_level and vl.virulence_level.lower() in ('high', 'severe') %}text-red-600{% else %}text-amber-600{% endif %}">
+                    {{ vl.virulence_level if vl else "Not evaluated" }}
+                </div>
+            </div>
+            <div class="border border-gray-100 rounded-lg p-4 text-center">
+                <div class="text-gray-500 text-sm">Mortality Rate Range</div>
+                <div class="text-xl font-bold mt-1 text-red-600">
+                    {% set mr = pathogenicity|selectattr("mortality_rate_min")|first %}
+                    {% if mr and mr.mortality_rate_min is not none %}{{ mr.mortality_rate_min }}% - {{ mr.mortality_rate_max }}%{% else %}Not recorded{% endif %}
+                </div>
+            </div>
+            <div class="border border-gray-100 rounded-lg p-4 text-center">
+                <div class="text-gray-500 text-sm">Disease Symptoms</div>
+                <div class="text-base mt-1 text-gray-800">
+                    {% if vl and vl.disease_symptoms %}{{ vl.disease_symptoms[:100] }}{% if vl.disease_symptoms|length > 100 %}...{% endif %}{% else %}Not recorded{% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    {% if outbreak_events %}
+    <section class="card p-6">
+        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-teal-400 to-teal-600 rounded-full"></span>Outbreak Events</h2>
+        <div class="space-y-3">
+            {% for o in outbreak_events %}
+            <div class="border border-gray-100 rounded-lg p-4">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="font-medium text-gray-800">{{ o.country }}</span>
+                        {% if o.start_year %}
+                        <span class="text-sm text-gray-500"> ({{ o.start_year }}{% if o.end_year %} - {{ o.end_year }}{% endif %})</span>
+                        {% endif %}
+                    </div>
+                    {% if o.economic_impact %}
+                    <span class="text-xs px-2 py-1 bg-red-50 text-red-600 rounded-full">Economic Loss</span>
+                    {% endif %}
+                </div>
+                {% if o.event_summary %}
+                <p class="text-sm text-gray-600 mt-2">{{ o.event_summary }}</p>
+                {% endif %}
+                {% if o.economic_impact %}
+                <p class="text-xs text-gray-400 mt-1">Economic Impact: {{ o.economic_impact }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="card p-6">
+            <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-teal-400 to-teal-600 rounded-full"></span>Reference</h2>
+            {% if virus.ref_title %}
+            <p class="text-sm font-medium text-gray-800">{{ virus.ref_title }}</p>
+            <p class="text-sm text-gray-500 mt-2">{{ virus.ref_authors or "" }}</p>
+            <p class="text-sm text-gray-500">{{ virus.journal or "" }} {{ virus.ref_year or "" }}</p>
+            <div class="flex flex-wrap gap-2 mt-3 text-xs">
+                {% if virus.pmid %}<span class="px-2 py-1 bg-gray-100 rounded">PMID: {{ virus.pmid }}</span>{% endif %}
+                {% if virus.doi %}<span class="px-2 py-1 bg-gray-100 rounded">DOI: {{ virus.doi }}</span>{% endif %}
+            </div>
+            {% else %}
+            <p class="text-sm text-gray-500">No linked publication record is available for this isolate.</p>
+            {% endif %}
+        </div>
+
+        <div class="card p-6">
+            <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-teal-400 to-teal-600 rounded-full"></span>ICTV Mapping</h2>
+            {% if ictv_mapped %}
+            <div class="space-y-2">
+                {% for item in ictv_mapped[:8] %}
+                <div class="border border-gray-100 rounded p-3 text-sm">
+                    <div class="font-medium text-gray-800">{{ item.species }}</div>
+                    <div class="text-gray-500">{{ item.family or "Unclassified family" }} / {{ item.genus or "Unclassified genus" }}</div>
+                    <div class="text-xs text-gray-400 mt-1">{{ item.match_status or "mapping" }} · {{ item.confidence or "unknown confidence" }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            {% elif ictv_family_refs %}
+            <p class="text-sm text-gray-500 mb-2">No reviewed species-level mapping is available. Family-level ICTV references:</p>
+            <ul class="text-sm text-gray-700 list-disc pl-5">
+                {% for ref in ictv_family_refs %}
+                <li>{{ ref.species }}{% if ref.genus %} ({{ ref.genus }}){% endif %}</li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-sm text-gray-500">No ICTV mapping is available or reviewed for this record.</p>
+            {% endif %}
+        </div>
+    </section>
+
+    {% if virulence or temperature %}
+    <section class="card p-6">
+        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-teal-400 to-teal-600 rounded-full"></span>Reviewed Evidence</h2>
+        <p class="text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded p-3 mb-4">Only manual-checked evidence records are displayed here. Candidate or inferred records are excluded from this page.</p>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {% if virulence and virulence.records %}
+            <div>
+                <h3 class="font-medium text-gray-700 mb-2">Virulence / pathogenicity</h3>
+                <div class="space-y-2">
+                    {% for record in virulence.records %}
+                    <div class="border border-gray-100 rounded p-3 text-sm">
+                        <div class="font-medium">{{ record.claim }}</div>
+                        <div class="text-gray-500 mt-1">{{ record.value_text or record.context or "No value text" }}</div>
+                        <div class="text-xs text-gray-400 mt-1">{{ record.evidence_type }} · {{ record.evidence_strength or "unknown" }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% if temperature and temperature.records %}
+            <div>
+                <h3 class="font-medium text-gray-700 mb-2">Temperature</h3>
+                <div class="space-y-2">
+                    {% for record in temperature.records %}
+                    <div class="border border-gray-100 rounded p-3 text-sm">
+                        <div class="font-medium">{{ record.claim }}</div>
+                        <div class="text-gray-500 mt-1">{{ record.value_text or record.context or "No value text" }}</div>
+                        <div class="text-xs text-gray-400 mt-1">{{ record.evidence_type }} · {{ record.evidence_strength or "unknown" }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+    {% endif %}
+
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="card p-6">
+            <h2 id="section-hosts" class="text-lg font-semibold text-gray-800 mb-4">Hosts</h2>
+            {% if hosts %}
+            <div class="space-y-2">
+                {% for host in hosts %}
+                <a href="/host/{{ host.host_id }}" class="block border border-gray-100 rounded p-3 hover:bg-gray-50">
+                    <div class="font-medium text-gray-800"><em>{{ host.scientific_name }}</em></div>
+                    <div class="text-sm text-gray-500">{{ host.common_name_cn or "" }} {{ host.taxon_family or "" }}</div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-sm text-gray-500">No host link is available for this master record.</p>
+            {% endif %}
+        </div>
+
+        <div class="card p-6">
+            <h2 id="section-diagnostics" class="text-lg font-semibold text-gray-800 mb-4">Diagnostic And Control Records</h2>
+            {% if diagnostic_methods %}
+            <h3 class="font-medium text-gray-700 mb-2">Diagnostic methods</h3>
+            <div class="space-y-2 mb-4">
+                {% for dm in diagnostic_methods %}
+                <div class="border border-gray-100 rounded p-3 text-sm">
+                    <div class="font-medium text-gray-800">{{ dm.method_name }}</div>
+                    <div class="text-gray-500">{{ dm.primary_cn or dm.primary_category }} · {{ dm.target_gene_or_region or "target not specified" }}</div>
+                    <div class="text-xs text-gray-400 mt-1">{{ dm.evidence_strength or "unknown evidence" }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% if control_methods %}
+            <h3 class="font-medium text-gray-700 mb-2">Control methods</h3>
+            <div class="space-y-2">
+                {% for cm in control_methods %}
+                <div class="border border-gray-100 rounded p-3 text-sm">
+                    <div class="font-medium text-gray-800">{{ cm.method_name }}</div>
+                    <div class="text-gray-500">{{ cm.method_category or "category not specified" }} · {{ cm.evidence_strength or "unknown evidence" }}</div>
+                    {% if cm.effect_summary %}<div class="text-gray-500 mt-1">{{ cm.effect_summary }}</div>{% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% if not diagnostic_methods and not control_methods %}
+            <p class="text-sm text-gray-500">No curated diagnostic or control records are available for this virus.</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <section id="section-proteins" class="card p-6">
+        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-teal-400 to-teal-600 rounded-full"></span>Proteins</h2>
+        <div id="proteins-container">
+            <div class="flex items-center justify-center py-8 text-gray-400">
+                <div class="text-center">
+                    <div class="inline-block w-6 h-6 border-2 border-teal-600 border-t-transparent rounded-full animate-spin mb-2"></div>
+                    <div class="text-sm">Loading protein data...</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="section-literature" class="card p-6">
+        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-teal-400 to-teal-600 rounded-full"></span>Related Literature <span class="text-sm text-gray-400 font-normal">({{ literature_count }} articles)</span></h2>
+        <div id="literature-container">
+            <div class="flex items-center justify-center py-8 text-gray-400">
+                <div class="text-center">
+                    <div class="inline-block w-6 h-6 border-2 border-teal-600 border-t-transparent rounded-full animate-spin mb-2"></div>
+                    <div class="text-sm">Loading literature data...</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="section-geography" class="card p-6">
+        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-teal-400 to-teal-600 rounded-full"></span>Geographic Distribution</h2>
+        {% if virus_geo %}
+        <div id="virus-geo-map" class="h-72 bg-gray-50 rounded border border-gray-200"></div>
+        <div class="mt-3 grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+            {% for g in virus_geo[:8] %}
+            <div class="border border-gray-100 rounded p-2">
+                <span class="text-gray-800 font-medium">{{ g.country }}</span>
+                <span class="text-gray-400 text-xs ml-1">{{ g.cnt }} isolates</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-sm text-gray-500">No geographic distribution data available</p>
+        {% endif %}
+    </section>
+
+    <section id="section-taxonomy" class="card p-6">
+        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-teal-400 to-teal-600 rounded-full"></span>Taxonomy Information</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="border border-gray-100 rounded-lg p-4">
+                <div class="text-xs text-gray-400 uppercase tracking-wide">Family</div>
+                <div class="text-sm font-medium text-gray-800 mt-1">{{ virus.virus_family or 'Unclassified' }}</div>
+            </div>
+            <div class="border border-gray-100 rounded-lg p-4">
+                <div class="text-xs text-gray-400 uppercase tracking-wide">Host Phylum</div>
+                <div class="text-sm font-medium text-gray-800 mt-1">{{ virus.virus_host_phylum or 'Unknown' }}</div>
+            </div>
+            <div class="border border-gray-100 rounded-lg p-4">
+                <div class="text-xs text-gray-400 uppercase tracking-wide">Genome Type</div>
+                <div class="text-sm font-medium text-gray-800 mt-1">{{ virus.genome_type or 'Unknown' }}</div>
+            </div>
+            <div class="border border-gray-100 rounded-lg p-4">
+                <div class="text-xs text-gray-400 uppercase tracking-wide">Discovery Method</div>
+                <div class="text-sm font-medium text-gray-800 mt-1">{{ virus.discovery_context or 'Unknown' }}</div>
+            </div>
+        </div>
+        {% if ictv_mapped %}
+        <h3 class="font-medium text-gray-700 mt-4 mb-2">ICTV Classification Mapping</h3>
+        <div class="space-y-2">
+            {% for item in ictv_mapped[:5] %}
+            <div class="border border-gray-100 rounded p-3 text-sm flex justify-between items-center">
+                <div>
+                    <div class="font-medium text-gray-800">{{ item.species }}</div>
+                    <div class="text-gray-500">{{ item.family or 'Unclassified' }} / {{ item.genus or 'Unclassified' }}</div>
+                </div>
+                <span class="text-xs px-2 py-1 bg-green-50 text-green-700 rounded">{{ item.confidence or 'mapped' }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </section>
+
+    <section id="section-isolates" class="card p-6">
+        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-teal-400 to-teal-600 rounded-full"></span>Related Isolates</h2>
+        {% if isolates %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="text-left px-3 py-2">Accession</th>
+                        <th class="text-right px-3 py-2">Length</th>
+                        <th class="text-right px-3 py-2">GC</th>
+                        <th class="text-left px-3 py-2">Completeness</th>
+                        <th class="text-left px-3 py-2">Country</th>
+                        <th class="text-left px-3 py-2">Year</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for iso in isolates %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-3 py-2 font-mono"><a class="text-teal-600" href="/virus/{{ iso.accession }}">{{ iso.accession }}</a></td>
+                        <td class="px-3 py-2 text-right font-mono">{{ "{:,}".format(iso.genome_length) if iso.genome_length else "N/A" }}</td>
+                        <td class="px-3 py-2 text-right font-mono">{{ "{:.1f}".format(iso.gc_content) if iso.gc_content else "N/A" }}</td>
+                        <td class="px-3 py-2">{{ iso.completeness or "N/A" }}</td>
+                        <td class="px-3 py-2">{{ iso.country or "N/A" }}</td>
+                        <td class="px-3 py-2">{{ iso.collection_year or "N/A" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-sm text-gray-500">No related isolates were found.</p>
+        {% endif %}
+    </section>
+
+    {% if has_phylogeny %}
+    <section class="card p-6">
+        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-teal-400 to-teal-600 rounded-full"></span>Phylogeny</h2>
+        <img src="/downloads/phylogeny/figures/{{ family_lower }}_tree.png" alt="{{ virus.virus_family }} phylogeny" class="max-w-full rounded border border-gray-200">
+        <div class="flex gap-3 mt-3 text-sm">
+            <a class="text-teal-600" href="/downloads/phylogeny/figures/{{ family_lower }}_tree.svg" target="_blank">SVG</a>
+            <a class="text-teal-600" href="/downloads/phylogeny/{{ family_lower }}_iqtree.contree" target="_blank">Newick</a>
+        </div>
+    </section>
+    {% endif %}
+
+    {% if has_sequence %}
+    <section class="card p-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+            <h2 class="text-lg font-semibold text-gray-800">Sequence</h2>
+            <div class="flex gap-2">
+                <input id="seq-search" class="border border-gray-200 rounded px-3 py-1.5 text-sm" placeholder="Find motif">
+                <button class="px-3 py-1.5 bg-teal-600 text-white rounded text-sm" onclick="searchSequence()">Find</button>
+            </div>
+        </div>
+        <div id="seq-meta" class="text-xs text-gray-500 mb-2"></div>
+        <pre id="seq-container" class="bg-gray-50 border border-gray-200 rounded p-4 max-h-96 overflow-auto text-xs leading-relaxed">Loading sequence...</pre>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Tab scroll-spy
+const tabLinks = document.querySelectorAll('.tab-nav-link');
+const sections = ['section-genome','section-isolates','section-hosts','section-proteins','section-diagnostics','section-literature','section-geography','section-taxonomy'].map(id => document.getElementById(id)).filter(Boolean);
+window.addEventListener('scroll', () => {
+    let current = sections[0]?.id;
+    sections.forEach(sec => {
+        const top = sec.getBoundingClientRect().top;
+        if (top < 120) current = sec.id;
+    });
+    tabLinks.forEach(link => {
+        link.classList.toggle('text-teal-600', link.getAttribute('href') === '#' + current);
+        link.classList.toggle('border-teal-600', link.getAttribute('href') === '#' + current);
+        link.classList.toggle('text-gray-500', link.getAttribute('href') !== '#' + current);
+        link.classList.toggle('border-transparent', link.getAttribute('href') !== '#' + current);
+    });
+});
+// Smooth scroll on tab click
+tabLinks.forEach(link => {
+    link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+});
+
+// Load proteins
+fetch('/api/virus/{{ virus.accession }}/proteins')
+    .then(r => r.json())
+    .then(data => {
+        const container = document.getElementById('proteins-container');
+        const proteins = data.proteins || data;
+        if (!proteins || proteins.length === 0) {
+            container.innerHTML = '<div class="text-center py-8 text-gray-400"><div class="text-3xl mb-2">🧬</div><p>No protein annotations available</p></div>';
+            return;
+        }
+        let html = '<div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-50"><tr><th class="text-left px-3 py-2">Name</th><th class="text-left px-3 py-2">Gene</th><th class="text-right px-3 py-2">Length</th><th class="text-left px-3 py-2">Functional Category</th><th class="text-center px-3 py-2">3D Structure</th></tr></thead><tbody class="divide-y divide-gray-100">';
+        proteins.forEach(p => {
+            html += '<tr class="hover:bg-gray-50">' +
+                '<td class="px-3 py-2 font-medium text-gray-800 max-w-xs truncate" title="' + (p.protein_name || p.protein_accession || '-') + '">' + (p.protein_name || p.protein_accession || '-') + '</td>' +
+                '<td class="px-3 py-2 font-mono text-xs text-gray-600">' + (p.gene_symbol || p.locus_tag || '-') + '</td>' +
+                '<td class="px-3 py-2 text-right font-mono text-gray-700">' + (p.aa_length ? p.aa_length.toLocaleString() + ' aa' : '-') + '</td>' +
+                '<td class="px-3 py-2"><span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded text-xs">' + (p.functional_category || 'unclassified') + '</span></td>' +
+                '<td class="px-3 py-2 text-center">' + (p._has_structure ? '<span class="text-green-600 font-bold">✓</span>' : '<span class="text-gray-300">-</span>') + '</td>' +
+                '</tr>';
+        });
+        html += '</tbody></table><div class="px-3 py-2 text-xs text-gray-400">' + proteins.length + ' proteins total</div></div>';
+        container.innerHTML = html;
+    })
+    .catch(() => {
+        document.getElementById('proteins-container').innerHTML = '<div class="text-center py-8 text-gray-400"><div class="text-3xl mb-2">⚠️</div><p class="text-red-500">Protein data loading failed</p></div>';
+    });
+
+// Load literature (from existing reference + evidence PMIDs)
+(function() {
+    const litContainer = document.getElementById('literature-container');
+    if (!litContainer) return;
+    const refs = [];
+    {% if virus.ref_title %}
+    refs.push({
+        title: {{ virus.ref_title|tojson }},
+        authors: {{ (virus.ref_authors or '')|tojson }},
+        journal: {{ (virus.journal or '')|tojson }},
+        year: {{ (virus.ref_year or '')|tojson }},
+        pmid: {{ (virus.pmid or '')|tojson }},
+        doi: {{ (virus.doi or '')|tojson }},
+    });
+    {% endif %}
+    // Collect PMIDs from virulence and temperature evidence
+    const evidencePmids = new Set();
+    {% if virulence and virulence.records %}
+    {% for r in virulence.records %}{% if r.source_pmid %}evidencePmids.add({{ r.source_pmid|tojson }});{% endif %}{% endfor %}
+    {% endif %}
+    {% if temperature and temperature.records %}
+    {% for r in temperature.records %}{% if r.source_pmid %}evidencePmids.add({{ r.source_pmid|tojson }});{% endif %}{% endfor %}
+    {% endif %}
+
+    if (refs.length === 0 && evidencePmids.size === 0) {
+        litContainer.innerHTML = '<div class="text-center py-8 text-gray-400"><div class="text-3xl mb-2">📄</div><p>No related literature</p></div>';
+        return;
+    }
+    let html = '<div class="space-y-3">';
+    refs.forEach(r => {
+        html += '<div class="border border-gray-100 rounded-lg p-4 hover:bg-gray-50 transition">' +
+            '<div class="font-medium text-gray-800">' + r.title + '</div>' +
+            '<div class="text-sm text-gray-500 mt-1">' + (r.authors || '') + '</div>' +
+            '<div class="text-sm text-gray-400">' + (r.journal || '') + ' ' + (r.year || '') + '</div>' +
+            '<div class="flex gap-2 mt-2">' +
+            (r.pmid ? '<a href="https://pubmed.ncbi.nlm.nih.gov/' + r.pmid + '/" target="_blank" class="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded">PMID: ' + r.pmid + '</a>' : '') +
+            (r.doi ? '<a href="https://doi.org/' + r.doi + '" target="_blank" class="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded">DOI</a>' : '') +
+            '</div></div>';
+    });
+    if (evidencePmids.size > 0) {
+        html += '<div class="text-xs text-gray-400 mt-2">Additional ' + evidencePmids.size + ' evidence source articles (PMID)</div>';
+    }
+    html += '</div>';
+    litContainer.innerHTML = html;
+})();
+
+// Load geography map
+{% if virus_geo %}
+(function() {
+    const geoDom = document.getElementById('virus-geo-map');
+    if (!geoDom || typeof echarts === 'undefined') return;
+    const geoData = {{ virus_geo|tojson }};
+    if (!geoData || geoData.length === 0) return;
+    const maxVal = Math.max(...geoData.map(d => d.cnt));
+    fetch('/static/world.json')
+        .then(r => { if (!r.ok) throw new Error('fail'); return r.json(); })
+        .then(worldJson => {
+            echarts.registerMap('world', worldJson);
+            const chart = echarts.init(geoDom);
+            chart.setOption({
+                tooltip: { trigger: 'item', formatter: p => p.value ? p.name + ': ' + p.value + ' isolates' : p.name },
+                visualMap: { min: 0, max: maxVal, inRange: { color: ['#e0f3f8','#abd9e9','#2c7bb6','#313695'] }, show: false },
+                series: [{
+                    type: 'map', map: 'world', roam: true,
+                    itemStyle: { areaColor: '#f0f0f0', borderColor: '#ccc' },
+                    emphasis: { label: { show: true }, itemStyle: { areaColor: '#f39c12' } },
+                    data: geoData.map(d => ({ name: d.country, value: d.cnt }))
+                }]
+            });
+            window.addEventListener('resize', () => chart.resize());
+        })
+        .catch(() => { geoDom.style.display = 'none'; });
+})();
+{% endif %}
+</script>
+{% if has_sequence %}
+<script>
+let seqData = "";
+
+function escapeHtml(text) {
+    return text.replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+
+function formatSequence(highlight) {
+    const lineLen = 60;
+    const chunks = [];
+    for (let i = 0; i < seqData.length; i += lineLen) {
+        const pos = String(i + 1).padStart(8, " ");
+        let chunk = seqData.slice(i, i + lineLen).replace(/(.{10})/g, "$1 ").trim();
+        chunk = escapeHtml(chunk);
+        if (highlight) {
+            const safe = highlight.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            chunk = chunk.replace(new RegExp(safe, "gi"), match => `<mark class="bg-yellow-200">${match}</mark>`);
+        }
+        chunks.push(`${pos}  ${chunk}`);
+    }
+    document.getElementById("seq-container").innerHTML = chunks.join("\n");
+}
+
+function searchSequence() {
+    const q = document.getElementById("seq-search").value.trim().toUpperCase();
+    formatSequence(q);
+}
+
+fetch("/api/virus/{{ virus.accession }}/sequence")
+    .then(resp => resp.text())
+    .then(text => {
+        const lines = text.split(/\r?\n/).filter(line => !line.startsWith(">"));
+        seqData = lines.join("").replace(/\s/g, "").toUpperCase();
+        const gc = seqData.length ? ((seqData.match(/[GC]/g) || []).length / seqData.length * 100).toFixed(1) : "0.0";
+        document.getElementById("seq-meta").textContent = `${seqData.length.toLocaleString()} bp, GC ${gc}%`;
+        formatSequence("");
+    })
+    .catch(() => {
+        document.getElementById("seq-container").textContent = "Sequence could not be loaded.";
+    });
+</script>
+{% endif %}
+{% endblock %}

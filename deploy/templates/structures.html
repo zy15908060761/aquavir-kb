@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+{% block title %}3D Protein Structures — Aquatic Invertebrate Virus Knowledge Base{% endblock %}
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/molstar@latest/build/viewer/molstar.min.js"></script>
+<style>
+    #molstar-viewer { width: 100%; height: 550px; border-radius: 12px; overflow: hidden; background: #f8fafc; }
+    .structure-card { transition: all 0.2s; border-left: 4px solid transparent; }
+    .structure-card:hover { border-left-color: #8b5cf6; box-shadow: 0 4px 12px -4px rgba(0,0,0,0.08); }
+    .structure-card.selected { border-left-color: #8b5cf6; background: #f5f3ff; }
+    .conf-very-high { color: #0053d6; }
+    .conf-high { color: #3b82f6; }
+    .conf-med { color: #f59e0b; }
+    .conf-low { color: #ef4444; }
+
+    /* pLDDT heatmap color scale */
+    .plddt-gradient {
+        width: 100%; height: 20px; border-radius: 4px;
+        background: linear-gradient(to right,
+            #0053d6 0%, #3b82f6 25%, #42b8b8 40%, #86c96d 55%,
+            #f5c842 70%, #f59e0b 80%, #ef4444 100%);
+    }
+    .plddt-scale { display: flex; justify-content: space-between; font-size: 10px; color: #6b7280; margin-top: 2px; }
+    .plddt-card { border-radius: 8px; padding: 12px; border: 1px solid #e5e7eb; }
+    .plddt-bar-container { margin-top: 8px; }
+    .plddt-bar { height: 4px; border-radius: 2px; transition: background 0.3s; }
+    .plddt-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+    .badge-vhigh { background: #dbeafe; color: #0053d6; }
+    .badge-high { background: #eff6ff; color: #3b82f6; }
+    .badge-med { background: #fef3c7; color: #d97706; }
+    .badge-low { background: #fee2e2; color: #dc2626; }
+    .badge-unk { background: #f3f4f6; color: #6b7280; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+    <div class="flex items-center gap-2 text-sm text-gray-400 mb-4">
+        <a href="/enrichment" class="hover:text-primary">Enrichment Hub</a><span>/</span><span class="text-gray-700 font-medium">3D Protein Structures</span>
+    </div>
+
+    <div class="bg-white rounded-xl p-5 mb-6 border border-gray-100">
+        <div class="flex items-center gap-3 mb-2">
+            <span class="text-3xl">&#x1F9CA;</span>
+            <div><h1 class="text-2xl font-bold text-gray-800">Protein 3D Structure Viewer</h1><p class="text-sm text-gray-500">AlphaFold AI-predicted structures + ESMFold with embedded pLDDT heatmap | Click a list entry to load the 3D model</p><p class="text-xs text-amber-600 mt-1">&#x26A0;&#xFE0F; AlphaFold-predicted structures. pLDDT reflects per-residue confidence, not experimentally resolved coordinates.</p></div>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4" id="struct-summary">
+            <div class="text-center p-3 bg-purple-50 rounded-lg"><div class="text-xl font-bold text-purple-700">--</div><div class="text-xs text-gray-500">AlphaFold Structures</div></div>
+            <div class="text-center p-3 bg-green-50 rounded-lg"><div class="text-xl font-bold text-green-700">--</div><div class="text-xs text-gray-500">ESMFold Structures</div></div>
+            <div class="text-center p-3 bg-blue-50 rounded-lg"><div class="text-xl font-bold text-blue-700">--</div><div class="text-xs text-gray-500">High Confidence (pLDDT&#x2265;70)</div></div>
+            <div class="text-center p-3 bg-purple-50 rounded-lg"><div class="text-xl font-bold text-purple-700">--</div><div class="text-xs text-gray-500">Proteins w/ Structures</div></div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Structure list -->
+        <div class="lg:col-span-1 space-y-4">
+            <div class="bg-white rounded-xl p-3 border border-gray-100">
+                <input type="text" id="struct-search" placeholder="Search UniProt ID..." class="search-input w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-purple-500 mb-2">
+                <div class="flex gap-2">
+                    <select id="source-filter" class="flex-1 px-2 py-1.5 border border-gray-200 rounded text-xs">
+                        <option value="all">All Sources</option><option value="alphafold">AlphaFold DB</option><option value="esmfold">ESMFold</option><option value="pdb">PDB</option>
+                    </select>
+                    <select id="conf-filter" class="flex-1 px-2 py-1.5 border border-gray-200 rounded text-xs">
+                        <option value="0">All Confidence</option><option value="90">pLDDT &#x2265; 90</option><option value="70">pLDDT &#x2265; 70</option><option value="50">pLDDT &#x2265; 50</option>
+                    </select>
+                </div>
+            </div>
+            <div id="struct-list" class="space-y-1 max-h-[500px] overflow-y-auto"><div class="text-center text-gray-400 py-6 text-sm">Loading...</div></div>
+            <!-- AlphaFold confidence disclaimer -->
+            <div class="mt-3 bg-amber-50 border border-amber-200 rounded-lg p-2.5 text-xs text-amber-800 leading-relaxed">
+                <span class="font-medium">&#x26A0;&#xFE0F; Important:</span> AlphaFold-predicted structures. pLDDT reflects per-residue confidence, not experimentally resolved coordinates. High-pLDDT regions (blue) are reliable; low-pLDDT regions (red) may be disordered or unreliable.
+            </div>
+            <div id="struct-pagination" class="flex justify-center gap-1 flex-wrap"></div>
+        </div>
+        <!-- 3D Viewer + pLDDT panel -->
+        <div class="lg:col-span-2 space-y-3">
+            <div id="molstar-viewer" class="border border-gray-200">
+                <div class="flex items-center justify-center h-full text-gray-400 text-sm">Click a structure entry in the left panel to load the 3D model</div>
+            </div>
+            <div id="struct-info" class="bg-white rounded-lg p-3 border border-gray-100 text-sm text-gray-500">Select a structure to view details</div>
+
+            <!-- pLDDT heatmap color scale and details -->
+            <div id="plddt-panel" class="plddt-card bg-white hidden">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-semibold text-gray-700">pLDDT Confidence Heatmap</span>
+                    <span id="plddt-avg-badge" class="plddt-badge badge-unk">--</span>
+                </div>
+                <div class="plddt-gradient"></div>
+                <div class="plddt-scale">
+                    <span>100 Very High</span><span>90</span><span>70 High</span><span>50 Medium</span><span>0 Low</span>
+                </div>
+                <div class="mt-3 grid grid-cols-4 gap-2 text-center text-xs text-gray-500">
+                    <div><div class="inline-block w-3 h-3 rounded-sm" style="background:#0053d6"></div> &gt;90 Very High</div>
+                    <div><div class="inline-block w-3 h-3 rounded-sm" style="background:#3b82f6"></div> 70-90 High</div>
+                    <div><div class="inline-block w-3 h-3 rounded-sm" style="background:#f5c842"></div> 50-70 Medium</div>
+                    <div><div class="inline-block w-3 h-3 rounded-sm" style="background:#ef4444"></div> &lt;50 Low</div>
+                </div>
+                <p class="text-xs text-gray-400 mt-2">Blue = high confidence (reliable structure) | Red = low confidence (possibly disordered region)</p>
+                <p class="text-xs text-gray-400 mt-1">Tip: In the 3D viewer toolbar, click <strong>Color &#x2192; Uncertainty (B-factor)</strong> to see pLDDT heatmap coloring</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let structData = [], structPage = 0, viewer = null;
+const SP = 20;
+
+function plddtTier(score) {
+    if (score == null) return { tier: 'unk', cls: 'badge-unk', label: 'Unknown' };
+    if (score >= 90) return { tier: 'vhigh', cls: 'badge-vhigh', label: 'Very High Confidence' };
+    if (score >= 70) return { tier: 'high', cls: 'badge-high', label: 'High Confidence' };
+    if (score >= 50) return { tier: 'med', cls: 'badge-med', label: 'Medium Confidence' };
+    return { tier: 'low', cls: 'badge-low', label: 'Low Confidence' };
+}
+
+function plddtColor(score) {
+    if (score == null) return '#9ca3af';
+    if (score >= 90) return '#0053d6';
+    if (score >= 70) return '#3b82f6';
+    if (score >= 50) return '#f59e0b';
+    return '#ef4444';
+}
+
+function loadStructures() {
+    Promise.all([
+        fetch('/api/enrichment/alphafold?limit=500').then(r => r.json()),
+        fetch('/api/structure/stats').then(r => r.json())
+    ]).then(([af, stats]) => {
+        structData = af.status === 'success' ? af.data : [];
+        const s = document.getElementById('struct-summary');
+        if (stats.status === 'success') {
+            s.children[0].querySelector('.text-xl').textContent = stats.alphafold_count || 0;
+            s.children[1].querySelector('.text-xl').textContent = stats.esmfold_count || 0;
+            s.children[2].querySelector('.text-xl').textContent =
+                (stats.esmfold_plddt_distribution?.very_high || 0) + (stats.esmfold_plddt_distribution?.high || 0) +
+                (structData.filter(x => x._type === 'alphafold' && x._confidence >= 70).length);
+            s.children[3].querySelector('.text-xl').textContent = stats.proteins_with_structure || 0;
+        }
+        applyStructFilter();
+    });
+}
+
+function applyStructFilter() {
+    const s = document.getElementById('struct-search').value.toLowerCase();
+    const src = document.getElementById('source-filter').value;
+    const conf = parseInt(document.getElementById('conf-filter').value);
+    let f = structData;
+    if (s) f = f.filter(x => (x._display_id||'').toLowerCase().includes(s) || (x.gene||'').toLowerCase().includes(s));
+    if (src !== 'all') f = f.filter(x => x._type === src);
+    if (conf > 0) f = f.filter(x => (x._confidence || 0) >= conf);
+    const batch = f.slice(structPage * SP, (structPage + 1) * SP);
+    document.getElementById('struct-list').innerHTML = batch.length === 0
+        ? '<div class="text-center text-gray-400 py-6 text-sm">No matching structures</div>'
+        : batch.map(x => {
+            const t = plddtTier(x._confidence);
+            const confDot = x._confidence != null
+                ? `<span class="w-2 h-2 rounded-full inline-block ml-1" style="background:${plddtColor(x._confidence)}" title="pLDDT ${Number(x._confidence).toFixed(0)}"></span>`
+                : '';
+            return `
+        <div class="structure-card bg-white rounded-lg p-3 border border-gray-100 cursor-pointer text-sm"
+             onclick="loadStructure('${x._display_id}','${x._type}','${x.entry_id || x._display_id}',${x._confidence || 0}, this)"
+             data-entry="${x.entry_id || x._display_id}">
+            <div class="flex justify-between items-start">
+                <div>
+                    <span class="font-medium text-gray-800">${x._display_id}</span>
+                    <span class="text-xs text-gray-400 ml-1">${x.gene || ''}</span>${confDot}
+                </div>
+                <span class="text-xs px-1.5 py-0.5 rounded ${x._type==='alphafold'?'bg-purple-100 text-purple-700':'bg-green-100 text-green-700'}">${x._type==='alphafold'?'AF':'ESM'}</span>
+            </div>
+            <div class="flex justify-between mt-1">
+                <span class="text-xs text-gray-400 truncate max-w-[180px]">${x.protein_description || x._display_id}</span>
+                ${x._confidence != null ? `<span class="text-xs font-mono ${x._confidence >= 70 ? 'conf-high' : x._confidence >= 50 ? 'conf-med' : 'conf-low'}">pLDDT ${Number(x._confidence).toFixed(0)}</span>` : ''}
+            </div>
+        </div>`}).join('');
+    const pages = Math.ceil(f.length / SP);
+    document.getElementById('struct-pagination').innerHTML = pages > 1 ? Array.from({length: Math.min(pages, 10)}, (_,i) => `<button onclick="structPage=${i};applyStructFilter()" class="px-2 py-1 rounded text-xs ${i===structPage?'bg-purple-600 text-white':'bg-gray-100 hover:bg-gray-200'}">${i+1}</button>`).join('') : '';
+}
+
+function loadStructure(displayId, source, entryId, confidence, cardEl) {
+    document.querySelectorAll('.structure-card').forEach(c => c.classList.remove('selected'));
+    if (cardEl) cardEl.classList.add('selected');
+
+    const info = document.getElementById('struct-info');
+    const viewerEl = document.getElementById('molstar-viewer');
+    const plddtPanel = document.getElementById('plddt-panel');
+    const plddtAvgBadge = document.getElementById('plddt-avg-badge');
+    viewerEl.innerHTML = '';
+
+    // Update pLDDT panel
+    const tier = plddtTier(confidence);
+    plddtAvgBadge.textContent = tier.label;
+    plddtAvgBadge.className = 'plddt-badge ' + tier.cls;
+    plddtPanel.classList.remove('hidden');
+
+    if (source === 'alphafold') {
+        // AlphaFold: try local PDB first, fall back to moleculeId
+        info.innerHTML = `<span class="font-medium">${displayId}</span> | <span class="text-purple-700">AlphaFold DB</span> | Mean pLDDT: <span class="font-mono font-semibold" style="color:${plddtColor(confidence)}">${confidence != null ? Number(confidence).toFixed(0) : 'N/A'}</span> | <a href="https://alphafold.ebi.ac.uk/entry/${displayId}" target="_blank" class="text-primary hover:underline">AlphaFold DB &rarr;</a>`;
+
+        if (!viewer) {
+            viewer = new PDBeMolstarPlugin();
+        }
+        // Try loading via moleculeId first (PDBe automatically uses B-factor coloring)
+        viewer.render(viewerEl, {
+            moleculeId: displayId,
+            hideControls: false,
+            bgColor: {r: 248, g: 250, b: 252},
+        });
+    } else if (source === 'esmfold' && entryId) {
+        info.innerHTML = `<span class="font-medium">${displayId}</span> | <span class="text-green-700">ESMFold</span> | Mean pLDDT: <span class="font-mono font-semibold" style="color:${plddtColor(confidence)}">${confidence != null ? Number(confidence).toFixed(0) : 'N/A'}</span> | structure_id: ${entryId} | <a href="/api/structure/pdb/${entryId}?type=esmfold" target="_blank" class="text-primary hover:underline">Download PDB</a>`;
+
+        fetch(`/api/structure/pdb/${entryId}?type=esmfold`).then(r => r.json()).then(data => {
+            if (data.status === 'success' && data.pdb_content) {
+                if (!viewer) {
+                    viewer = new PDBeMolstarPlugin();
+                }
+                viewer.render(viewerEl, {
+                    customData: { data: data.pdb_content, format: 'pdb' },
+                    hideControls: false,
+                    bgColor: {r: 248, g: 250, b: 252},
+                });
+            } else {
+                viewerEl.innerHTML = '<div class="flex items-center justify-center h-full text-gray-400 text-sm">PDB file unavailable</div>';
+            }
+        }).catch(() => {
+            viewerEl.innerHTML = '<div class="flex items-center justify-center h-full text-gray-400 text-sm">PDB load failed</div>';
+        });
+    } else {
+        info.innerHTML = `<span class="font-medium">${displayId}</span> | ${source} | pLDDT: ${confidence != null ? Number(confidence).toFixed(0) : 'N/A'}`;
+        viewerEl.innerHTML = '<div class="flex items-center justify-center h-full text-gray-400 text-sm">Online viewing not supported for this structure type</div>';
+    }
+}
+
+document.getElementById('struct-search').addEventListener('input', () => { structPage=0; applyStructFilter(); });
+document.getElementById('source-filter').addEventListener('change', () => { structPage=0; applyStructFilter(); });
+document.getElementById('conf-filter').addEventListener('change', () => { structPage=0; applyStructFilter(); });
+loadStructures();
+</script>
+{% endblock %}

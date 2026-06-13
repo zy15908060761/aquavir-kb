@@ -1,0 +1,43 @@
+# Database files (mounted at runtime)
+*.db
+*.db-wal
+*.db-shm
+
+# Data files (mounted at runtime)
+sequences/
+downloads/
+public_downloads/
+ncbi_metadata/
+external_data/
+
+# Tools and binaries
+tools/
+cdhit-4.8.1/
+blastdb/
+
+# Backups
+backups/
+
+# Deploy configs (not needed inside container)
+deploy/
+
+# Git
+.git/
+.gitignore
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Logs and temp
+*.log
+reports/
+maintenance_archive/
+tmp_*.py
+tmp_*.json
+
+# OS
+.DS_Store
+Thumbs.db

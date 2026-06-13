@@ -1,0 +1,827 @@
+{% extends "base.html" %}
+{% block title %}{{ virus.canonical_name or virus.virus_name or virus.accession }} — AquaVir-KB{% endblock %}
+
+{% block extra_head %}
+<style>
+    .hero-card { border-radius: var(--radius-lg); padding: 20px 24px; margin-bottom: 16px; background: var(--bg-card); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm); }
+    .metric-bar { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    @media (min-width: 768px) { .metric-bar { grid-template-columns: repeat(4, 1fr); } }
+    .metric-item { text-align: center; padding: 10px; border-radius: var(--radius-md); background: var(--bg-elevated); transition: background 0.15s; }
+    .metric-item:hover { background: var(--border-subtle); }
+    .metric-num { font-size: 18px; font-weight: 700; font-family: monospace; }
+    .metric-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); margin-top: 2px; }
+    .tab-content { display: none; animation: fadeIn 0.25s ease; }
+    .tab-content.active { display: block; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-6">
+
+    <!-- ═══════════════════════════════════════════════════════
+         LAYER 1: HERO SUMMARY
+         ═══════════════════════════════════════════════════════ -->
+    <div class="hero-card">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 10px;">
+            <div style="min-width: 0; flex: 1;">
+                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <h1 style="font-size: 22px; font-weight: 700; color: var(--text-main); letter-spacing: -0.02em; margin: 0;">
+                        {{ virus.canonical_name or virus.virus_name or "Unknown virus" }}
+                    </h1>
+                    <span style="font-family: monospace; font-size: 15px; color: var(--text-muted);">{{ virus.accession }}</span>
+                </div>
+                {% if virus.canonical_name_cn %}
+                <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 6px 0;">{{ virus.canonical_name_cn }}</p>
+                {% endif %}
+                <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+                    {% if virus.virus_family %}
+                    <a href="/family/{{ virus.virus_family|urlencode }}" class="tag tag-primary" style="text-decoration: none; font-size: 12px; padding: 3px 10px;">{{ virus.virus_family }}</a>
+                    {% endif %}
+                    {% if virus.virus_genus %}
+                    <span class="tag tag-subtle" style="font-size: 11px; padding: 2px 8px;">{{ virus.virus_genus }}</span>
+                    {% endif %}
+                    {% if virus.genome_type %}
+                    <span class="tag tag-genome" style="font-size: 11px; padding: 2px 8px;">{{ virus.genome_type }}</span>
+                    {% endif %}
+                    {% if virus.virus_host_phylum %}
+                    <span class="tag" style="font-size: 11px; padding: 2px 8px;
+                        {% if virus.virus_host_phylum == 'Arthropoda' %}background: rgba(245,158,11,0.08); color: #d97706; border-color: rgba(245,158,11,0.15);
+                        {% elif virus.virus_host_phylum == 'Mollusca' %}background: rgba(139,92,246,0.08); color: #7c3aed; border-color: rgba(139,92,246,0.15);
+                        {% elif virus.virus_host_phylum == 'Cnidaria' %}background: rgba(236,72,153,0.08); color: #db2777; border-color: rgba(236,72,153,0.15);
+                        {% else %}background: var(--bg-elevated); color: var(--text-secondary); border-color: var(--border-subtle);
+                        {% endif %}
+                    ">{{ virus.virus_host_phylum }}</span>
+                    {% endif %}
+                    {% if virus.dataset_tier %}
+                    <span class="tag tag-subtle" style="font-size: 10px; padding: 2px 6px;">{{ virus.dataset_tier }}</span>
+                    {% endif %}
+                    {% if pathogenicity %}
+                        {% set vl = pathogenicity|selectattr("virulence_level")|first %}
+                        {% if vl and vl.virulence_level and vl.virulence_level.lower() in ('high', 'severe') %}
+                        <span class="tag tag-severe" style="font-size: 11px; padding: 2px 8px; font-weight: 700;">⚠️ HIGH VIRULENCE</span>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap; flex-shrink: 0;">
+                <a href="https://www.ncbi.nlm.nih.gov/nuccore/{{ virus.accession }}" target="_blank" class="btn btn-sm" style="text-decoration: none;">NCBI ↗</a>
+                {% if has_sequence %}
+                <a href="/api/virus/{{ virus.accession }}/sequence" download="{{ virus.accession }}.fasta" class="btn btn-primary btn-sm" style="text-decoration: none;">⬇ FASTA</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- One-line summary -->
+        {% if pathogenicity %}
+            {% set vl = pathogenicity|selectattr("virulence_level")|first %}
+            {% if vl and vl.virulence_level and vl.virulence_level.lower() in ('high', 'severe') %}
+            <p style="font-size: 12px; color: var(--c-severe); margin: 8px 0 0 0; font-weight: 500;">
+                ⚠️ {{ vl.disease_symptoms[:120] if vl.disease_symptoms else 'High virulence pathogen' }}{% if vl.disease_symptoms and vl.disease_symptoms|length > 120 %}...{% endif %}
+            </p>
+            {% endif %}
+        {% endif %}
+
+        <!-- Key Metrics Bar -->
+        <div class="metric-bar" style="margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border-subtle);">
+            <div class="metric-item">
+                <div class="metric-num" style="color: var(--c-genome);">{{ isolate_count }}</div>
+                <div class="metric-label">Isolates</div>
+            </div>
+            <div class="metric-item">
+                <div class="metric-num" style="color: var(--c-host);">{{ host_count }}</div>
+                <div class="metric-label">Hosts</div>
+            </div>
+            <div class="metric-item">
+                <div class="metric-num" style="color: var(--c-protein);">{{ protein_count or 0 }}</div>
+                <div class="metric-label">Proteins</div>
+            </div>
+            <div class="metric-item">
+                <div class="metric-num" style="color: var(--c-evidence);">{{ evidence_count or literature_count or 0 }}</div>
+                <div class="metric-label">Evidence</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         LAYER 2: STICKY TAB NAVIGATION
+         ═══════════════════════════════════════════════════════ -->
+    <div class="card" style="padding: 0; position: sticky; top: 52px; z-index: 40; overflow-x: auto; border-radius: var(--radius-lg);">
+        <div class="tab-nav" style="padding: 0 8px;">
+            <button class="tab-nav-btn active" data-tab-group="detail" data-tab-target="overview" onclick="activateTab('detail', 'overview')">📋 Overview</button>
+            <button class="tab-nav-btn" data-tab-group="detail" data-tab-target="genome" onclick="activateTab('detail', 'genome')">🧬 Genome</button>
+            <button class="tab-nav-btn" data-tab-group="detail" data-tab-target="hosts" onclick="activateTab('detail', 'hosts')">🦐 Hosts <span style="font-size: 10px; color: var(--text-muted); margin-left: 2px;">({{ host_count }})</span></button>
+            <button class="tab-nav-btn" data-tab-group="detail" data-tab-target="proteins" onclick="activateTab('detail', 'proteins')">🧪 Proteins <span style="font-size: 10px; color: var(--text-muted); margin-left: 2px;">({{ protein_count or 0 }})</span></button>
+            <button class="tab-nav-btn" data-tab-group="detail" data-tab-target="evidence" onclick="activateTab('detail', 'evidence')">📊 Evidence</button>
+            <button class="tab-nav-btn" data-tab-group="detail" data-tab-target="literature" onclick="activateTab('detail', 'literature')">📚 Literature</button>
+            <button class="tab-nav-btn" data-tab-group="detail" data-tab-target="geography" onclick="activateTab('detail', 'geography')">🌍 Geography</button>
+            <button class="tab-nav-btn" data-tab-group="detail" data-tab-target="isolates" onclick="activateTab('detail', 'isolates')">🧬 Isolates</button>
+            <button class="tab-nav-btn" data-tab-group="detail" data-tab-target="taxonomy" onclick="activateTab('detail', 'taxonomy')">📋 Taxonomy</button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         LAYER 2: TAB PANELS
+         ═══════════════════════════════════════════════════════ -->
+
+    <!-- ── Tab: Overview ── -->
+    <div id="tab-panel-overview" data-tab-panel="detail" class="tab-content active" style="margin-top: 16px;">
+        <!-- Genome Summary -->
+        <div class="card" style="margin-bottom: 16px;">
+            <div class="card-h">
+                <div class="color-bar color-bar--genome"></div>
+                <span>Genome Summary</span>
+            </div>
+            <div class="grid-bento" style="grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));">
+                <div style="text-align: center; padding: 10px; background: var(--bg-elevated); border-radius: var(--radius-md);">
+                    <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted);">Length</div>
+                    <div class="mono" style="font-size: 14px; font-weight: 700; color: var(--text-main); margin-top: 4px;">{{ "{:,}".format(virus.genome_length) if virus.genome_length else "N/A" }}</div>
+                </div>
+                <div style="text-align: center; padding: 10px; background: var(--bg-elevated); border-radius: var(--radius-md);">
+                    <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted);">Type</div>
+                    <div style="font-size: 14px; font-weight: 700; color: var(--text-main); margin-top: 4px;">{{ virus.genome_type or "N/A" }}</div>
+                </div>
+                <div style="text-align: center; padding: 10px; background: var(--bg-elevated); border-radius: var(--radius-md);">
+                    <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted);">GC%</div>
+                    <div class="mono" style="font-size: 14px; font-weight: 700; color: var(--text-main); margin-top: 4px;">{{ "{:.1f}%".format(virus.gc_content) if virus.gc_content else "N/A" }}</div>
+                </div>
+                <div style="text-align: center; padding: 10px; background: var(--bg-elevated); border-radius: var(--radius-md);">
+                    <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted);">Completeness</div>
+                    <div style="font-size: 14px; font-weight: 700; color: var(--text-main); margin-top: 4px;">{{ virus.completeness or "N/A" }}</div>
+                </div>
+                <div style="text-align: center; padding: 10px; background: var(--bg-elevated); border-radius: var(--radius-md);">
+                    <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted);">Country</div>
+                    <div style="font-size: 14px; font-weight: 700; color: var(--text-main); margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ virus.country or '' }}">{{ virus.country or "N/A" }}</div>
+                </div>
+                <div style="text-align: center; padding: 10px; background: var(--bg-elevated); border-radius: var(--radius-md);">
+                    <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted);">Year</div>
+                    <div class="mono" style="font-size: 14px; font-weight: 700; color: var(--text-main); margin-top: 4px;">{{ virus.collection_year or "N/A" }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pathogenicity (Prominent) -->
+        {% if pathogenicity %}
+        <div class="alert-card alert-virulence" style="margin-bottom: 16px;">
+            <div class="card-h" style="border-color: rgba(245,158,11,0.15); margin-bottom: 12px;">
+                <div class="color-bar color-bar--virulence"></div>
+                <span>Pathogenicity</span>
+                {% set vl = pathogenicity|selectattr("virulence_level")|first %}
+                {% if vl and vl.virulence_level and vl.virulence_level.lower() in ('high', 'severe') %}
+                <span class="tag tag-severe" style="margin-left: auto; font-size: 10px; padding: 2px 8px;">HIGH ALERT</span>
+                {% endif %}
+            </div>
+            <div class="grid grid-3" style="gap: 10px;">
+                {% set vl = pathogenicity|selectattr("virulence_level")|first %}
+                <div class="card" style="padding: 14px; text-align: center; margin-bottom: 0;">
+                    <div style="font-size: 12px; color: var(--text-muted);">Virulence Level</div>
+                    <div style="font-size: 22px; font-weight: 700; margin-top: 4px; {% if vl and vl.virulence_level and vl.virulence_level.lower() in ('high', 'severe') %}color: var(--c-severe);{% else %}color: var(--c-virulence);{% endif %}">
+                        {{ vl.virulence_level if vl else "Not evaluated" }}
+                    </div>
+                </div>
+                <div class="card" style="padding: 14px; text-align: center; margin-bottom: 0;">
+                    <div style="font-size: 12px; color: var(--text-muted);">Mortality Rate</div>
+                    <div style="font-size: 22px; font-weight: 700; margin-top: 4px; color: var(--c-severe);">
+                        {% set mr = pathogenicity|selectattr("mortality_rate_min")|first %}
+                        {% if mr and mr.mortality_rate_min is not none %}{{ mr.mortality_rate_min }}% – {{ mr.mortality_rate_max }}%{% else %}Not recorded{% endif %}
+                    </div>
+                </div>
+                <div class="card" style="padding: 14px; text-align: center; margin-bottom: 0;">
+                    <div style="font-size: 12px; color: var(--text-muted);">Disease Symptoms</div>
+                    <div style="font-size: 13px; font-weight: 500; color: var(--text-main); margin-top: 4px; line-height: 1.4;">
+                        {% if vl and vl.disease_symptoms %}{{ vl.disease_symptoms[:100] }}{% if vl.disease_symptoms|length > 100 %}...{% endif %}{% else %}Not recorded{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Outbreak Events (Layer 3: inline expand, show first 2) -->
+        {% if outbreak_events %}
+        <div class="card" style="margin-bottom: 16px;">
+            <div class="card-h">
+                <div class="color-bar color-bar--severe"></div>
+                <span>Outbreak Events</span>
+                <span style="margin-left: auto; font-size: 11px; color: var(--text-muted);">{{ outbreak_events|length }} recorded</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                {% for o in outbreak_events[:2] %}
+                <div style="border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 6px;">
+                        <div>
+                            <span style="font-weight: 600; font-size: 13px; color: var(--text-main);">{{ o.country }}</span>
+                            {% if o.start_year %}
+                            <span style="font-size: 12px; color: var(--text-muted);">({{ o.start_year }}{% if o.end_year %} – {{ o.end_year }}{% endif %})</span>
+                            {% endif %}
+                        </div>
+                        {% if o.economic_impact %}
+                        <span class="tag tag-severe" style="font-size: 10px; padding: 2px 8px;">Economic Loss</span>
+                        {% endif %}
+                    </div>
+                    {% if o.event_summary %}
+                    <p style="font-size: 12px; color: var(--text-secondary); margin: 6px 0 0 0; line-height: 1.5;">{{ o.event_summary }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                {% if outbreak_events|length > 2 %}
+                <div id="outbreak-expand" class="expand-section" style="display: flex; flex-direction: column; gap: 8px;">
+                    {% for o in outbreak_events[2:] %}
+                    <div style="border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 6px;">
+                            <div>
+                                <span style="font-weight: 600; font-size: 13px; color: var(--text-main);">{{ o.country }}</span>
+                                {% if o.start_year %}
+                                <span style="font-size: 12px; color: var(--text-muted);">({{ o.start_year }}{% if o.end_year %} – {{ o.end_year }}{% endif %})</span>
+                                {% endif %}
+                            </div>
+                            {% if o.economic_impact %}
+                            <span class="tag tag-severe" style="font-size: 10px; padding: 2px 8px;">Economic Loss</span>
+                            {% endif %}
+                        </div>
+                        {% if o.event_summary %}
+                        <p style="font-size: 12px; color: var(--text-secondary); margin: 6px 0 0 0; line-height: 1.5;">{{ o.event_summary }}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                <button class="expand-toggle" data-expand-for="outbreak-expand" onclick="toggleExpand('outbreak-expand')">
+                    Show all {{ outbreak_events|length }} →
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Diagnostic Methods (Layer 3: inline expand, show first 2) -->
+        {% if diagnostic_methods %}
+        <div class="card" style="margin-bottom: 16px;">
+            <div class="card-h">
+                <div class="color-bar color-bar--evidence"></div>
+                <span>Diagnostic Methods</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+                {% for dm in diagnostic_methods[:2] %}
+                <div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); transition: background 0.15s;" onmouseover="this.style.background='var(--bg-elevated)'" onmouseout="this.style.background='transparent'">
+                    <span style="width: 28px; height: 28px; border-radius: var(--radius-md); background: rgba(236,72,153,0.08); display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0;">🧬</span>
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-weight: 600; font-size: 13px; color: var(--text-main);">{{ dm.method_name }}</div>
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 1px;">{{ dm.primary_cn or dm.primary_category }} · {{ dm.target_gene_or_region or "target not specified" }}</div>
+                    </div>
+                    <span class="tag" style="font-size: 10px; padding: 2px 6px; flex-shrink: 0; {% if dm.evidence_strength and 'high' in dm.evidence_strength.lower() %}background: rgba(16,185,129,0.08); color: #059669; border-color: rgba(16,185,129,0.15);{% else %}background: rgba(245,158,11,0.08); color: #d97706; border-color: rgba(245,158,11,0.15);{% endif %}">{{ dm.evidence_strength or "unknown" }}</span>
+                </div>
+                {% endfor %}
+                {% if diagnostic_methods|length > 2 %}
+                <div id="diag-expand" class="expand-section" style="display: flex; flex-direction: column; gap: 6px;">
+                    {% for dm in diagnostic_methods[2:] %}
+                    <div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); transition: background 0.15s;" onmouseover="this.style.background='var(--bg-elevated)'" onmouseout="this.style.background='transparent'">
+                        <span style="width: 28px; height: 28px; border-radius: var(--radius-md); background: rgba(236,72,153,0.08); display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0;">🧬</span>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-weight: 600; font-size: 13px; color: var(--text-main);">{{ dm.method_name }}</div>
+                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 1px;">{{ dm.primary_cn or dm.primary_category }} · {{ dm.target_gene_or_region or "target not specified" }}</div>
+                        </div>
+                        <span class="tag" style="font-size: 10px; padding: 2px 6px; flex-shrink: 0; {% if dm.evidence_strength and 'high' in dm.evidence_strength.lower() %}background: rgba(16,185,129,0.08); color: #059669; border-color: rgba(16,185,129,0.15);{% else %}background: rgba(245,158,11,0.08); color: #d97706; border-color: rgba(245,158,11,0.15);{% endif %}">{{ dm.evidence_strength or "unknown" }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <button class="expand-toggle" data-expand-for="diag-expand" onclick="toggleExpand('diag-expand')">
+                    Show all {{ diagnostic_methods|length }} →
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Key Hosts (Layer 3: inline expand, show first 3) -->
+        {% if hosts %}
+        <div class="card" style="margin-bottom: 16px;">
+            <div class="card-h">
+                <div class="color-bar color-bar--host"></div>
+                <span>Key Hosts</span>
+                <span style="margin-left: auto; font-size: 11px; color: var(--text-muted);">{{ hosts|length }} total</span>
+            </div>
+            <div class="grid grid-3" style="gap: 8px;">
+                {% for host in hosts[:3] %}
+                <a href="/host/{{ host.host_id }}" style="text-decoration: none; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px; display: block; transition: all 0.15s;" onmouseover="this.style.borderColor='var(--c-host)'; this.style.background='rgba(16,185,129,0.03)'" onmouseout="this.style.borderColor='var(--border-subtle)'; this.style.background='transparent'">
+                    <div style="font-weight: 600; font-size: 13px; color: var(--text-main); font-style: italic;">{{ host.scientific_name }}</div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">{{ host.common_name_cn or "" }} {{ host.taxon_family or "" }}</div>
+                    <div style="display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap;">
+                        <span class="tag tag-host" style="font-size: 9px; padding: 1px 5px;">Confirmed</span>
+                    </div>
+                </a>
+                {% endfor %}
+                {% if hosts|length > 3 %}
+                <div id="host-expand" class="expand-section grid grid-3" style="gap: 8px; grid-column: 1 / -1;">
+                    {% for host in hosts[3:] %}
+                    <a href="/host/{{ host.host_id }}" style="text-decoration: none; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px; display: block; transition: all 0.15s;" onmouseover="this.style.borderColor='var(--c-host)'; this.style.background='rgba(16,185,129,0.03)'" onmouseout="this.style.borderColor='var(--border-subtle)'; this.style.background='transparent'">
+                        <div style="font-weight: 600; font-size: 13px; color: var(--text-main); font-style: italic;">{{ host.scientific_name }}</div>
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">{{ host.common_name_cn or "" }} {{ host.taxon_family or "" }}</div>
+                        <div style="display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap;">
+                            <span class="tag tag-host" style="font-size: 9px; padding: 1px 5px;">Confirmed</span>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                <div style="grid-column: 1 / -1;">
+                    <button class="expand-toggle" data-expand-for="host-expand" onclick="toggleExpand('host-expand')">
+                        Show all {{ hosts|length }} hosts →
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Reference & ICTM Mapping (Side by side) -->
+        <div class="grid grid-2" style="gap: 12px; margin-bottom: 16px;">
+            <div class="card" style="margin-bottom: 0;">
+                <div class="card-h">
+                    <div class="color-bar color-bar--literature"></div>
+                    <span>Reference</span>
+                </div>
+                {% if virus.ref_title %}
+                <p style="font-size: 13px; font-weight: 500; color: var(--text-main); margin: 0 0 6px 0;">{{ virus.ref_title }}</p>
+                <p style="font-size: 12px; color: var(--text-muted); margin: 0;">{{ virus.ref_authors or "" }}</p>
+                <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 8px 0;">{{ virus.journal or "" }} {{ virus.ref_year or "" }}</p>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    {% if virus.pmid %}<span class="tag tag-subtle" style="font-size: 10px; padding: 2px 8px;">PMID: {{ virus.pmid }}</span>{% endif %}
+                    {% if virus.doi %}<span class="tag tag-subtle" style="font-size: 10px; padding: 2px 8px;">DOI: {{ virus.doi }}</span>{% endif %}
+                </div>
+                {% else %}
+                <p style="font-size: 12px; color: var(--text-muted); margin: 0;">No linked publication record available for this isolate.</p>
+                {% endif %}
+            </div>
+            <div class="card" style="margin-bottom: 0;">
+                <div class="card-h">
+                    <div class="color-bar color-bar--primary"></div>
+                    <span>ICTV Mapping</span>
+                </div>
+                {% if ictv_mapped %}
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    {% for item in ictv_mapped[:5] %}
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border: 1px solid var(--border-subtle); border-radius: var(--radius-md);">
+                        <div>
+                            <div style="font-weight: 500; font-size: 12px; color: var(--text-main);">{{ item.species }}</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">{{ item.family or 'Unclassified' }} / {{ item.genus or 'Unclassified' }}</div>
+                        </div>
+                        <span class="tag tag-subtle" style="font-size: 10px; padding: 2px 6px; flex-shrink: 0;">{{ item.confidence or 'mapped' }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% elif ictv_family_refs %}
+                <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 6px 0;">No species-level mapping. Family-level references:</p>
+                <ul style="font-size: 12px; color: var(--text-secondary); padding-left: 16px; margin: 0;">
+                    {% for ref in ictv_family_refs %}
+                    <li>{{ ref.species }}{% if ref.genus %} ({{ ref.genus }}){% endif %}</li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p style="font-size: 12px; color: var(--text-muted); margin: 0;">No ICTV mapping available for this record.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Tab: Genome ── -->
+    <div id="tab-panel-genome" data-tab-panel="detail" class="tab-content" style="margin-top: 16px;">
+        <div class="card" style="margin-bottom: 16px;">
+            <div class="card-h">
+                <div class="color-bar color-bar--genome"></div>
+                <span>Genome & Sequence</span>
+            </div>
+            <div class="grid-bento" style="grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); margin-bottom: 16px;">
+                <div style="text-align: center; padding: 10px; background: var(--bg-elevated); border-radius: var(--radius-md);">
+                    <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted);">Length</div>
+                    <div class="mono" style="font-size: 14px; font-weight: 700; color: var(--text-main); margin-top: 4px;">{{ "{:,}".format(virus.genome_length) if virus.genome_length else "N/A" }}</div>
+                </div>
+                <div style="text-align: center; padding: 10px; background: var(--bg-elevated); border-radius: var(--radius-md);">
+                    <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted);">Type</div>
+                    <div style="font-size: 14px; font-weight: 700; color: var(--text-main); margin-top: 4px;">{{ virus.genome_type or "N/A" }}</div>
+                </div>
+                <div style="text-align: center; padding: 10px; background: var(--bg-elevated); border-radius: var(--radius-md);">
+                    <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted);">GC%</div>
+                    <div class="mono" style="font-size: 14px; font-weight: 700; color: var(--text-main); margin-top: 4px;">{{ "{:.1f}%".format(virus.gc_content) if virus.gc_content else "N/A" }}</div>
+                </div>
+                <div style="text-align: center; padding: 10px; background: var(--bg-elevated); border-radius: var(--radius-md);">
+                    <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted);">Completeness</div>
+                    <div style="font-size: 14px; font-weight: 700; color: var(--text-main); margin-top: 4px;">{{ virus.completeness or "N/A" }}</div>
+                </div>
+            </div>
+            {% if has_sequence %}
+            <div style="display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap;">
+                <input id="seq-search" placeholder="Find motif in sequence" style="flex: 1; min-width: 120px; padding: 6px 10px; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); font-size: 12px; background: var(--bg-card); color: var(--text-main); outline: none;">
+                <button class="btn btn-primary btn-sm" onclick="searchSequence()">Find</button>
+                <a href="/api/virus/{{ virus.accession }}/sequence" download="{{ virus.accession }}.fasta" class="btn btn-sm" style="text-decoration: none;">⬇ FASTA</a>
+            </div>
+            <div id="seq-meta" style="font-size: 11px; color: var(--text-muted); margin-bottom: 6px;"></div>
+            <pre id="seq-container" style="background: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px; max-height: 400px; overflow: auto; font-size: 11px; line-height: 1.6; font-family: monospace; color: var(--text-main); margin: 0;">Loading sequence...</pre>
+            {% else %}
+            <p style="font-size: 12px; color: var(--text-muted); margin: 0;">Sequence data not available for this record.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ── Tab: Hosts ── -->
+    <div id="tab-panel-hosts" data-tab-panel="detail" class="tab-content" style="margin-top: 16px;">
+        <div class="card" style="margin-bottom: 16px;">
+            <div class="card-h">
+                <div class="color-bar color-bar--host"></div>
+                <span>Associated Hosts</span>
+                <span style="margin-left: auto; font-size: 11px; color: var(--text-muted);">{{ host_count }} species</span>
+            </div>
+            {% if hosts %}
+            <div class="grid grid-3" style="gap: 8px;">
+                {% for host in hosts %}
+                <a href="/host/{{ host.host_id }}" style="text-decoration: none; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px; display: block; transition: all 0.15s;" onmouseover="this.style.borderColor='var(--c-host)'; this.style.background='rgba(16,185,129,0.03)'" onmouseout="this.style.borderColor='var(--border-subtle)'; this.style.background='transparent'">
+                    <div style="font-weight: 600; font-size: 13px; color: var(--text-main); font-style: italic;">{{ host.scientific_name }}</div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">{{ host.common_name_cn or "" }} {{ host.taxon_family or "" }}</div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p style="font-size: 12px; color: var(--text-muted); margin: 0;">No host links available for this record.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ── Tab: Proteins (async load) ── -->
+    <div id="tab-panel-proteins" data-tab-panel="detail" class="tab-content" style="margin-top: 16px;">
+        <div class="card" style="margin-bottom: 16px;">
+            <div class="card-h">
+                <div class="color-bar color-bar--protein"></div>
+                <span>Proteins</span>
+            </div>
+            <div id="proteins-container">
+                <div style="display: flex; align-items: center; justify-content: center; padding: 40px; gap: 10px;">
+                    <div style="width: 20px; height: 20px; border: 2px solid var(--border-subtle); border-top-color: var(--c-protein); border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+                    <span style="font-size: 13px; color: var(--text-muted);">Loading protein data...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Tab: Evidence ── -->
+    <div id="tab-panel-evidence" data-tab-panel="detail" class="tab-content" style="margin-top: 16px;">
+        {% if virulence or temperature %}
+        <div class="card" style="margin-bottom: 16px;">
+            <div class="card-h">
+                <div class="color-bar color-bar--evidence"></div>
+                <span>Reviewed Evidence</span>
+            </div>
+            <p style="font-size: 12px; color: var(--c-virulence); background: rgba(245,158,11,0.05); border: 1px solid rgba(245,158,11,0.1); border-radius: var(--radius-md); padding: 8px 12px; margin-bottom: 12px;">
+                Only manual-checked evidence records are displayed. Candidate or inferred records are excluded.
+            </p>
+            <div class="grid grid-2" style="gap: 12px;">
+                {% if virulence and virulence.records %}
+                <div>
+                    <h3 style="font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 8px;">Virulence / Pathogenicity</h3>
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        {% for record in virulence.records %}
+                        <div style="border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 10px 12px;">
+                            <div style="font-weight: 500; font-size: 12px; color: var(--text-main);">{{ record.claim }}</div>
+                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">{{ record.value_text or record.context or "No value text" }}</div>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">{{ record.evidence_type }} · {{ record.evidence_strength or "unknown" }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                {% if temperature and temperature.records %}
+                <div>
+                    <h3 style="font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 8px;">Temperature</h3>
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        {% for record in temperature.records %}
+                        <div style="border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 10px 12px;">
+                            <div style="font-weight: 500; font-size: 12px; color: var(--text-main);">{{ record.claim }}</div>
+                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">{{ record.value_text or record.context or "No value text" }}</div>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">{{ record.evidence_type }} · {{ record.evidence_strength or "unknown" }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="card" style="padding: 40px; text-align: center; margin-bottom: 16px;">
+            <p style="font-size: 13px; color: var(--text-muted); margin: 0;">No curated evidence records available for this virus.</p>
+        </div>
+        {% endif %}
+
+        <!-- Control Methods -->
+        {% if control_methods %}
+        <div class="card" style="margin-bottom: 16px;">
+            <div class="card-h">
+                <div class="color-bar color-bar--evidence"></div>
+                <span>Control Methods</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+                {% for cm in control_methods %}
+                <div style="border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 10px 12px;">
+                    <div style="font-weight: 500; font-size: 12px; color: var(--text-main);">{{ cm.method_name }}</div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">{{ cm.method_category or "category not specified" }} · {{ cm.evidence_strength or "unknown evidence" }}</div>
+                    {% if cm.effect_summary %}<div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">{{ cm.effect_summary }}</div>{% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ── Tab: Literature (async load) ── -->
+    <div id="tab-panel-literature" data-tab-panel="detail" class="tab-content" style="margin-top: 16px;">
+        <div class="card" style="margin-bottom: 16px;">
+            <div class="card-h">
+                <div class="color-bar color-bar--literature"></div>
+                <span>Related Literature</span>
+                <span style="margin-left: auto; font-size: 11px; color: var(--text-muted);">{{ literature_count or 0 }} articles</span>
+            </div>
+            <div id="literature-container">
+                <div style="display: flex; align-items: center; justify-content: center; padding: 40px; gap: 10px;">
+                    <div style="width: 20px; height: 20px; border: 2px solid var(--border-subtle); border-top-color: var(--c-literature); border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+                    <span style="font-size: 13px; color: var(--text-muted);">Loading literature data...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Tab: Geography ── -->
+    <div id="tab-panel-geography" data-tab-panel="detail" class="tab-content" style="margin-top: 16px;">
+        <div class="card" style="margin-bottom: 16px;">
+            <div class="card-h">
+                <div class="color-bar color-bar--geography"></div>
+                <span>Geographic Distribution</span>
+            </div>
+            {% if virus_geo %}
+            <div id="virus-geo-map" style="width: 100%; height: 320px; background: var(--bg-elevated); border-radius: var(--radius-md); border: 1px solid var(--border-subtle); margin-bottom: 12px;"></div>
+            <div class="grid-bento" style="grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));">
+                {% for g in virus_geo %}
+                <div style="border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 8px 10px;">
+                    <span style="font-weight: 500; font-size: 12px; color: var(--text-main);">{{ g.country }}</span>
+                    <span style="font-size: 11px; color: var(--text-muted); margin-left: 4px;">{{ g.cnt }} isolates</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p style="font-size: 12px; color: var(--text-muted); margin: 0;">No geographic distribution data available.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ── Tab: Isolates ── -->
+    <div id="tab-panel-isolates" data-tab-panel="detail" class="tab-content" style="margin-top: 16px;">
+        <div class="card" style="margin-bottom: 16px;">
+            <div class="card-h">
+                <div class="color-bar color-bar--genome"></div>
+                <span>Related Isolates</span>
+                <span style="margin-left: auto; font-size: 11px; color: var(--text-muted);">{{ isolate_count }} total</span>
+            </div>
+            {% if isolates %}
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Accession</th>
+                            <th style="text-align: right;">Length</th>
+                            <th style="text-align: right;">GC</th>
+                            <th>Completeness</th>
+                            <th>Country</th>
+                            <th>Year</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for iso in isolates %}
+                        <tr>
+                            <td class="cell-mono"><a href="/virus/{{ iso.accession }}" style="color: var(--c-primary-600); text-decoration: none; font-weight: 500;">{{ iso.accession }}</a></td>
+                            <td class="cell-num">{{ "{:,}".format(iso.genome_length) if iso.genome_length else "N/A" }}</td>
+                            <td class="cell-num">{{ "{:.1f}".format(iso.gc_content) if iso.gc_content else "N/A" }}</td>
+                            <td>{{ iso.completeness or "N/A" }}</td>
+                            <td>{{ iso.country or "N/A" }}</td>
+                            <td>{{ iso.collection_year or "N/A" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p style="font-size: 12px; color: var(--text-muted); margin: 0;">No related isolates found.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ── Tab: Taxonomy ── -->
+    <div id="tab-panel-taxonomy" data-tab-panel="detail" class="tab-content" style="margin-top: 16px;">
+        <div class="card" style="margin-bottom: 16px;">
+            <div class="card-h">
+                <div class="color-bar color-bar--primary"></div>
+                <span>Taxonomy Information</span>
+            </div>
+            <div class="grid grid-2" style="gap: 10px; margin-bottom: 12px;">
+                <div style="border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px;">
+                    <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); margin-bottom: 4px;">Family</div>
+                    <div style="font-weight: 500; font-size: 13px; color: var(--text-main);">{{ virus.virus_family or 'Unclassified' }}</div>
+                </div>
+                <div style="border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px;">
+                    <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); margin-bottom: 4px;">Host Phylum</div>
+                    <div style="font-weight: 500; font-size: 13px; color: var(--text-main);">{{ virus.virus_host_phylum or 'Unknown' }}</div>
+                </div>
+                <div style="border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px;">
+                    <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); margin-bottom: 4px;">Genome Type</div>
+                    <div style="font-weight: 500; font-size: 13px; color: var(--text-main);">{{ virus.genome_type or 'Unknown' }}</div>
+                </div>
+                <div style="border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px;">
+                    <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); margin-bottom: 4px;">Discovery Method</div>
+                    <div style="font-weight: 500; font-size: 13px; color: var(--text-main);">{{ virus.discovery_context or 'Unknown' }}</div>
+                </div>
+            </div>
+            {% if ictv_mapped %}
+            <h3 style="font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 8px;">ICTV Classification Mapping</h3>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+                {% for item in ictv_mapped %}
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border: 1px solid var(--border-subtle); border-radius: var(--radius-md);">
+                    <div>
+                        <div style="font-weight: 500; font-size: 12px; color: var(--text-main);">{{ item.species }}</div>
+                        <div style="font-size: 11px; color: var(--text-muted);">{{ item.family or 'Unclassified' }} / {{ item.genus or 'Unclassified' }}</div>
+                    </div>
+                    <span class="tag tag-subtle" style="font-size: 10px; padding: 2px 6px; flex-shrink: 0;">{{ item.confidence or 'mapped' }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% if has_phylogeny %}
+        <div class="card" style="margin-bottom: 16px;">
+            <div class="card-h">
+                <div class="color-bar color-bar--genome"></div>
+                <span>Phylogeny</span>
+            </div>
+            <img src="/downloads/phylogeny/figures/{{ family_lower }}_tree.png" alt="{{ virus.virus_family }} phylogeny" style="max-width: 100%; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); display: block;">
+            <div style="display: flex; gap: 10px; margin-top: 10px; font-size: 12px;">
+                <a href="/downloads/phylogeny/figures/{{ family_lower }}_tree.svg" target="_blank" style="color: var(--c-primary-600); text-decoration: none;">SVG</a>
+                <a href="/downloads/phylogeny/{{ family_lower }}_iqtree.contree" target="_blank" style="color: var(--c-primary-600); text-decoration: none;">Newick</a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // ── Load proteins when tab activated ──
+    let proteinsLoaded = false;
+    let literatureLoaded = false;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Observe tab activation to lazy-load data
+        const proteinTab = document.querySelector('[data-tab-target="proteins"]');
+        const litTab = document.querySelector('[data-tab-target="literature"]');
+        if (proteinTab) {
+            proteinTab.addEventListener('click', () => { if (!proteinsLoaded) loadProteins(); });
+        }
+        if (litTab) {
+            litTab.addEventListener('click', () => { if (!literatureLoaded) loadLiterature(); });
+        }
+    });
+
+    function loadProteins() {
+        proteinsLoaded = true;
+        fetch('/api/virus/{{ virus.accession }}/proteins')
+            .then(r => r.json())
+            .then(data => {
+                const container = document.getElementById('proteins-container');
+                const proteins = data.proteins || data;
+                if (!proteins || proteins.length === 0) {
+                    container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-muted);"><div style="font-size: 28px; margin-bottom: 8px;">🧬</div><p>No protein annotations available</p></div>';
+                    return;
+                }
+                let html = '<div style="overflow-x: auto;"><table class="data-table"><thead><tr><th>Name</th><th>Gene</th><th style="text-align: right;">Length</th><th>Function</th><th style="text-align: center;">3D</th></tr></thead><tbody>';
+                proteins.forEach(p => {
+                    html += '<tr>' +
+                        '<td style="font-weight: 500; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="' + (p.protein_name || p.protein_accession || '-') + '">' + (p.protein_name || p.protein_accession || '-') + '</td>' +
+                        '<td class="cell-mono">' + (p.gene_symbol || p.locus_tag || '-') + '</td>' +
+                        '<td class="cell-num">' + (p.aa_length ? p.aa_length.toLocaleString() + ' aa' : '-') + '</td>' +
+                        '<td><span class="tag tag-protein" style="font-size: 10px; padding: 1px 6px;">' + (p.functional_category || 'unclassified') + '</span></td>' +
+                        '<td style="text-align: center;">' + (p._has_structure ? '<span style="color: var(--c-host); font-weight: 700;">✓</span>' : '<span style="color: var(--text-muted);">—</span>') + '</td>' +
+                        '</tr>';
+                });
+                html += '</tbody></table><p style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">' + proteins.length + ' proteins total</p></div>';
+                container.innerHTML = html;
+            })
+            .catch(() => {
+                document.getElementById('proteins-container').innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-muted);"><div style="font-size: 28px; margin-bottom: 8px;">⚠️</div><p style="color: var(--c-severe);">Protein data loading failed</p></div>';
+            });
+    }
+
+    function loadLiterature() {
+        literatureLoaded = true;
+        const litContainer = document.getElementById('literature-container');
+        const refs = [];
+        {% if virus.ref_title %}
+        refs.push({
+            title: {{ virus.ref_title|tojson }},
+            authors: {{ (virus.ref_authors or '')|tojson }},
+            journal: {{ (virus.journal or '')|tojson }},
+            year: {{ (virus.ref_year or '')|tojson }},
+            pmid: {{ (virus.pmid or '')|tojson }},
+            doi: {{ (virus.doi or '')|tojson }},
+        });
+        {% endif %}
+        const evidencePmids = new Set();
+        {% if virulence and virulence.records %}
+        {% for r in virulence.records %}{% if r.source_pmid %}evidencePmids.add({{ r.source_pmid|tojson }});{% endif %}{% endfor %}
+        {% endif %}
+        {% if temperature and temperature.records %}
+        {% for r in temperature.records %}{% if r.source_pmid %}evidencePmids.add({{ r.source_pmid|tojson }});{% endif %}{% endfor %}
+        {% endif %}
+
+        if (refs.length === 0 && evidencePmids.size === 0) {
+            litContainer.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-muted);"><div style="font-size: 28px; margin-bottom: 8px;">📄</div><p>No related literature</p></div>';
+            return;
+        }
+        let html = '<div style="display: flex; flex-direction: column; gap: 8px;">';
+        refs.forEach(r => {
+            html += '<div style="border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px; transition: background 0.15s;" onmouseover="this.style.background=\'var(--bg-elevated)\'" onmouseout="this.style.background=\'transparent\'">' +
+                '<div style="font-weight: 500; font-size: 13px; color: var(--text-main); margin-bottom: 4px;">' + r.title + '</div>' +
+                '<div style="font-size: 11px; color: var(--text-muted); margin-bottom: 2px;">' + (r.authors || '') + '</div>' +
+                '<div style="font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">' + (r.journal || '') + ' ' + (r.year || '') + '</div>' +
+                '<div style="display: flex; gap: 6px; flex-wrap: wrap;">' +
+                (r.pmid ? '<a href="https://pubmed.ncbi.nlm.nih.gov/' + r.pmid + '/" target="_blank" class="tag tag-subtle" style="text-decoration: none; font-size: 10px; padding: 2px 8px;">PMID: ' + r.pmid + '</a>' : '') +
+                (r.doi ? '<a href="https://doi.org/' + r.doi + '" target="_blank" class="tag tag-subtle" style="text-decoration: none; font-size: 10px; padding: 2px 8px;">DOI</a>' : '') +
+                '</div></div>';
+        });
+        if (evidencePmids.size > 0) {
+            html += '<p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Additional ' + evidencePmids.size + ' evidence source articles (PMID)</p>';
+        }
+        html += '</div>';
+        litContainer.innerHTML = html;
+    }
+
+    // ── Geography Map (ECharts) ──
+    {% if virus_geo %}
+    (function() {
+        const geoDom = document.getElementById('virus-geo-map');
+        if (!geoDom || typeof echarts === 'undefined') return;
+        const geoData = {{ virus_geo|tojson }};
+        if (!geoData || geoData.length === 0) return;
+        const maxVal = Math.max(...geoData.map(d => d.cnt));
+        fetch('/static/world.json')
+            .then(r => { if (!r.ok) throw new Error('fail'); return r.json(); })
+            .then(worldJson => {
+                echarts.registerMap('world', worldJson);
+                const chart = echarts.init(geoDom);
+                chart.setOption({
+                    tooltip: { trigger: 'item', formatter: p => p.value ? p.name + ': ' + p.value + ' isolates' : p.name },
+                    visualMap: { min: 0, max: maxVal, inRange: { color: ['#e0f3f8','#abd9e9','#2c7bb6','#313695'] }, show: false },
+                    series: [{
+                        type: 'map', map: 'world', roam: true,
+                        itemStyle: { areaColor: '#f0f0f0', borderColor: '#ccc' },
+                        emphasis: { label: { show: true }, itemStyle: { areaColor: '#f39c12' } },
+                        data: geoData.map(d => ({ name: d.country, value: d.cnt }))
+                    }]
+                });
+                window.addEventListener('resize', () => chart.resize());
+            })
+            .catch(() => { geoDom.style.display = 'none'; });
+    })();
+    {% endif %}
+
+    // ── Sequence viewer ──
+    {% if has_sequence %}
+    let seqData = "";
+    function escapeHtml(text) {
+        return text.replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    }
+    function formatSequence(highlight) {
+        const lineLen = 60;
+        const chunks = [];
+        for (let i = 0; i < seqData.length; i += lineLen) {
+            const pos = String(i + 1).padStart(8, " ");
+            let chunk = seqData.slice(i, i + lineLen).replace(/(.{10})/g, "$1 ").trim();
+            chunk = escapeHtml(chunk);
+            if (highlight) {
+                const safe = highlight.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+                chunk = chunk.replace(new RegExp(safe, "gi"), match => `<mark style="background: #fde047; padding: 0 2px; border-radius: 2px;">${match}</mark>`);
+            }
+            chunks.push(`${pos}  ${chunk}`);
+        }
+        document.getElementById("seq-container").innerHTML = chunks.join("\n");
+    }
+    function searchSequence() {
+        const q = document.getElementById("seq-search").value.trim().toUpperCase();
+        formatSequence(q);
+    }
+    fetch("/api/virus/{{ virus.accession }}/sequence")
+        .then(resp => resp.text())
+        .then(text => {
+            const lines = text.split(/\r?\n/).filter(line => !line.startsWith(">"));
+            seqData = lines.join("").replace(/\s/g, "").toUpperCase();
+            const gc = seqData.length ? ((seqData.match(/[GC]/g) || []).length / seqData.length * 100).toFixed(1) : "0.0";
+            document.getElementById("seq-meta").textContent = `${seqData.length.toLocaleString()} bp, GC ${gc}%`;
+            formatSequence("");
+        })
+        .catch(() => {
+            document.getElementById("seq-container").textContent = "Sequence could not be loaded.";
+        });
+    {% endif %}
+</script>
+{% endblock %}

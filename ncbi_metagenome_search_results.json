@@ -1,0 +1,17 @@
+{
+  "sra_counts": {
+    "mollusk_sra": "756",
+    "crustacean_sra": "1682",
+    "cnidaria_sra": "42",
+    "echinoderm_sra": "0",
+    "porifera_sra": "73",
+    "marine_invert_virome": "36"
+  },
+  "bioprojects": {
+    "mollusk_sra": [],
+    "crustacean_sra": [],
+    "cnidaria_sra": [],
+    "porifera_sra": [],
+    "marine_invert_virome": []
+  }
+}

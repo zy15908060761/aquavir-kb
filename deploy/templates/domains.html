@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}InterPro Domains - AquaVir-KB{% endblock %}
+{% block extra_head %}
+<style>
+.domain-track { height: 12px; border-radius: 999px; background: #e5e7eb; overflow: hidden; }
+.domain-span { height: 100%; border-radius: 999px; min-width: 2px; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+    <div class="flex items-center gap-2 text-sm text-gray-400 mb-4">
+        <a href="/enrichment" class="hover:text-primary">Enrichment</a><span>/</span><span class="text-gray-700 font-medium">InterPro domains</span>
+    </div>
+
+    <section class="bg-white rounded-lg p-5 mb-6 border border-gray-100">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">InterPro Domain Annotations</h1>
+                <p class="text-sm text-gray-500 mt-1">Entry-level annotations are shown separately from records with start/end coordinates.</p>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 min-w-[320px]" id="ip-summary">
+                <div class="text-center p-3 bg-sky-50 rounded-lg"><div class="text-xl font-bold text-sky-700">--</div><div class="text-xs text-gray-500">records</div></div>
+                <div class="text-center p-3 bg-emerald-50 rounded-lg"><div class="text-xl font-bold text-emerald-700">--</div><div class="text-xs text-gray-500">positioned</div></div>
+                <div class="text-center p-3 bg-amber-50 rounded-lg"><div class="text-xl font-bold text-amber-700">--</div><div class="text-xs text-gray-500">entry-only</div></div>
+                <div class="text-center p-3 bg-slate-50 rounded-lg"><div class="text-xl font-bold text-slate-700">--</div><div class="text-xs text-gray-500">InterPro IDs</div></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-white rounded-lg p-4 mb-6 border border-gray-100">
+        <div class="flex flex-wrap gap-3 items-center">
+            <input type="text" id="ip-search" placeholder="Search UniProt, InterPro ID, or name" class="search-input flex-1 min-w-[220px] px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-sky-500">
+            <select id="ip-status-filter" class="px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                <option value="all">All coordinate states</option>
+                <option value="positioned">Positioned only</option>
+                <option value="entry_level_only">Entry-level only</option>
+            </select>
+            <button onclick="loadInterPro()" class="px-4 py-2 bg-sky-600 text-white text-sm rounded-lg hover:bg-sky-700 transition">Refresh</button>
+        </div>
+    </section>
+
+    <div id="ip-list" class="space-y-2"><div class="text-center text-gray-400 py-10">Loading...</div></div>
+    <div class="flex justify-center gap-2 mt-6 flex-wrap" id="ip-pagination"></div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let ipData = [];
+let ipPage = 0;
+const IP_PAGE = 25;
+const domainColors = ['#0f766e','#0ea5e9','#8b5cf6','#f59e0b','#ef4444','#10b981','#ec4899','#6366f1'];
+
+function statusOf(x) {
+    return x.coordinate_status || (x.start_pos != null && x.end_pos != null ? 'positioned' : 'entry_level_only');
+}
+
+function loadInterPro() {
+    fetch('/api/enrichment/interpro?limit=500')
+        .then(r => r.json())
+        .then(d => {
+            if (d.status !== 'success') return;
+            ipData = d.data || [];
+            const summary = document.getElementById('ip-summary');
+            const total = ipData.length;
+            const positioned = ipData.filter(x => statusOf(x) === 'positioned').length;
+            const uniqueIP = new Set(ipData.filter(x => x.interpro_id).map(x => x.interpro_id)).size;
+            summary.children[0].querySelector('.text-xl').textContent = total;
+            summary.children[1].querySelector('.text-xl').textContent = positioned;
+            summary.children[2].querySelector('.text-xl').textContent = total - positioned;
+            summary.children[3].querySelector('.text-xl').textContent = uniqueIP;
+            applyIPFilter();
+        });
+}
+
+function applyIPFilter() {
+    const text = document.getElementById('ip-search').value.toLowerCase();
+    const status = document.getElementById('ip-status-filter').value;
+    let rows = ipData;
+    if (text) {
+        rows = rows.filter(x =>
+            (x.uniprot_id || '').toLowerCase().includes(text) ||
+            (x.interpro_id || '').toLowerCase().includes(text) ||
+            (x.interpro_name || '').toLowerCase().includes(text)
+        );
+    }
+    if (status !== 'all') rows = rows.filter(x => statusOf(x) === status);
+    const pages = Math.max(Math.ceil(rows.length / IP_PAGE), 1);
+    if (ipPage >= pages) ipPage = 0;
+    const batch = rows.slice(ipPage * IP_PAGE, (ipPage + 1) * IP_PAGE);
+    document.getElementById('ip-list').innerHTML = batch.length === 0
+        ? '<div class="text-center text-gray-400 py-10">No matching records</div>'
+        : batch.map(renderRow).join('');
+    document.getElementById('ip-pagination').innerHTML = pages > 1
+        ? Array.from({length: pages}, (_, i) => `<button onclick="ipPage=${i};applyIPFilter()" class="px-3 py-1 rounded text-sm ${i===ipPage?'bg-sky-600 text-white':'bg-gray-100 hover:bg-gray-200'}">${i+1}</button>`).join('')
+        : '';
+}
+
+function renderRow(x) {
+    const positioned = statusOf(x) === 'positioned';
+    const color = domainColors[hashCode(x.interpro_id || x.interpro_name || '') % domainColors.length];
+    const maxLen = Math.max(Number(x.end_pos || 0) + 50, 100);
+    const left = positioned ? Math.max(Number(x.start_pos || 0) / maxLen * 100, 0) : 0;
+    const width = positioned ? Math.max((Number(x.end_pos) - Number(x.start_pos) + 1) / maxLen * 100, 2) : 0;
+    return `
+        <div class="bg-white rounded-lg p-4 border border-gray-100 hover:shadow-sm transition">
+            <div class="flex justify-between items-start gap-3 flex-wrap">
+                <div class="flex-1 min-w-[260px]">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        ${x.interpro_id ? `<a href="https://www.ebi.ac.uk/interpro/entry/InterPro/${x.interpro_id}/" target="_blank" class="font-bold text-sky-600 hover:underline">${x.interpro_id}</a>` : '<span class="text-gray-400">No ID</span>'}
+                        <span class="font-medium text-gray-700">${x.interpro_name || 'Unnamed domain annotation'}</span>
+                        <span class="px-2 py-0.5 rounded-full text-xs ${positioned ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}">${positioned ? 'positioned' : 'entry-level only'}</span>
+                    </div>
+                    ${positioned ? `
+                    <div class="mt-3 flex items-center gap-2">
+                        <span class="text-xs text-gray-500 w-12 text-right">${x.start_pos}</span>
+                        <div class="domain-track flex-1 relative">
+                            <div class="domain-span absolute" style="left:${left}%;width:${width}%;background:${color}"></div>
+                        </div>
+                        <span class="text-xs text-gray-500 w-14">${x.end_pos} aa</span>
+                    </div>` : `
+                    <div class="mt-3 text-xs text-amber-700 bg-amber-50 rounded px-3 py-2">
+                        No start/end coordinates are available. This record is suitable for domain presence summaries, not domain-bar visualization.
+                    </div>`}
+                </div>
+                <div class="text-xs text-gray-400 text-right">${x.uniprot_id || '--'}<br>${x.source_database || ''}</div>
+            </div>
+        </div>
+    `;
+}
+
+function hashCode(s) {
+    let h = 0;
+    for (let i = 0; i < s.length; i++) h = ((h << 5) - h) + s.charCodeAt(i) | 0;
+    return Math.abs(h);
+}
+document.getElementById('ip-search').addEventListener('input', () => { ipPage = 0; applyIPFilter(); });
+document.getElementById('ip-status-filter').addEventListener('change', () => { ipPage = 0; applyIPFilter(); });
+loadInterPro();
+</script>
+{% endblock %}

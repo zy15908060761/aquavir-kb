@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}ViralZone Families — Aquatic Invertebrate Virus Knowledge Base{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+    <div class="flex items-center gap-2 text-sm text-gray-400 mb-4">
+        <a href="/enrichment" class="hover:text-primary">Enrichment Hub</a><span>/</span><span class="text-gray-700 font-medium">ViralZone Families</span>
+    </div>
+    <div class="bg-white rounded-xl p-5 mb-6 border border-gray-100">
+        <div class="flex items-center gap-3 mb-2"><span class="text-3xl">&#x1F4D6;</span><div><h1 class="text-2xl font-bold text-gray-800">ViralZone Family Information</h1><p class="text-sm text-gray-500">SIB Swiss Institute of Bioinformatics — Molecular biology facts for virus families: genome organization, replication cycle, host range</p></div></div>
+        <div class="text-center p-3 bg-cyan-50 rounded-lg inline-block mt-3"><div class="text-xl font-bold text-cyan-700" id="s-vz">--</div><div class="text-xs text-gray-500">Virus Family Records</div></div>
+    </div>
+    <div class="bg-white rounded-xl p-4 mb-6 border border-gray-100">
+        <input type="text" id="vz-search" placeholder="Search virus family name..." class="search-input w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-cyan-500">
+    </div>
+    <div id="vz-list" class="space-y-2"><div class="text-center text-gray-400 py-10">Loading...</div></div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+let vzData = [];
+function loadVZ() {
+    fetch('/api/enrichment/viralzone')
+        .then(r => r.json())
+        .then(d => {
+            if (d.status !== 'success') return;
+            vzData = d.data || [];
+            document.getElementById('s-vz').textContent = vzData.length;
+            applyVZFilter();
+        });
+}
+function applyVZFilter() {
+    const s = document.getElementById('vz-search').value.toLowerCase();
+    let f = vzData;
+    if (s) f = f.filter(x => (x.family_name||'').toLowerCase().includes(s));
+    document.getElementById('vz-list').innerHTML = f.length === 0
+        ? '<div class="text-center text-gray-400 py-10">No matching results</div>'
+        : f.slice(0, 80).map(x => `
+        <div class="bg-white rounded-lg p-4 border border-gray-100">
+            <div class="flex justify-between items-start gap-3">
+                <div class="flex-1">
+                    <h3 class="font-bold text-gray-800">${x.family_name}</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2 text-xs">
+                        ${x.genome_type ? `<div><span class="text-gray-400">Genome Type</span><br><span class="font-medium">${x.genome_type}</span></div>` : ''}
+                        ${x.genome_size_range ? `<div><span class="text-gray-400">Genome Size</span><br><span class="font-medium">${x.genome_size_range}</span></div>` : ''}
+                        ${x.host_range ? `<div><span class="text-gray-400">Host Range</span><br><span class="font-medium">${x.host_range}</span></div>` : ''}
+                        ${x.transmission ? `<div><span class="text-gray-400">Transmission</span><br><span class="font-medium">${x.transmission}</span></div>` : ''}
+                    </div>
+                    ${x.virion_description ? `<p class="text-xs text-gray-500 mt-2 line-clamp-2">${x.virion_description}</p>` : ''}
+                </div>
+                ${x.viralzone_url ? `<a href="${x.viralzone_url}" target="_blank" class="text-xs text-cyan-600 hover:underline flex-shrink-0">ViralZone &#x2192;</a>` : ''}
+            </div>
+        </div>`).join('');
+}
+document.getElementById('vz-search').addEventListener('input', applyVZFilter);
+loadVZ();
+</script>
+{% endblock %}

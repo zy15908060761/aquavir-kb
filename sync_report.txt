@@ -1,0 +1,22 @@
+============================================================
+Crustacean Virus Database - Sync Report
+Time: 2026-05-18 02:03:23
+Duration: 198.3 seconds
+============================================================
+
+[OK] NCBI Download
+[OK] Incremental Import
+[OK] Extract Sequences
+[OK] Classify Sequences
+[OK] Normalize Names
+[FAIL] Fill Geography
+[OK] Build Phylogeny
+[OK] Build Downloads
+
+New records imported: 0
+Backup: crustacean_virus_core_sync_20260518_020005.db
+
+Next steps:
+  1. Restart the backend server
+  2. Refresh the browser to see updated data
+============================================================

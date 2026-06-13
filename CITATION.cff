@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: >-
+  If you use AquaVir-KB in your research, please cite both the NAR Database
+  Issue paper and the Zenodo data archive. The Zenodo DOI ensures permanent
+  archival and reproducibility.
+title: "AquaVir-KB: A Comprehensive Knowledge Base for Aquatic Invertebrate Viruses with Genomic, Phylogenetic, and Functional Insights"
+version: "1.0.0"
+date-released: "2026-06-12"
+license: "CC-BY-4.0"
+doi: "10.5281/zenodo.pending"
+authors:
+  - family-names: "Zhou"
+    given-names: "Y."
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+    affiliation: "South China Agricultural University"
+repository-code: "https://github.com/zy15908060761/CDB"
+url: "https://aquavirdb.com"
+type: dataset
+keywords:
+  - aquatic invertebrate viruses
+  - knowledge base
+  - evidence grading
+  - virus-host associations
+  - metagenomics
+  - aquaculture
+  - ICTV taxonomy
+  - literature mining

@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}Phylogenetic Analysis - AquaVir-KB{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">🌳 Phylogenetic Analysis</h1>
+        <p class="text-gray-500 mt-2">Maximum-likelihood phylogenetic trees for 8 major virus families, built with MAFFT + IQ-TREE (UFBoot 1000)</p>
+    </div>
+
+    <!-- Family Selector + Main Viewer -->
+    <div class="card overflow-hidden">
+        <div class="flex flex-col lg:flex-row" style="min-height: 600px;">
+            <!-- Sidebar: Family List -->
+            <div class="w-full lg:w-72 border-b lg:border-b-0 lg:border-r border-gray-100 bg-gray-50/50">
+                <div class="p-4 border-b border-gray-100">
+                    <h3 class="font-semibold text-gray-700 text-sm">Select Virus Family</h3>
+                </div>
+                <div class="overflow-y-auto" style="max-height: 600px;" id="family-list">
+                    <div class="px-4 py-8 text-center text-slate-400">
+                        <div class="loading-dots justify-center"><span></span><span></span><span></span></div>
+                        <div class="text-sm mt-2">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Viewer -->
+            <div class="flex-1 p-6 flex flex-col">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800" id="viewer-title">Nimaviridae</h2>
+                        <p class="text-sm text-gray-500 mt-1" id="viewer-desc">Representative virus: WSSV · 15 isolates</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <a id="link-svg" href="downloads/phylogeny/figures/nimaviridae_tree.svg" target="_blank" class="btn btn-ghost text-xs py-1.5 px-3 border border-slate-200 rounded-lg">🖼 SVG</a>
+                        <a id="link-newick" href="downloads/phylogeny/nimaviridae_iqtree.contree" target="_blank" class="btn btn-ghost text-xs py-1.5 px-3 border border-slate-200 rounded-lg">🧬 Newick</a>
+                        <a href="https://itol.embl.de/" target="_blank" class="btn btn-ghost text-xs py-1.5 px-3 text-teal-600 border border-teal-200 rounded-lg bg-teal-50 hover:bg-teal-100">iTOL ↗</a>
+                    </div>
+                </div>
+
+                <!-- Image Container -->
+                <div class="flex-1 flex items-center justify-center bg-gray-50 rounded-lg border border-gray-100 overflow-auto" id="viewer-container">
+                    <img id="viewer-image" src="downloads/phylogeny/figures/nimaviridae_tree.png" alt="Nimaviridae phylogeny"
+                         class="max-w-full max-h-[520px] object-contain rounded-md shadow-sm">
+                </div>
+
+                <!-- Thumbnail Grid -->
+                <div class="mt-4 pt-4 border-t border-gray-100">
+                    <p class="text-xs text-gray-400 mb-2" id="thumbnail-count">All families thumbnails</p>
+                    <div class="grid grid-cols-3 md:grid-cols-6 gap-3" id="thumbnail-grid">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overview Tree -->
+    <div class="mt-6 card p-5">
+        <h3 class="text-sm font-semibold text-gray-700 mb-3">Top 10 Virus Overview Tree</h3>
+        <div id="chart-phylo" style="width:100%;height:380px"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    let families = [];
+
+    async function loadFamilies() {
+        try {
+            const res = await fetch('/api/phylogeny/families');
+            const data = await res.json();
+            families = data.families || [];
+
+            const container = document.getElementById('family-list');
+            if (!families.length) {
+                UI.showEmpty('family-list', '🌳', 'No phylogenetic trees available', 'Run build_phylogeny_nar.py to generate');
+                return;
+            }
+
+            container.innerHTML = families.map((f, i) => {
+                const typeLabel = f.type === 'rdrp' ? 'RDRP protein' : 'Genome';
+                return `<button class="family-btn w-full text-left px-4 py-3 hover:bg-white transition border-l-4 border-transparent ${i === 0 ? 'active bg-white border-teal-500' : ''}"
+                        data-family="${f.key}" data-name="${f.display_name}" data-desc="${f.rep} · ${f.count} seq · ${typeLabel}" onclick="selectFamily(this)">
+                    <div class="font-medium text-gray-800 text-sm">${f.display_name} <span class="text-[10px] text-gray-400">${typeLabel}</span></div>
+                    <div class="text-xs text-gray-500 mt-0.5">${f.rep || f.display_name} · ${f.count} seq</div>
+                </button>`;
+            }).join('');
+
+            // Load first family
+            if (families.length > 0) {
+                const f = families[0];
+                updateViewer(f.key, f.display_name, `${f.rep || ''} · ${f.count} seq`);
+            }
+        } catch(e) { UI.showError('family-list', 'Loading failed'); }
+    }
+
+    function selectFamily(btn) {
+        document.querySelectorAll('.family-btn').forEach(b => {
+            b.classList.remove('active', 'bg-white', 'border-teal-500');
+            b.classList.add('border-transparent');
+        });
+        btn.classList.add('active', 'bg-white', 'border-teal-500');
+        btn.classList.remove('border-transparent');
+        updateViewer(btn.dataset.family, btn.dataset.name, btn.dataset.desc);
+    }
+
+    function selectFamilyByKey(key, name, desc) {
+        const btn = document.querySelector(`.family-btn[data-family="${key}"]`);
+        if (btn) selectFamily(btn);
+        else updateViewer(key, name, desc);
+    }
+
+    function updateViewer(key, name, desc) {
+        document.getElementById('viewer-title').textContent = name;
+        document.getElementById('viewer-desc').textContent = desc;
+        const img = document.getElementById('viewer-image');
+        img.src = `downloads/phylogeny/figures/${key}_tree.png`;
+        document.getElementById('link-svg').href = `downloads/phylogeny/figures/${key}_tree.svg`;
+        document.getElementById('link-newick').href = `downloads/phylogeny/${key}_iqtree.contree`;
+    }
+
+    async function initPhylo() {
+        try {
+            const res = await fetch('/api/phylogeny');
+            const data = await res.json();
+            if (data.error || !data.tree) return;
+            const chart = echarts.init(document.getElementById('chart-phylo'));
+            chart.setOption({
+                tooltip: { trigger: 'item', triggerOn: 'mousemove', formatter: p => `${p.name}<br/>Branch length: ${(p.value||0).toFixed(4)}` },
+                series: [{
+                    type: 'tree', data: [data.tree], top: '5%', left: '10%', bottom: '5%', right: '20%',
+                    symbol: 'circle', symbolSize: 7, orient: 'RL',
+                    label: { position: 'right', verticalAlign: 'middle', align: 'left', fontSize: 11 },
+                    leaves: { label: { position: 'left', verticalAlign: 'middle', align: 'right' } },
+                    expandAndCollapse: true, initialTreeDepth: 3,
+                    lineStyle: { color: '#64748b', width: 1.2 },
+                    itemStyle: { color: '#ef4444', borderColor: '#dc2626' }
+                }]
+            });
+            chart.on('click', p => { if(p.name) window.location.href = '/search?q=' + encodeURIComponent(p.name.replace(/_/g, ' ')); });
+            window.addEventListener('resize', () => chart.resize());
+        } catch(e) {}
+    }
+
+    function renderThumbnails() {
+        const grid = document.getElementById('thumbnail-grid');
+        const label = document.getElementById('thumbnail-count');
+        if (!grid) return;
+        label.textContent = `All ${families.length} families thumbnails`;
+        grid.innerHTML = families.map(f => `
+            <button class="text-center group" onclick="selectFamilyByKey('${f.key}', '${f.display_name}', '${f.rep || ''} · ${f.count} seq')">
+                <img src="downloads/phylogeny/figures/${f.key}_tree.png" alt="${f.display_name}"
+                     class="w-full h-24 object-cover rounded-lg border-2 border-slate-200 group-hover:border-teal-400 transition-all duration-200 cursor-pointer shadow-sm"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                <div class="hidden h-24 items-center justify-center bg-slate-100 rounded-lg border border-slate-200 text-xs text-slate-400 font-medium">${f.display_name.slice(0,4)}</div>
+                <div class="text-[10px] text-gray-500 mt-1 truncate">${f.display_name}</div>
+            </button>
+        `).join('');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadFamilies().then(() => {
+            renderThumbnails();
+            initPhylo();
+        });
+    });
+</script>
+
+<style>
+    .family-btn.active { background: white; }
+</style>
+{% endblock %}

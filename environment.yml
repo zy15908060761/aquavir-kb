@@ -1,0 +1,16 @@
+name: crustavirus-db
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.10
+  - fastapi
+  - uvicorn
+  - jinja2
+  - requests
+  - pandas
+  - openpyxl
+  - pydantic
+  - python-multipart
+  - biopython
+  - numpy
+  - pip

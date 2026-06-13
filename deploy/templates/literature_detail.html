@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}{{ literature.title[:80] if literature.title else 'Literature Detail' }} - AquaVir-KB{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+    {% if not literature %}
+    <div class="text-center py-12 text-gray-400">
+        <div class="text-4xl mb-3">&#x1F4C4;</div>
+        <p>Literature not found</p>
+        <a href="/search" class="text-teal-600 hover:text-teal-500 mt-2 inline-block">Back to Search</a>
+    </div>
+    {% else %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+        <h1 class="text-xl font-bold text-gray-800 leading-snug">{{ literature.title }}</h1>
+        <div class="text-sm text-gray-500 mt-2">{{ literature.authors or 'Authors unknown' }}</div>
+        <div class="flex flex-wrap gap-3 mt-3 text-sm">
+            <span class="text-gray-600">{{ literature.journal or '' }} {{ literature.year or '' }}</span>
+            {% if literature.pmid %}
+            <a href="https://pubmed.ncbi.nlm.nih.gov/{{ literature.pmid }}/" target="_blank" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded text-xs">PMID: {{ literature.pmid }}</a>
+            {% endif %}
+            {% if literature.doi %}
+            <a href="https://doi.org/{{ literature.doi }}" target="_blank" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded text-xs">DOI: {{ literature.doi }}</a>
+            {% endif %}
+        </div>
+        {% if literature.abstract %}
+        <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+            <h3 class="font-medium text-gray-700 mb-2">Abstract</h3>
+            <p class="text-sm text-gray-600 leading-relaxed">{{ literature.abstract }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if evidence %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-100">
+            <h2 class="font-semibold text-gray-700">Evidence extracted from this article ({{ evidence|length }} items)</h2>
+        </div>
+        <div class="p-5 space-y-3">
+            {% for e in evidence %}
+            <div class="border border-gray-100 rounded-lg p-4 hover:bg-gray-50 transition">
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="px-2 py-0.5 rounded text-xs font-medium
+                        {%- if e.evidence_type == 'host_range' %} bg-blue-50 text-blue-700
+                        {%- elif e.evidence_type == 'pathogenicity' %} bg-red-50 text-red-700
+                        {%- elif e.evidence_type == 'diagnosis' %} bg-green-50 text-green-700
+                        {%- elif e.evidence_type == 'temperature' %} bg-orange-50 text-orange-700
+                        {%- else %} bg-gray-50 text-gray-700{% endif %}">
+                        {{ e.evidence_type }}
+                    </span>
+                    <span class="px-2 py-0.5 rounded text-xs
+                        {%- if e.evidence_strength == 'high' %} bg-green-50 text-green-700
+                        {%- elif e.evidence_strength == 'medium' %} bg-amber-50 text-amber-700
+                        {%- else %} bg-gray-50 text-gray-600{% endif %}">
+                        {{ e.evidence_strength or 'unknown' }}
+                    </span>
+                    {% if e.virus_name %}
+                    <a href="/search?q={{ e.virus_name|urlencode }}" class="text-xs text-teal-600 hover:text-teal-500 ml-auto">{{ e.virus_name }}</a>
+                    {% endif %}
+                </div>
+                <p class="text-sm text-gray-700">{{ e.claim }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center text-gray-400">
+        <div class="text-3xl mb-2">&#x1F4CB;</div>
+        <p>No structured evidence has been extracted from this article</p>
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

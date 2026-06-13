@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>White spot syndrome virus — AquaVir-KB</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#0f766e','primary-dark':'#134e4a',accent:'#14b8a6'}}}}</script>
+<style>
+.gradient-bg { background: linear-gradient(135deg, #0f766e 0%, #134e4a 100%); }
+.tab-active { color: #0f766e; border-bottom: 2px solid #0f766e; font-weight: 600; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+</style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+<!-- Navigation -->
+<nav class="gradient-bg text-white shadow-lg sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-4">
+    <div class="flex justify-between h-14 items-center">
+      <div class="flex items-center gap-2">
+        <span class="text-2xl">🦐</span>
+        <span class="text-xl font-bold">AquaVir-KB</span>
+      </div>
+      <div class="hidden md:flex items-center gap-1 text-sm">
+        <a href="index.html" class="px-3 py-2 rounded-md hover:bg-white/10 transition">首页</a>
+        <a href="browse.html" class="px-3 py-2 rounded-md bg-white/15 font-semibold">病毒</a>
+        <a href="#" class="px-3 py-2 rounded-md hover:bg-white/10 transition">宿主</a>
+        <a href="#" class="px-3 py-2 rounded-md hover:bg-white/10 transition">统计</a>
+        <a href="#" class="px-3 py-2 rounded-md hover:bg-white/10 transition">下载</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+
+  <!-- ===== Header Card ===== -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+    <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+      <div>
+        <div class="flex flex-wrap items-center gap-2 mb-2">
+          <h1 class="text-2xl font-bold text-gray-800">White spot syndrome virus</h1>
+          <span class="text-lg text-gray-400 font-mono">WSSV</span>
+          <span class="text-lg text-gray-500">白斑综合征病毒</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 text-sm">
+          <span class="px-2.5 py-1 rounded-full bg-teal-50 text-teal-700 font-medium">Nimaviridae</span>
+          <span class="px-2 py-1 rounded bg-gray-100 text-gray-600 text-xs">Whispovirus</span>
+          <span class="px-2 py-1 rounded bg-indigo-50 text-indigo-700 text-xs font-medium">dsDNA</span>
+          <span class="px-2 py-1 rounded bg-emerald-50 text-emerald-700 text-xs">Arthropoda</span>
+          <span class="px-2 py-1 rounded bg-amber-50 text-amber-700 text-xs">分离培养</span>
+        </div>
+      </div>
+      <div class="flex gap-2 shrink-0">
+        <a href="#" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm text-gray-700">NCBI</a>
+        <a href="#" class="px-3 py-1.5 bg-teal-600 hover:bg-teal-500 rounded-lg text-sm text-white">下载 FASTA</a>
+        <a href="#" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm text-white">导出数据</a>
+      </div>
+    </div>
+    <div class="flex flex-wrap gap-4 mt-4 pt-4 border-t border-gray-100 text-sm">
+      <div class="text-center px-3"><div class="text-lg font-bold text-gray-800">1,298</div><div class="text-xs text-gray-500">分离株</div></div>
+      <div class="text-center px-3"><div class="text-lg font-bold text-gray-800">98</div><div class="text-xs text-gray-500">关联宿主</div></div>
+      <div class="text-center px-3"><div class="text-lg font-bold text-gray-800">156</div><div class="text-xs text-gray-500">蛋白</div></div>
+      <div class="text-center px-3"><div class="text-lg font-bold text-teal-700">可用</div><div class="text-xs text-gray-500">序列文件</div></div>
+    </div>
+  </div>
+
+  <!-- ===== Tab Navigation ===== -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="border-b border-gray-200 px-6">
+      <nav class="flex gap-0 -mb-px overflow-x-auto">
+        <button class="tab-btn tab-active whitespace-nowrap px-4 py-3 text-sm transition" onclick="switchTab('overview')">概览</button>
+        <button class="tab-btn whitespace-nowrap px-4 py-3 text-sm text-gray-500 hover:text-gray-700 transition" onclick="switchTab('isolates')">分离株 <span class="text-xs text-gray-400">(1,298)</span></button>
+        <button class="tab-btn whitespace-nowrap px-4 py-3 text-sm text-gray-500 hover:text-gray-700 transition" onclick="switchTab('hosts')">宿主 <span class="text-xs text-gray-400">(98)</span></button>
+        <button class="tab-btn whitespace-nowrap px-4 py-3 text-sm text-gray-500 hover:text-gray-700 transition" onclick="switchTab('proteins')">蛋白 <span class="text-xs text-gray-400">(156)</span></button>
+        <button class="tab-btn whitespace-nowrap px-4 py-3 text-sm text-gray-500 hover:text-gray-700 transition" onclick="switchTab('literature')">文献</button>
+        <button class="tab-btn whitespace-nowrap px-4 py-3 text-sm text-gray-500 hover:text-gray-700 transition" onclick="switchTab('geography')">地理</button>
+      </nav>
+    </div>
+
+    <!-- ===== Overview Tab ===== -->
+    <div id="tab-overview" class="tab-content active p-6">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div>
+          <h3 class="text-base font-semibold text-gray-800 mb-3">基因组信息</h3>
+          <div class="grid grid-cols-2 gap-3 text-sm">
+            <div class="border border-gray-100 rounded-lg p-3"><div class="text-gray-500 text-xs">基因组长度</div><div class="font-mono text-gray-800 mt-0.5">305,107 bp</div></div>
+            <div class="border border-gray-100 rounded-lg p-3"><div class="text-gray-500 text-xs">基因组类型</div><div class="text-gray-800 mt-0.5">dsDNA</div></div>
+            <div class="border border-gray-100 rounded-lg p-3"><div class="text-gray-500 text-xs">GC 含量</div><div class="font-mono text-gray-800 mt-0.5">41.0%</div></div>
+            <div class="border border-gray-100 rounded-lg p-3"><div class="text-gray-500 text-xs">完整度</div><div class="text-gray-800 mt-0.5">complete</div></div>
+          </div>
+        </div>
+        <div class="space-y-4">
+          <div>
+            <h3 class="text-base font-semibold text-gray-800 mb-2">ICTV 分类映射</h3>
+            <div class="border border-gray-100 rounded p-3 text-sm">
+              <div class="font-medium text-gray-800">White spot syndrome virus</div>
+              <div class="text-gray-500">Nimaviridae / Whispovirus</div>
+              <div class="text-xs text-green-600 mt-1">高置信度匹配</div>
+            </div>
+          </div>
+          <div class="bg-amber-50 border border-amber-100 rounded-lg p-3 text-sm">
+            <p class="text-amber-800 font-medium mb-1">致病性摘要</p>
+            <p class="text-amber-700 text-xs">系统感染导致外胚层和中胚层组织快速坏死；已知可感染超过 100 种甲壳动物；致死率 80-100%；低温条件下可能存在潜伏感染。</p>
+          </div>
+          <div>
+            <h3 class="text-base font-semibold text-gray-800 mb-2">诊断方法</h3>
+            <div class="space-y-1.5 text-sm">
+              <div class="border border-gray-100 rounded p-2"><span class="font-medium">Nested PCR</span> <span class="text-xs text-gray-400 ml-2">靶标: VP28 基因</span></div>
+              <div class="border border-gray-100 rounded p-2"><span class="font-medium">qPCR (TaqMan)</span> <span class="text-xs text-gray-400 ml-2">靶标: VP19 / VP28</span></div>
+              <div class="border border-gray-100 rounded p-2"><span class="font-medium">LAMP</span> <span class="text-xs text-gray-400 ml-2">现场可部署</span></div>
+              <div class="border border-gray-100 rounded p-2"><span class="font-medium">免疫层析试纸条</span> <span class="text-xs text-gray-400 ml-2">现场快速检测</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Isolates Tab ===== -->
+    <div id="tab-isolates" class="tab-content p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-base font-semibold text-gray-800">所有分离株 (1,298)</h3>
+        <select class="px-3 py-1.5 border border-gray-200 rounded-lg text-sm">
+          <option>全部完整度</option><option>完整基因组</option><option>部分序列</option>
+        </select>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50">
+            <tr><th class="text-left px-4 py-3">登录号</th><th class="text-right px-4 py-3">长度</th><th class="text-right px-4 py-3">GC%</th><th class="text-left px-4 py-3">完整度</th><th class="text-left px-4 py-3">国家</th><th class="text-left px-4 py-3">年份</th></tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr class="hover:bg-gray-50"><td class="px-4 py-2.5 font-mono text-teal-600">NC_003225</td><td class="px-4 py-2.5 text-right font-mono">305,107</td><td class="px-4 py-2.5 text-right font-mono">41.0</td><td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs">complete</span></td><td class="px-4 py-2.5">China</td><td class="px-4 py-2.5">2001</td></tr>
+            <tr class="hover:bg-gray-50"><td class="px-4 py-2.5 font-mono text-teal-600">KY827813</td><td class="px-4 py-2.5 text-right font-mono">295,884</td><td class="px-4 py-2.5 text-right font-mono">41.1</td><td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs">complete</span></td><td class="px-4 py-2.5">India</td><td class="px-4 py-2.5">2017</td></tr>
+            <tr class="hover:bg-gray-50"><td class="px-4 py-2.5 font-mono text-teal-600">AF332093</td><td class="px-4 py-2.5 text-right font-mono">305,107</td><td class="px-4 py-2.5 text-right font-mono">41.0</td><td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs">complete</span></td><td class="px-4 py-2.5">Thailand</td><td class="px-4 py-2.5">2001</td></tr>
+            <tr class="hover:bg-gray-50"><td class="px-4 py-2.5 font-mono text-teal-600">AF440570</td><td class="px-4 py-2.5 text-right font-mono">305,107</td><td class="px-4 py-2.5 text-right font-mono">41.0</td><td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs">complete</span></td><td class="px-4 py-2.5">Taiwan</td><td class="px-4 py-2.5">2002</td></tr>
+            <tr class="hover:bg-gray-50"><td class="px-4 py-2.5 font-mono text-teal-600">KU216744</td><td class="px-4 py-2.5 text-right font-mono">297,231</td><td class="px-4 py-2.5 text-right font-mono">40.9</td><td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-full text-xs">partial</span></td><td class="px-4 py-2.5">Brazil</td><td class="px-4 py-2.5">2016</td></tr>
+            <tr class="hover:bg-gray-50"><td class="px-4 py-2.5 font-mono text-teal-600">MH663980</td><td class="px-4 py-2.5 text-right font-mono">301,245</td><td class="px-4 py-2.5 text-right font-mono">41.0</td><td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs">complete</span></td><td class="px-4 py-2.5">Vietnam</td><td class="px-4 py-2.5">2018</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="text-xs text-gray-400 mt-3">显示前 6 条，共 1,298 条</p>
+    </div>
+
+    <!-- ===== Hosts Tab ===== -->
+    <div id="tab-hosts" class="tab-content p-6">
+      <h3 class="text-base font-semibold text-gray-800 mb-4">关联宿主 (98 种)</h3>
+      <p class="text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-lg p-2 mb-4">按证据等级排列：确认感染 > 病理观察 > 暴发关联 > 宏基因组共现 > 环境样本</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div class="border border-green-200 rounded-lg p-4 bg-green-50/30">
+          <div class="font-medium text-gray-800 italic">Litopenaeus vannamei</div>
+          <div class="text-sm text-gray-500">凡纳滨对虾 / 南美白对虾</div>
+          <div class="flex flex-wrap gap-1.5 mt-2">
+            <span class="px-1.5 py-0.5 bg-green-100 text-green-700 text-[10px] rounded">确认感染</span>
+            <span class="px-1.5 py-0.5 bg-red-50 text-red-600 text-[10px] rounded">致死率 80-100%</span>
+          </div>
+        </div>
+        <div class="border border-green-200 rounded-lg p-4 bg-green-50/30">
+          <div class="font-medium text-gray-800 italic">Penaeus monodon</div>
+          <div class="text-sm text-gray-500">斑节对虾 / 草虾 / 黑虎虾</div>
+          <div class="flex flex-wrap gap-1.5 mt-2">
+            <span class="px-1.5 py-0.5 bg-green-100 text-green-700 text-[10px] rounded">确认感染</span>
+            <span class="px-1.5 py-0.5 bg-red-50 text-red-600 text-[10px] rounded">致死率 80-100%</span>
+          </div>
+        </div>
+        <div class="border border-green-200 rounded-lg p-4 bg-green-50/30">
+          <div class="font-medium text-gray-800 italic">Procambarus clarkii</div>
+          <div class="text-sm text-gray-500">克氏原螯虾 / 小龙虾</div>
+          <div class="flex flex-wrap gap-1.5 mt-2">
+            <span class="px-1.5 py-0.5 bg-green-100 text-green-700 text-[10px] rounded">确认感染</span>
+          </div>
+        </div>
+        <div class="border border-amber-200 rounded-lg p-4">
+          <div class="font-medium text-gray-800 italic">Eriocheir sinensis</div>
+          <div class="text-sm text-gray-500">中华绒螯蟹 / 大闸蟹</div>
+          <div class="flex flex-wrap gap-1.5 mt-2">
+            <span class="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[10px] rounded">暴发关联</span>
+          </div>
+        </div>
+        <div class="border border-gray-200 rounded-lg p-4">
+          <div class="font-medium text-gray-800 italic">Macrobrachium rosenbergii</div>
+          <div class="text-sm text-gray-500">罗氏沼虾</div>
+          <div class="flex flex-wrap gap-1.5 mt-2">
+            <span class="px-1.5 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded">宏基因组共现</span>
+          </div>
+        </div>
+        <div class="border border-blue-200 rounded-lg p-4 bg-blue-50/20">
+          <div class="font-medium text-gray-800 italic">... 等 92 种</div>
+          <div class="text-xs text-gray-400 mt-2">含实验感染宿主、野生甲壳类、以及环境样本中检出的非典型宿主</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Proteins Tab ===== -->
+    <div id="tab-proteins" class="tab-content p-6">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50">
+            <tr><th class="text-left px-4 py-3">蛋白名</th><th class="text-left px-4 py-3">基因符号</th><th class="text-right px-4 py-3">长度 (aa)</th><th class="text-left px-4 py-3">功能分类</th></tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr class="hover:bg-gray-50"><td class="px-4 py-2.5 font-medium">VP28 envelope protein</td><td class="px-4 py-2.5 font-mono">wsv421</td><td class="px-4 py-2.5 text-right font-mono">204</td><td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded text-xs">structural</span></td></tr>
+            <tr class="hover:bg-gray-50"><td class="px-4 py-2.5 font-medium">VP19 envelope protein</td><td class="px-4 py-2.5 font-mono">wsv486</td><td class="px-4 py-2.5 text-right font-mono">121</td><td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded text-xs">structural</span></td></tr>
+            <tr class="hover:bg-gray-50"><td class="px-4 py-2.5 font-medium">DNA polymerase</td><td class="px-4 py-2.5 font-mono">wsv514</td><td class="px-4 py-2.5 text-right font-mono">2,114</td><td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-green-50 text-green-700 rounded text-xs">replication</span></td></tr>
+            <tr class="hover:bg-gray-50"><td class="px-4 py-2.5 font-medium">Ribonucleotide reductase large subunit</td><td class="px-4 py-2.5 font-mono">wsv067</td><td class="px-4 py-2.5 text-right font-mono">857</td><td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-amber-50 text-amber-700 rounded text-xs">metabolism</span></td></tr>
+            <tr class="hover:bg-gray-50"><td class="px-4 py-2.5 font-medium">Thymidine kinase</td><td class="px-4 py-2.5 font-mono">wsv395</td><td class="px-4 py-2.5 text-right font-mono">195</td><td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-amber-50 text-amber-700 rounded text-xs">metabolism</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== Literature Tab ===== -->
+    <div id="tab-literature" class="tab-content p-6">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50">
+            <tr><th class="text-left px-4 py-3">标题</th><th class="text-left px-4 py-3">作者</th><th class="text-left px-4 py-3">期刊</th><th class="text-left px-4 py-3">年份</th><th class="text-left px-4 py-3">链接</th></tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr class="hover:bg-gray-50"><td class="px-4 py-2.5 font-medium max-w-xs truncate">Identification of two major virion protein genes of WSSV of shrimp</td><td class="px-4 py-2.5 text-gray-600 text-xs">van Hulten MC et al.</td><td class="px-4 py-2.5 text-gray-500 text-xs">Virology</td><td class="px-4 py-2.5">2000</td><td class="px-4 py-2.5 text-xs"><span class="text-teal-600">PMID:10639309</span></td></tr>
+            <tr class="hover:bg-gray-50"><td class="px-4 py-2.5 font-medium max-w-xs truncate">The white spot syndrome virus DNA genome sequence</td><td class="px-4 py-2.5 text-gray-600 text-xs">Yang F et al.</td><td class="px-4 py-2.5 text-gray-500 text-xs">Virology</td><td class="px-4 py-2.5">2001</td><td class="px-4 py-2.5 text-xs"><span class="text-teal-600">PMID:11531409</span></td></tr>
+            <tr class="hover:bg-gray-50"><td class="px-4 py-2.5 font-medium max-w-xs truncate">Complete genome sequence of WSSV isolated from India</td><td class="px-4 py-2.5 text-gray-600 text-xs">Vijayan KK et al.</td><td class="px-4 py-2.5 text-gray-500 text-xs">Archives of Virology</td><td class="px-4 py-2.5">2017</td><td class="px-4 py-2.5 text-xs"><span class="text-teal-600">PMID:28349247</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== Geography Tab ===== -->
+    <div id="tab-geography" class="tab-content p-6">
+      <h3 class="text-base font-semibold text-gray-800 mb-4">地理分布</h3>
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div class="border border-gray-100 rounded-lg p-3"><div class="text-sm font-medium">China</div><div class="text-xs text-gray-500 mt-0.5">267 条记录</div></div>
+        <div class="border border-gray-100 rounded-lg p-3"><div class="text-sm font-medium">Thailand</div><div class="text-xs text-gray-500 mt-0.5">198 条记录</div></div>
+        <div class="border border-gray-100 rounded-lg p-3"><div class="text-sm font-medium">Vietnam</div><div class="text-xs text-gray-500 mt-0.5">145 条记录</div></div>
+        <div class="border border-gray-100 rounded-lg p-3"><div class="text-sm font-medium">India</div><div class="text-xs text-gray-500 mt-0.5">132 条记录</div></div>
+        <div class="border border-gray-100 rounded-lg p-3"><div class="text-sm font-medium">Brazil</div><div class="text-xs text-gray-500 mt-0.5">89 条记录</div></div>
+        <div class="border border-gray-100 rounded-lg p-3"><div class="text-sm font-medium">Mexico</div><div class="text-xs text-gray-500 mt-0.5">76 条记录</div></div>
+        <div class="border border-gray-100 rounded-lg p-3"><div class="text-sm font-medium">Ecuador</div><div class="text-xs text-gray-500 mt-0.5">65 条记录</div></div>
+        <div class="border border-gray-100 rounded-lg p-3"><div class="text-sm font-medium">Indonesia</div><div class="text-xs text-gray-500 mt-0.5">58 条记录</div></div>
+        <div class="border border-gray-100 rounded-lg p-3"><div class="text-sm font-medium">Taiwan</div><div class="text-xs text-gray-500 mt-0.5">43 条记录</div></div>
+        <div class="border border-gray-100 rounded-lg p-3"><div class="text-sm font-medium">USA</div><div class="text-xs text-gray-500 mt-0.5">31 条记录</div></div>
+      </div>
+      <p class="text-xs text-gray-400 mt-3">覆盖 40+ 个国家/地区</p>
+    </div>
+  </div>
+</div>
+
+<script>
+function switchTab(name) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('tab-active'); b.classList.add('text-gray-500'); });
+  document.getElementById('tab-' + name).classList.add('active');
+  const btn = document.querySelector(`[onclick="switchTab('${name}')"]`);
+  if (btn) { btn.classList.add('tab-active'); btn.classList.remove('text-gray-500'); }
+}
+</script>
+
+</body>
+</html>

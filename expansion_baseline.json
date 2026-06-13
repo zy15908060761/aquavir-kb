@@ -1,0 +1,36 @@
+{
+  "timestamp": "2026-05-12T19:19:48.180497",
+  "database_size_mb": 236.5,
+  "virus_species": 526,
+  "viral_isolates": 3783,
+  "viral_proteins": 22823,
+  "target_hosts": 66,
+  "hosts_by_phylum": {
+    "Arthropoda": 62,
+    "Mollusca": 4
+  },
+  "infection_records": {
+    "total": 3107,
+    "by_method": {
+      "co_occurrence_metagenomic": 830,
+      "disease_outbreak": 2276,
+      "environmental_sample": 1
+    }
+  },
+  "evidence_coverage": {
+    "species_with_evidence": 71,
+    "total_species": 526,
+    "pct": 13.5
+  },
+  "literature": {
+    "total": 317,
+    "with_pmid": 167,
+    "with_doi": 247,
+    "traceless": 52
+  },
+  "virus_by_discovery": {
+    "isolated_and_cultured": 4,
+    "metagenomic_environmental": 206,
+    "metagenomic_with_host_evidence": 316
+  }
+}

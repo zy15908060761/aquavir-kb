@@ -1,0 +1,31 @@
+DONE   | YES                  | Nimaviridae               | 1058 isolates | 1058 cached |   1 species | max_len=311562
+DONE   | YES                  | Dicistroviridae           |  375 isolates |  375 cached |   3 species | max_len=10303
+DONE   | YES                  | Roniviridae               |  200 isolates |  200 cached |   2 species | max_len=26769
+DONE   | YES                  | Parvoviridae              |  158 isolates |  158 cached |   2 species | max_len=3914
+DONE   | YES                  | Nodaviridae               |   98 isolates |   98 cached |   4 species | max_len=4036
+NEEDS  | YES                  | Partitiviridae            |   84 isolates |   84 cached |   4 species | max_len=2300
+NEEDS  | YES                  | Yueviridae                |   66 isolates |   66 cached |   3 species | max_len=8057
+DONE   | YES                  | Artiviridae               |   34 isolates |   34 cached |   1 species | max_len=8230
+NEEDS  | YES                  | Chuviridae                |   29 isolates |   29 cached |   6 species | max_len=12996
+NEEDS  | YES                  | Virgaviridae              |   26 isolates |   26 cached |   1 species | max_len=18636
+NEEDS  | YES                  | Qinviridae                |   26 isolates |   26 cached |   2 species | max_len=6371
+DONE   | YES                  | Iridoviridae              |   18 isolates |   18 cached |   1 species | max_len=167330
+NEEDS  | YES                  | Cruliviridae              |   15 isolates |   15 cached |   3 species | max_len=6691
+NEEDS  | YES                  | Tombusviridae             |   14 isolates |   14 cached |   3 species | max_len=5540
+NEEDS  | YES                  | Circoviridae              |   12 isolates |   12 cached |   1 species | max_len=2293
+NEEDS  | YES                  | Marnaviridae              |   10 isolates |   10 cached |   2 species | max_len=9835
+NEEDS  | YES                  | Flaviviridae              |   10 isolates |   10 cached |   1 species | max_len=16366
+NEEDS  | YES                  | Orthototiviridae          |    8 isolates |    8 cached |   3 species | max_len=8576
+NEEDS  | YES                  | Narnaviridae              |    8 isolates |    8 cached |   4 species | max_len=4320
+NEEDS  | YES                  | Phenuiviridae             |    7 isolates |    7 cached |   2 species | max_len=6284
+NEEDS  | YES                  | Sarthroviridae            |    4 isolates |    4 cached |   1 species | max_len=796
+NEEDS  | YES                  | Rhabdoviridae             |    4 isolates |    4 cached |   1 species | max_len=11938
+NEEDS  | YES                  | Nyamiviridae              |    4 isolates |    4 cached |   2 species | max_len=9591
+NEEDS  | NO (need >=3 sequences) | Solemoviridae             |    2 isolates |    2 cached |   1 species | max_len=512
+NEEDS  | NO (need >=3 sequences) | Natareviridae             |    2 isolates |    2 cached |   1 species | max_len=12860
+NEEDS  | NO (need >=3 sequences) | Euroniviridae             |    2 isolates |    2 cached |   1 species | max_len=29385
+NEEDS  | NO (need >=3 sequences) | Betaflexiviridae          |    2 isolates |    2 cached |   1 species | max_len=6349
+NEEDS  | NO (need >=3 sequences) | Tymoviridae               |    1 isolates |    1 cached |   1 species | max_len=6344
+NEEDS  | NO (need >=3 sequences) | Phasmaviridae             |    1 isolates |    1 cached |   1 species | max_len=7110
+NEEDS  | NO (need >=3 sequences) | Nudiviridae               |    1 isolates |    1 cached |   1 species | max_len=119883
+NEEDS  | NO (need >=3 sequences) | Hepeviridae               |    1 isolates |    1 cached |   1 species | max_len=10400

@@ -1,0 +1,1346 @@
+{
+  "yaOV1orf312": {
+    "virus_name": "wolf_11",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-306",
+    "sotu": "u1060",
+    "run": "SRR10323723"
+  },
+  "APG76710": {
+    "virus_name": "beihai_picorna_like_virus_35",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u1060",
+    "run": "SRR10323723"
+  },
+  "YP_009333403": {
+    "virus_name": "beihai_picorna_like_virus_2",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-1055",
+    "sotu": "u1060",
+    "run": "SRR10323723"
+  },
+  "YP_009333593": {
+    "virus_name": "beihai_picorna_like_virus_23",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u1060",
+    "run": "SRR10323723"
+  },
+  "YP_009330066": {
+    "virus_name": "beihai_picorna_like_virus_15",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u1060",
+    "run": "SRR10323723"
+  },
+  "yaOV49orf8882": {
+    "virus_name": "wolf_3752",
+    "phylum": "Kitrinoviricota",
+    "family": "Unclassified-1599",
+    "sotu": "u1060",
+    "run": "SRR10482237"
+  },
+  "YP_009333352": {
+    "virus_name": "beihai_picobirna_like_virus_7",
+    "phylum": "Pisuviricota",
+    "family": "Picobirnaviridae",
+    "sotu": "u1060",
+    "run": "SRR10482237"
+  },
+  "YP_009333349": {
+    "virus_name": "beihai_picobirna_like_virus_8",
+    "phylum": "Pisuviricota",
+    "family": "Picobirnaviridae",
+    "sotu": "u1060",
+    "run": "SRR10482237"
+  },
+  "YP_003934934": {
+    "virus_name": "armigeres_subalbatus_virus_sax06_ak20",
+    "phylum": "Duplornaviricota",
+    "family": "Totiviridae",
+    "sotu": "u1060",
+    "run": "SRR10482237"
+  },
+  "yaOV1orf1725": {
+    "virus_name": "wolf_124",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u1060",
+    "run": "SRR10482237"
+  },
+  "yaOV81orf24624": {
+    "virus_name": "wolf_4049",
+    "phylum": "Lenarviricota",
+    "family": "Unclassified-2367",
+    "sotu": "u40044",
+    "run": "SRR7086057"
+  },
+  "yaOV3orf24849": {
+    "virus_name": "wolf_1257",
+    "phylum": "Kitrinoviricota",
+    "family": "Nodaviridae",
+    "sotu": "u40044",
+    "run": "SRR7086057"
+  },
+  "yaOV26orf57133": {
+    "virus_name": "wolf_3347",
+    "phylum": "Kitrinoviricota",
+    "family": "Tombusviridae",
+    "sotu": "u40044",
+    "run": "SRR7086057"
+  },
+  "ASG92534": {
+    "virus_name": "picornavirales_n_ov_003",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-118",
+    "sotu": "u40044",
+    "run": "SRR7086057"
+  },
+  "yaOV40orf5110": {
+    "virus_name": "wolf_3626",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u40044",
+    "run": "SRR7086057"
+  },
+  "YP_009333528": {
+    "virus_name": "beihai_picorna_like_virus_9",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u40044",
+    "run": "ERR3063039"
+  },
+  "YP_009333581": {
+    "virus_name": "beihai_picorna_like_virus_11",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u40044",
+    "run": "ERR3063039"
+  },
+  "YP_009337672": {
+    "virus_name": "wenzhou_picorna_like_virus_44",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-2350",
+    "sotu": "u40044",
+    "run": "ERR3063039"
+  },
+  "yaOV1orf1091": {
+    "virus_name": "wolf_73",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u40044",
+    "run": "ERR3063039"
+  },
+  "yaOV40orf74366": {
+    "virus_name": "wolf_3633",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u40044",
+    "run": "ERR3063039"
+  },
+  "YP_009047193": {
+    "virus_name": "asterionellopsis_glacialis_rna_virus",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u229843",
+    "run": "ERR3660993"
+  },
+  "ASM94098": {
+    "virus_name": "barns_ness_serrated_wrack_narna_like_virus_2",
+    "phylum": "Lenarviricota",
+    "family": "Narnaviridae",
+    "sotu": "u229843",
+    "run": "ERR3660993"
+  },
+  "YP_009333475": {
+    "virus_name": "beihai_picorna_like_virus_18",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u229843",
+    "run": "ERR3660993"
+  },
+  "yaOV153orf4999": {
+    "virus_name": "wolf_4356",
+    "phylum": "Pisuviricota",
+    "family": "Astroviridae",
+    "sotu": "u229843",
+    "run": "ERR3660993"
+  },
+  "yaOV6orf10994": {
+    "virus_name": "wolf_1941",
+    "phylum": "Lenarviricota",
+    "family": "Unclassified-2100",
+    "sotu": "u229843",
+    "run": "ERR3660993"
+  },
+  "yaOV1orf4054": {
+    "virus_name": "wolf_251",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-106",
+    "sotu": "u46932",
+    "run": "SRR6808590"
+  },
+  "APG78919": {
+    "virus_name": "beihai_picorna_like_virus_31",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u46932",
+    "run": "SRR6808590"
+  },
+  "yaOV1orf440": {
+    "virus_name": "wolf_19",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-1832",
+    "sotu": "u46932",
+    "run": "SRR6808590"
+  },
+  "NP_671718": {
+    "virus_name": "paprika_mild_mottle_virus",
+    "phylum": "Kitrinoviricota",
+    "family": "Virgaviridae",
+    "sotu": "u46932",
+    "run": "SRR6808590"
+  },
+  "BAU79492": {
+    "virus_name": "diatom_colony_associated_dsrna_virus_5",
+    "phylum": "Duplornaviricota",
+    "family": "Totiviridae",
+    "sotu": "u65510",
+    "run": "SRR11827185"
+  },
+  "BAU79486": {
+    "virus_name": "diatom_colony_associated_dsrna_virus_3",
+    "phylum": "Duplornaviricota",
+    "family": "Totiviridae",
+    "sotu": "u65510",
+    "run": "SRR11827185"
+  },
+  "ASM94070": {
+    "virus_name": "barns_ness_breadcrumb_sponge_narna_like_virus_5",
+    "phylum": "Lenarviricota",
+    "family": "Narnaviridae",
+    "sotu": "u65510",
+    "run": "SRR11827185"
+  },
+  "YP_009333384": {
+    "virus_name": "beihai_picorna_like_virus_42",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-1056",
+    "sotu": "u65510",
+    "run": "SRR11827440"
+  },
+  "YP_009337400": {
+    "virus_name": "wenzhou_picorna_like_virus_4",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u65510",
+    "run": "SRR11827440"
+  },
+  "YP_009337060": {
+    "virus_name": "changjiang_tombus_like_virus_18",
+    "phylum": "Kitrinoviricota",
+    "family": "Unclassified-1399",
+    "sotu": "u25965",
+    "run": "SRR11414092"
+  },
+  "yaOV119orf2277": {
+    "virus_name": "wolf_4241",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-1457",
+    "sotu": "u25965",
+    "run": "SRR11414092"
+  },
+  "yaOV1orf46616": {
+    "virus_name": "wolf_546",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-720",
+    "sotu": "u25965",
+    "run": "SRR11414092"
+  },
+  "yaOV76orf18582": {
+    "virus_name": "wolf_4018",
+    "phylum": "Kitrinoviricota",
+    "family": "Unclassified-2406",
+    "sotu": "u25965",
+    "run": "SRR11414092"
+  },
+  "AKI84589": {
+    "virus_name": "tomato_mosaic_virus",
+    "phylum": "Kitrinoviricota",
+    "family": "Virgaviridae",
+    "sotu": "u25965",
+    "run": "SRR11414092"
+  },
+  "yaOV10orf39435": {
+    "virus_name": "wolf_2469",
+    "phylum": "Lenarviricota",
+    "family": "Unclassified-621",
+    "sotu": "u25965",
+    "run": "SRR5466337"
+  },
+  "APG76480": {
+    "virus_name": "hubei_tombus_like_virus_35",
+    "phylum": "Kitrinoviricota",
+    "family": "Tombusviridae",
+    "sotu": "u25965",
+    "run": "SRR5466337"
+  },
+  "APG78216": {
+    "virus_name": "wuhan_insect_virus_23",
+    "phylum": "Pisuviricota",
+    "family": "Partitiviridae",
+    "sotu": "u25965",
+    "run": "SRR5466337"
+  },
+  "yaOV28orf14955": {
+    "virus_name": "wolf_3379",
+    "phylum": "Lenarviricota",
+    "family": "Unclassified-113",
+    "sotu": "u25965",
+    "run": "SRR5466337"
+  },
+  "yaOV7orf37195": {
+    "virus_name": "wolf_2125",
+    "phylum": "Lenarviricota",
+    "family": "Unclassified-2101",
+    "sotu": "u25965",
+    "run": "SRR5466337"
+  },
+  "QIJ70116": {
+    "virus_name": "rosadiaz_solemo_like_virus",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-1131",
+    "sotu": "u37987",
+    "run": "ERR2737663"
+  },
+  "YP_009330092": {
+    "virus_name": "hubei_sobemo_like_virus_45",
+    "phylum": "Pisuviricota",
+    "family": "Solemoviridae",
+    "sotu": "u37987",
+    "run": "ERR2737663"
+  },
+  "GHJE01057056": {
+    "virus_name": "harmonia_axyridis",
+    "phylum": "Pisuviricota",
+    "family": "Quenyaviridae",
+    "sotu": "u37987",
+    "run": "ERR2737663"
+  },
+  "YP_009337160": {
+    "virus_name": "hubei_picorna_like_virus_62",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-1368",
+    "sotu": "u37987",
+    "run": "ERR2737663"
+  },
+  "AVK80197": {
+    "virus_name": "sogatella_furcifera_honeydew_virus",
+    "phylum": "Pisuviricota",
+    "family": "Iflaviridae",
+    "sotu": "u37987",
+    "run": "ERR2737663"
+  },
+  "yaOV1orf1125": {
+    "virus_name": "wolf_77",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u37987",
+    "run": "SRR10873475"
+  },
+  "API61900": {
+    "virus_name": "quarivirus_93c4",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-1084",
+    "sotu": "u37987",
+    "run": "SRR10873475"
+  },
+  "yaOV98orf2860": {
+    "virus_name": "wolf_4150",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-1084",
+    "sotu": "u37987",
+    "run": "SRR10873475"
+  },
+  "YP_009345032": {
+    "virus_name": "wuhan_insect_virus_33",
+    "phylum": "Pisuviricota",
+    "family": "Dicistroviridae",
+    "sotu": "u37987",
+    "run": "SRR10873475"
+  },
+  "YP_009337313": {
+    "virus_name": "hubei_picorna_like_virus_14",
+    "phylum": "Pisuviricota",
+    "family": "Dicistroviridae",
+    "sotu": "u37987",
+    "run": "SRR10873475"
+  },
+  "yaOV21orf22677": {
+    "virus_name": "wolf_3209",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u583653",
+    "run": "SRR5208543"
+  },
+  "YP_009336661": {
+    "virus_name": "wenzhou_picorna_like_virus_52",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u583653",
+    "run": "SRR5208543"
+  },
+  "YP_009333315": {
+    "virus_name": "beihai_narna_like_virus_18",
+    "phylum": "Lenarviricota",
+    "family": "Unclassified-163",
+    "sotu": "u583653",
+    "run": "SRR5208543"
+  },
+  "ASM94019": {
+    "virus_name": "barns_ness_breadcrumb_sponge_tombus_like_virus_4",
+    "phylum": "Kitrinoviricota",
+    "family": "Tombusviridae",
+    "sotu": "u583653",
+    "run": "SRR10820345"
+  },
+  "BCD41489": {
+    "virus_name": "chaetoceros_setoensis_rna_virus_sp",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u583653",
+    "run": "SRR10820345"
+  },
+  "YP_009333509": {
+    "virus_name": "beihai_picorna_like_virus_1",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u583653",
+    "run": "SRR10820345"
+  },
+  "BAE47071": {
+    "virus_name": "heterocapsa_circularisquama_rna_virus",
+    "phylum": "Pisuviricota",
+    "family": "Alvernaviridae",
+    "sotu": "u583653",
+    "run": "SRR10820345"
+  },
+  "YP_009333502": {
+    "virus_name": "beihai_picorna_like_virus_81",
+    "phylum": "Pisuviricota",
+    "family": "Dicistroviridae",
+    "sotu": "u49198",
+    "run": "ERR3660999"
+  },
+  "yaOV1orf5195": {
+    "virus_name": "wolf_291",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u49198",
+    "run": "ERR3660999"
+  },
+  "ASM93979": {
+    "virus_name": "caledonia_beadlet_anemone_dicistro_like_virus_1",
+    "phylum": "Pisuviricota",
+    "family": "Dicistroviridae",
+    "sotu": "u49198",
+    "run": "ERR3660999"
+  },
+  "yaOV4orf17948": {
+    "virus_name": "wolf_1567",
+    "phylum": "Kitrinoviricota",
+    "family": "Unclassified-298",
+    "sotu": "u49198",
+    "run": "ERR3660999"
+  },
+  "YP_009342252": {
+    "virus_name": "wenzhou_yanvirus_like_virus_2",
+    "phylum": "Kitrinoviricota",
+    "family": "Unclassified-25",
+    "sotu": "u49198",
+    "run": "ERR3660999"
+  },
+  "QNL09598": {
+    "virus_name": "clinch_picobirna_like_virus_1",
+    "phylum": "Pisuviricota",
+    "family": "Picobirnaviridae",
+    "sotu": "u7815",
+    "run": "SRR11828459"
+  },
+  "YP_009329981": {
+    "virus_name": "beihai_sobemo_like_virus_24",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-1589",
+    "sotu": "u7815",
+    "run": "SRR11828459"
+  },
+  "yaOV81orf16614": {
+    "virus_name": "wolf_4048",
+    "phylum": "Lenarviricota",
+    "family": "Unclassified-2367",
+    "sotu": "u56320",
+    "run": "ERR3660995"
+  },
+  "yaOV38orf14379": {
+    "virus_name": "wolf_3587",
+    "phylum": "Lenarviricota",
+    "family": "Unclassified-624",
+    "sotu": "u56320",
+    "run": "ERR3660995"
+  },
+  "yaOV38orf15048": {
+    "virus_name": "wolf_3589",
+    "phylum": "Lenarviricota",
+    "family": "Unclassified-624",
+    "sotu": "u56320",
+    "run": "ERR3660995"
+  },
+  "YP_009342302": {
+    "virus_name": "wenzhou_tombus_like_virus_9",
+    "phylum": "Kitrinoviricota",
+    "family": "Unclassified-901",
+    "sotu": "u56320",
+    "run": "ERR3660995"
+  },
+  "AHA44480": {
+    "virus_name": "marine_rna_virus_sf_3",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u56320",
+    "run": "SRR10820330"
+  },
+  "APS85759": {
+    "virus_name": "biomphalaria_virus_4",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-1777",
+    "sotu": "u56320",
+    "run": "SRR10820330"
+  },
+  "yaOV1orf58639": {
+    "virus_name": "wolf_578",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u56320",
+    "run": "SRR10820330"
+  },
+  "YP_009337287": {
+    "virus_name": "wenzhou_picorna_like_virus_51",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-2265",
+    "sotu": "u41087",
+    "run": "SRR8820861"
+  },
+  "YP_009336994": {
+    "virus_name": "wenzhou_picorna_like_virus_28",
+    "phylum": "Pisuviricota",
+    "family": "Dicistroviridae",
+    "sotu": "u41087",
+    "run": "SRR8820861"
+  },
+  "yaOV91orf61357": {
+    "virus_name": "wolf_4109",
+    "phylum": "Pisuviricota",
+    "family": "Picobirnaviridae",
+    "sotu": "u41087",
+    "run": "SRR8820861"
+  },
+  "yaOV40orf36219": {
+    "virus_name": "wolf_3630",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u41087",
+    "run": "SRR8820861"
+  },
+  "yaOV90orf336": {
+    "virus_name": "wolf_4103",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u2782",
+    "run": "SRR10800988"
+  },
+  "yaOV58orf9144": {
+    "virus_name": "wolf_3854",
+    "phylum": "Kitrinoviricota",
+    "family": "Unclassified-475",
+    "sotu": "u2782",
+    "run": "SRR10800988"
+  },
+  "YP_009333382": {
+    "virus_name": "beihai_picorna_like_virus_26",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u2782",
+    "run": "SRR10800988"
+  },
+  "YP_009333456": {
+    "virus_name": "beihai_picorna_like_virus_71",
+    "phylum": "Pisuviricota",
+    "family": "Dicistroviridae",
+    "sotu": "u2782",
+    "run": "SRR10800988"
+  },
+  "yaOV17orf50200": {
+    "virus_name": "wolf_3051",
+    "phylum": "Lenarviricota",
+    "family": "Unclassified-474",
+    "sotu": "u2782",
+    "run": "SRR11647858"
+  },
+  "yaOV81orf15859": {
+    "virus_name": "wolf_4046",
+    "phylum": "Lenarviricota",
+    "family": "Unclassified-2367",
+    "sotu": "u2782",
+    "run": "SRR11647858"
+  },
+  "YP_009333600": {
+    "virus_name": "beihai_picorna_like_virus_51",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-2251",
+    "sotu": "u2782",
+    "run": "SRR11647858"
+  },
+  "APG77021": {
+    "virus_name": "beihai_levi_like_virus_22",
+    "phylum": "Lenarviricota",
+    "family": "Leviviridae",
+    "sotu": "u2782",
+    "run": "SRR11647858"
+  },
+  "YP_009333515": {
+    "virus_name": "beihai_picorna_like_virus_63",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-1883",
+    "sotu": "u2782",
+    "run": "SRR11647858"
+  },
+  "YP_009342067": {
+    "virus_name": "wenzhou_weivirus_like_virus_1",
+    "phylum": "Kitrinoviricota",
+    "family": "Unclassified-1419",
+    "sotu": "u190032",
+    "run": "ERR3063019"
+  },
+  "APG76211": {
+    "virus_name": "beihai_noda_like_virus_21",
+    "phylum": "Kitrinoviricota",
+    "family": "Unclassified-953",
+    "sotu": "u190032",
+    "run": "ERR3063019"
+  },
+  "yaOV1orf1054": {
+    "virus_name": "wolf_68",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u190032",
+    "run": "ERR3063019"
+  },
+  "YP_009337101": {
+    "virus_name": "beihai_weivirus_like_virus_13",
+    "phylum": "Kitrinoviricota",
+    "family": "Unclassified-1067",
+    "sotu": "u190032",
+    "run": "ERR3063019"
+  },
+  "yaOV321orf4163": {
+    "virus_name": "wolf_4591",
+    "phylum": "Unclassified",
+    "family": "Unclassified-1301",
+    "sotu": "u190032",
+    "run": "ERR3063019"
+  },
+  "YP_009337753": {
+    "virus_name": "wenzhou_crab_virus_4",
+    "phylum": "Kitrinoviricota",
+    "family": "Unclassified-1219",
+    "sotu": "u190032",
+    "run": "ERR3063037"
+  },
+  "yaOV153orf5666": {
+    "virus_name": "wolf_4357",
+    "phylum": "Pisuviricota",
+    "family": "Astroviridae",
+    "sotu": "u190032",
+    "run": "ERR3063037"
+  },
+  "yaOV46orf10582": {
+    "virus_name": "wolf_3712",
+    "phylum": "Kitrinoviricota",
+    "family": "Unclassified-1419",
+    "sotu": "u190032",
+    "run": "ERR3063037"
+  },
+  "YP_009337128": {
+    "virus_name": "beihai_weivirus_like_virus_1",
+    "phylum": "Kitrinoviricota",
+    "family": "Unclassified-1419",
+    "sotu": "u190032",
+    "run": "ERR3063037"
+  },
+  "YP_009336797": {
+    "virus_name": "shahe_picorna_like_virus_5",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u58554",
+    "run": "SRR7687159"
+  },
+  "yaOV53orf22023": {
+    "virus_name": "wolf_3803",
+    "phylum": "Kitrinoviricota",
+    "family": "Unclassified-1255",
+    "sotu": "u58554",
+    "run": "SRR7687159"
+  },
+  "yaOV190orf17569": {
+    "virus_name": "wolf_4441",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-1902",
+    "sotu": "u58554",
+    "run": "SRR7687159"
+  },
+  "yaOV13orf11174": {
+    "virus_name": "wolf_2757",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-1416",
+    "sotu": "u58554",
+    "run": "SRR7687159"
+  },
+  "yaOV9orf13412": {
+    "virus_name": "wolf_2353",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-519",
+    "sotu": "u58554",
+    "run": "SRR7687159"
+  },
+  "yaOV7orf64582": {
+    "virus_name": "wolf_2148",
+    "phylum": "Lenarviricota",
+    "family": "Unclassified-2060",
+    "sotu": "u58554",
+    "run": "SRR6032605"
+  },
+  "yaOV72orf749": {
+    "virus_name": "wolf_3985",
+    "phylum": "Pisuviricota",
+    "family": "Dicistroviridae",
+    "sotu": "u58554",
+    "run": "SRR6032605"
+  },
+  "AZR39355": {
+    "virus_name": "hypsignathus_monstrosus_dicistrovirus",
+    "phylum": "Pisuviricota",
+    "family": "Dicistroviridae",
+    "sotu": "u58554",
+    "run": "SRR6032605"
+  },
+  "yaOV72orf5454": {
+    "virus_name": "wolf_3988",
+    "phylum": "Pisuviricota",
+    "family": "Dicistroviridae",
+    "sotu": "u58554",
+    "run": "SRR6032605"
+  },
+  "YP_009337399": {
+    "virus_name": "wenzhou_picorna_like_virus_47",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-1982",
+    "sotu": "u58554",
+    "run": "SRR6032605"
+  },
+  "yaOV3orf41796": {
+    "virus_name": "wolf_1367",
+    "phylum": "Kitrinoviricota",
+    "family": "Nodaviridae",
+    "sotu": "u19938",
+    "run": "SRR11647857"
+  },
+  "YP_009333571": {
+    "virus_name": "beihai_sea_slater_virus_2",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-1421",
+    "sotu": "u19938",
+    "run": "SRR11647857"
+  },
+  "yaOV81orf16060": {
+    "virus_name": "wolf_4047",
+    "phylum": "Lenarviricota",
+    "family": "Unclassified-2367",
+    "sotu": "u19938",
+    "run": "SRR11647857"
+  },
+  "yaOV10orf21028": {
+    "virus_name": "wolf_2422",
+    "phylum": "Lenarviricota",
+    "family": "Unclassified-472",
+    "sotu": "u19938",
+    "run": "SRR11647857"
+  },
+  "yaOV14orf12191": {
+    "virus_name": "wolf_2808",
+    "phylum": "Lenarviricota",
+    "family": "Unclassified-1203",
+    "sotu": "u19938",
+    "run": "SRR11647857"
+  },
+  "AYN75541": {
+    "virus_name": "cragig_virus_1",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u19938",
+    "run": "SRR11647877"
+  },
+  "YP_009333494": {
+    "virus_name": "beihai_shrimp_virus_1",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-1892",
+    "sotu": "u32279",
+    "run": "SRR1802993"
+  },
+  "yaOV89orf7873": {
+    "virus_name": "wolf_4098",
+    "phylum": "Kitrinoviricota",
+    "family": "Unclassified-901",
+    "sotu": "u32279",
+    "run": "SRR1802993"
+  },
+  "APG76709": {
+    "virus_name": "beihai_picorna_like_virus_88",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-1892",
+    "sotu": "u32279",
+    "run": "SRR1802993"
+  },
+  "APG77985": {
+    "virus_name": "hubei_picorna_like_virus_15",
+    "phylum": "Pisuviricota",
+    "family": "Dicistroviridae",
+    "sotu": "u32279",
+    "run": "SRR1802993"
+  },
+  "YP_009333605": {
+    "virus_name": "beihai_picorna_like_virus_41",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-987",
+    "sotu": "u32279",
+    "run": "SRR7086126"
+  },
+  "YP_009336650": {
+    "virus_name": "wenling_crustacean_virus_6",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-1421",
+    "sotu": "u32279",
+    "run": "SRR7086126"
+  },
+  "yaOV38orf15714": {
+    "virus_name": "wolf_3592",
+    "phylum": "Lenarviricota",
+    "family": "Unclassified-624",
+    "sotu": "u214606",
+    "run": "SRR11827438"
+  },
+  "QLC36817": {
+    "virus_name": "sarcosphaera_coronaria_partitivirus",
+    "phylum": "Pisuviricota",
+    "family": "Partitiviridae",
+    "sotu": "u214606",
+    "run": "SRR11827438"
+  },
+  "APG78016": {
+    "virus_name": "beihai_picorna_like_virus_74",
+    "phylum": "Pisuviricota",
+    "family": "Dicistroviridae",
+    "sotu": "u214606",
+    "run": "SRR7428106"
+  },
+  "YP_009336722": {
+    "virus_name": "wenzhou_picorna_like_virus_18",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-2251",
+    "sotu": "u214606",
+    "run": "SRR7428106"
+  },
+  "yaOV1orf2114": {
+    "virus_name": "wolf_153",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-204",
+    "sotu": "u214606",
+    "run": "SRR7428106"
+  },
+  "yaOV21orf4189": {
+    "virus_name": "wolf_3192",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u214606",
+    "run": "SRR7428106"
+  },
+  "YP_009329854": {
+    "virus_name": "beihai_picorna_like_virus_5",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u214606",
+    "run": "SRR7428106"
+  },
+  "yaOV1orf1319": {
+    "virus_name": "wolf_94",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-88",
+    "sotu": "u22188",
+    "run": "SRR10482235"
+  },
+  "APG77303": {
+    "virus_name": "wenzhou_narna_like_virus_10",
+    "phylum": "Lenarviricota",
+    "family": "Unclassified-2162",
+    "sotu": "u22188",
+    "run": "SRR10482235"
+  },
+  "yaOV17orf13006": {
+    "virus_name": "wolf_3016",
+    "phylum": "Lenarviricota",
+    "family": "Unclassified-623",
+    "sotu": "u22188",
+    "run": "SRR10482235"
+  },
+  "YP_009230120": {
+    "virus_name": "marine_rna_virus_pal156",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u66433",
+    "run": "ERR3063033"
+  },
+  "yaOV1orf35864": {
+    "virus_name": "wolf_517",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-1948",
+    "sotu": "u66433",
+    "run": "ERR3063033"
+  },
+  "yaOV40orf464": {
+    "virus_name": "wolf_3616",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u66433",
+    "run": "SRR6808581"
+  },
+  "ASM94051": {
+    "virus_name": "barns_ness_breadcrumb_sponge_aquatic_picorna_like_virus_1",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u66433",
+    "run": "SRR6808581"
+  },
+  "yaOV21orf2350": {
+    "virus_name": "wolf_3185",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u66433",
+    "run": "SRR6808581"
+  },
+  "AFM93995": {
+    "virus_name": "recovirus_bangladesh_289_2007",
+    "phylum": "Pisuviricota",
+    "family": "Caliciviridae",
+    "sotu": "u796729",
+    "run": "ERR3063026"
+  },
+  "YP_009336635": {
+    "virus_name": "wenling_picorna_like_virus_1",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u796729",
+    "run": "ERR3063026"
+  },
+  "yaOV3orf9671": {
+    "virus_name": "wolf_1142",
+    "phylum": "Kitrinoviricota",
+    "family": "Unclassified-2241",
+    "sotu": "u796729",
+    "run": "ERR3063026"
+  },
+  "YP_009333414": {
+    "virus_name": "beihai_picorna_like_virus_6",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u796729",
+    "run": "ERR3063026"
+  },
+  "AYN75548": {
+    "virus_name": "halhan_virus_1",
+    "phylum": "Pisuviricota",
+    "family": "Dicistroviridae",
+    "sotu": "u796729",
+    "run": "ERR3063026"
+  },
+  "yaOV7orf32960": {
+    "virus_name": "wolf_2121",
+    "phylum": "Lenarviricota",
+    "family": "Unclassified-2101",
+    "sotu": "u52758",
+    "run": "ERR2809041"
+  },
+  "yaOV28orf60347": {
+    "virus_name": "wolf_3390",
+    "phylum": "Lenarviricota",
+    "family": "Unclassified-1809",
+    "sotu": "u52758",
+    "run": "ERR2809041"
+  },
+  "ASM94100": {
+    "virus_name": "barns_ness_serrated_wrack_narna_like_virus_4",
+    "phylum": "Lenarviricota",
+    "family": "Narnaviridae",
+    "sotu": "u52758",
+    "run": "ERR2809041"
+  },
+  "yaOV19orf15697": {
+    "virus_name": "wolf_3110",
+    "phylum": "Lenarviricota",
+    "family": "Leviviridae",
+    "sotu": "u52758",
+    "run": "ERR2809041"
+  },
+  "yaOV7orf60502": {
+    "virus_name": "wolf_2145",
+    "phylum": "Lenarviricota",
+    "family": "Unclassified-1616",
+    "sotu": "u52758",
+    "run": "ERR2809041"
+  },
+  "APG76091": {
+    "virus_name": "hubei_noda_like_virus_11",
+    "phylum": "Kitrinoviricota",
+    "family": "Unclassified-1890",
+    "sotu": "u52758",
+    "run": "SRR5466723"
+  },
+  "AMQ23551": {
+    "virus_name": "unidentified_ssrna_virus",
+    "phylum": "Lenarviricota",
+    "family": "Unclassified-675",
+    "sotu": "u52758",
+    "run": "SRR5466723"
+  },
+  "yaOV10orf19403": {
+    "virus_name": "wolf_2409",
+    "phylum": "Lenarviricota",
+    "family": "Unclassified-1425",
+    "sotu": "u52758",
+    "run": "SRR5466723"
+  },
+  "yaOV144orf12930": {
+    "virus_name": "wolf_4329",
+    "phylum": "Lenarviricota",
+    "family": "Unclassified-512",
+    "sotu": "u52758",
+    "run": "SRR5466723"
+  },
+  "yaOV91orf56761": {
+    "virus_name": "wolf_4108",
+    "phylum": "Pisuviricota",
+    "family": "Picobirnaviridae",
+    "sotu": "u145296",
+    "run": "ERR3660996"
+  },
+  "YP_009333554": {
+    "virus_name": "beihai_picorna_like_virus_14",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u145296",
+    "run": "ERR3660996"
+  },
+  "yaOV69orf486": {
+    "virus_name": "wolf_3960",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-148",
+    "sotu": "u257972",
+    "run": "SRR7086121"
+  },
+  "yaOV2orf3349": {
+    "virus_name": "wolf_663",
+    "phylum": "Kitrinoviricota",
+    "family": "Unclassified-404",
+    "sotu": "u134941",
+    "run": "SRR5864100"
+  },
+  "APG77214": {
+    "virus_name": "hubei_narna_like_virus_1",
+    "phylum": "Lenarviricota",
+    "family": "Unclassified-732",
+    "sotu": "u134941",
+    "run": "SRR5864100"
+  },
+  "yaOV17orf9894": {
+    "virus_name": "wolf_3010",
+    "phylum": "Lenarviricota",
+    "family": "Unclassified-623",
+    "sotu": "u134941",
+    "run": "SRR5864100"
+  },
+  "ASM94089": {
+    "virus_name": "barns_ness_dog_whelk_narna_like_virus_1",
+    "phylum": "Lenarviricota",
+    "family": "Narnaviridae",
+    "sotu": "u134941",
+    "run": "SRR5864100"
+  },
+  "ASM94067": {
+    "virus_name": "barns_ness_breadcrumb_sponge_narna_like_virus_2",
+    "phylum": "Lenarviricota",
+    "family": "Narnaviridae",
+    "sotu": "u134941",
+    "run": "SRR5864100"
+  },
+  "YP_009337232": {
+    "virus_name": "sanxia_water_strider_virus_17",
+    "phylum": "Kitrinoviricota",
+    "family": "Unclassified-1890",
+    "sotu": "u134941",
+    "run": "SRR5246792"
+  },
+  "yaOV21orf2214": {
+    "virus_name": "wolf_3184",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u134941",
+    "run": "SRR5246792"
+  },
+  "yaOV5orf23295": {
+    "virus_name": "wolf_1859",
+    "phylum": "Kitrinoviricota",
+    "family": "Tombusviridae",
+    "sotu": "u134941",
+    "run": "SRR5246792"
+  },
+  "yaOV7orf11766": {
+    "virus_name": "wolf_2066",
+    "phylum": "Lenarviricota",
+    "family": "Unclassified-2101",
+    "sotu": "u37457",
+    "run": "ERR2632532"
+  },
+  "YP_406375": {
+    "virus_name": "dulcamara_mottle_virus",
+    "phylum": "Kitrinoviricota",
+    "family": "Tymoviridae",
+    "sotu": "u37457",
+    "run": "ERR2632532"
+  },
+  "NP_085473": {
+    "virus_name": "acinetobacter_phage_ap205",
+    "phylum": "Lenarviricota",
+    "family": "Leviviridae",
+    "sotu": "u37457",
+    "run": "ERR2632532"
+  },
+  "yaOV7orf16640": {
+    "virus_name": "wolf_2094",
+    "phylum": "Lenarviricota",
+    "family": "Unclassified-2101",
+    "sotu": "u37457",
+    "run": "ERR2632532"
+  },
+  "yaOV48orf16786": {
+    "virus_name": "wolf_3740",
+    "phylum": "Lenarviricota",
+    "family": "Leviviridae",
+    "sotu": "u37457",
+    "run": "ERR2632532"
+  },
+  "APG77225": {
+    "virus_name": "hubei_levi_like_virus_5",
+    "phylum": "Lenarviricota",
+    "family": "Leviviridae",
+    "sotu": "u37457",
+    "run": "ERR3047579"
+  },
+  "QIJ70079": {
+    "virus_name": "benes_partiti_like_virus",
+    "phylum": "Pisuviricota",
+    "family": "Picobirnaviridae",
+    "sotu": "u37457",
+    "run": "ERR3047579"
+  },
+  "yaOV7orf17123": {
+    "virus_name": "wolf_2097",
+    "phylum": "Lenarviricota",
+    "family": "Unclassified-2101",
+    "sotu": "u37457",
+    "run": "ERR3047579"
+  },
+  "APG77245": {
+    "virus_name": "hubei_levi_like_virus_3",
+    "phylum": "Lenarviricota",
+    "family": "Unclassified-55",
+    "sotu": "u37457",
+    "run": "ERR3047579"
+  },
+  "YP_009333221": {
+    "virus_name": "shahe_isopoda_virus_5",
+    "phylum": "Kitrinoviricota",
+    "family": "Unclassified-1770",
+    "sotu": "u47976",
+    "run": "SRR6401740"
+  },
+  "yaOV152orf13945": {
+    "virus_name": "wolf_4353",
+    "phylum": "Lenarviricota",
+    "family": "Unclassified-28",
+    "sotu": "u47976",
+    "run": "SRR6401740"
+  },
+  "ASG92530": {
+    "virus_name": "picornavirales_n_ov_137",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-177",
+    "sotu": "u47976",
+    "run": "SRR6401740"
+  },
+  "QBY91920": {
+    "virus_name": "cylindrotheca_closterium_rna_virus_02",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u47976",
+    "run": "SRR6401740"
+  },
+  "yaOV60orf20325": {
+    "virus_name": "wolf_3879",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-2051",
+    "sotu": "u47976",
+    "run": "ERR3047573"
+  },
+  "yaOV4orf10427": {
+    "virus_name": "wolf_1495",
+    "phylum": "Kitrinoviricota",
+    "family": "Unclassified-707",
+    "sotu": "u47976",
+    "run": "ERR3047573"
+  },
+  "yaOV1orf1622": {
+    "virus_name": "wolf_118",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u47976",
+    "run": "ERR3047573"
+  },
+  "AFR11837": {
+    "virus_name": "picalivirus_b",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-390",
+    "sotu": "u47976",
+    "run": "ERR3047573"
+  },
+  "AYN75554": {
+    "virus_name": "halhan_virus_3",
+    "phylum": "Pisuviricota",
+    "family": "Dicistroviridae",
+    "sotu": "u81426",
+    "run": "SRR6401670"
+  },
+  "yaOV46orf10484": {
+    "virus_name": "wolf_3711",
+    "phylum": "Kitrinoviricota",
+    "family": "Unclassified-1419",
+    "sotu": "u81426",
+    "run": "SRR6401670"
+  },
+  "yaOV46orf6162": {
+    "virus_name": "wolf_3704",
+    "phylum": "Kitrinoviricota",
+    "family": "Unclassified-1419",
+    "sotu": "u81426",
+    "run": "SRR6401670"
+  },
+  "BAK40203": {
+    "virus_name": "chaetoceros_sprna_virus_2",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u81426",
+    "run": "SRR6401670"
+  },
+  "YP_009333458": {
+    "virus_name": "beihai_picorna_like_virus_54",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-1211",
+    "sotu": "u81426",
+    "run": "SRR8820783"
+  },
+  "YP_009333376": {
+    "virus_name": "beihai_mantis_shrimp_virus_6",
+    "phylum": "Kitrinoviricota",
+    "family": "Nodaviridae",
+    "sotu": "u482384",
+    "run": "ERR3063020"
+  },
+  "yaOV11orf23067": {
+    "virus_name": "wolf_2532",
+    "phylum": "Kitrinoviricota",
+    "family": "Tombusviridae",
+    "sotu": "u179355",
+    "run": "SRR6824962"
+  },
+  "yaOV74orf11384": {
+    "virus_name": "wolf_4002",
+    "phylum": "Kitrinoviricota",
+    "family": "Unclassified-215",
+    "sotu": "u179355",
+    "run": "SRR6824962"
+  },
+  "yaOV79orf9428": {
+    "virus_name": "wolf_4034",
+    "phylum": "Kitrinoviricota",
+    "family": "Unclassified-750",
+    "sotu": "u179355",
+    "run": "SRR6824962"
+  },
+  "QIP68021": {
+    "virus_name": "bremia_lactucae_associated_narnavirus_3",
+    "phylum": "Lenarviricota",
+    "family": "Narnaviridae",
+    "sotu": "u179355",
+    "run": "SRR6824962"
+  },
+  "YP_001429583": {
+    "virus_name": "marine_rna_virus_jp_b",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u195956",
+    "run": "SRR8943076"
+  },
+  "ASG92532": {
+    "virus_name": "picornavirales_n_ov_013",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-1999",
+    "sotu": "u195956",
+    "run": "SRR8943076"
+  },
+  "YP_009333585": {
+    "virus_name": "beihai_picorna_like_virus_122",
+    "phylum": "Pisuviricota",
+    "family": "Unclassified-1059",
+    "sotu": "u195956",
+    "run": "SRR8943076"
+  },
+  "yaOV1orf557": {
+    "virus_name": "wolf_28",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u195956",
+    "run": "SRR8943076"
+  },
+  "YP_006732323": {
+    "virus_name": "rhizosolenia_setigera_rna_virus_01",
+    "phylum": "Pisuviricota",
+    "family": "Marnaviridae",
+    "sotu": "u23162",
+    "run": "SRR5343979"
+  },
+  "YP_009333372": {
+    "virus_name": "beihai_barnacle_virus_11",
+    "phylum": "Kitrinoviricota",
+    "family": "Nodaviridae",
+    "sotu": "u23162",
+    "run": "SRR5343979"
+  }
+}

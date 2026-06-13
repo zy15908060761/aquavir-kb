@@ -1,0 +1,17 @@
+{
+  "virome_papers": 192,
+  "new_genbank": [
+    "AF191073",
+    "KT319643",
+    "PQ720520",
+    "PQ720521",
+    "K08303",
+    "AJ515911",
+    "K13730"
+  ],
+  "new_sra": [],
+  "new_bioprojects": [
+    "PRJNA577390"
+  ],
+  "validated_virus": []
+}

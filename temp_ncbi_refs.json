@@ -1,0 +1,198 @@
+{
+  "AF273215": {
+    "pmids": [
+      "11062047"
+    ],
+    "host": "Litopenaeus stylirostris",
+    "organism": "Penaeus stylirostris penstyldensovirus 1",
+    "definition": "Penaeus stylirostris penstyldensovirus 1 non-structural protein 1, non-structural protein 2, and capsid protein genes, complete cds"
+  },
+  "GBBW01007738": {
+    "pmids": [],
+    "host": null,
+    "organism": "Aplysia californica",
+    "definition": "TSA: Aplysia californica comp58_c0_seq1 transcribed RNA sequence"
+  },
+  "GU371276": {
+    "pmids": [],
+    "host": "Fenneropenaeus chinensis",
+    "organism": "Fenneropenaeus chinensis hepandensovirus",
+    "definition": "Fenneropenaeus chinensis hepatopancreatic densovirus, complete genome"
+  },
+  "KP410261": {
+    "pmids": [],
+    "host": "Cherax quadricarinatus",
+    "organism": "Cherax quadricarinatus densovirus",
+    "definition": "Cherax quadricarinatus densovirus non-structural protein 3, non-structural protein 1 (NS1), non-structural protein 2 (NS2), and viral protein (VP) genes, complete cds"
+  },
+  "KP638402": {
+    "pmids": [
+      "25999569"
+    ],
+    "host": "Eriocheir sinensis (freshwater Chinese mitten crab)",
+    "organism": "Crabreovirus eriocheiris",
+    "definition": "Eriocheir sinensis reovirus strain WX-2012 segment 1 VP1 gene, partial cds"
+  },
+  "KX883512": {
+    "pmids": [
+      "27880757"
+    ],
+    "host": "octopus",
+    "organism": "Beihai narna-like virus 2",
+    "definition": "Beihai narna-like virus 2 strain BHZY58217 RNA-dependent RNA polymerase gene, complete cds"
+  },
+  "KX883515": {
+    "pmids": [
+      "27880757"
+    ],
+    "host": "Paphia shell",
+    "organism": "Beihai narna-like virus 1",
+    "definition": "Beihai narna-like virus 1 strain BWBFG61141 RNA-dependent RNA polymerase gene, complete cds"
+  },
+  "KX883578": {
+    "pmids": [
+      "27880757"
+    ],
+    "host": "freshwater shellfish (Unio douglasiae)",
+    "organism": "Hubei narna-like virus 2",
+    "definition": "Hubei narna-like virus 2 strain WHBL67117 RNA-dependent RNA polymerase gene, complete cds"
+  },
+  "MK028683": {
+    "pmids": [],
+    "host": "Penaeus monodon",
+    "organism": "Penaeus monodon metallodensovirus",
+    "definition": "Penaeus monodon metallodensovirus strain 2014CDN, complete genome"
+  },
+  "MN190158": {
+    "pmids": [],
+    "host": "Asterias forbesi (sea star)",
+    "organism": "Asterias forbesi-associated densovirus",
+    "definition": "Asterias forbesi-associated densovirus clone AfDV, complete genome"
+  },
+  "MT733014": {
+    "pmids": [],
+    "host": "Evasterias troschelii; adult",
+    "organism": "Aquambidensovirus asteroid3",
+    "definition": "Aquambidensovirus asteroid3 clone EtaDV1 NS3 (NS3), NS1 (NS1), NS2 (NS2), VP (VP), and ORF1 (ORF2) genes, complete cds"
+  },
+  "MT733015": {
+    "pmids": [],
+    "host": "Evasterias troschelii; adult",
+    "organism": "Aquambidensovirus asteroid4",
+    "definition": "Aquambidensovirus asteroid4 clone EtaDV2 NS3 (NS3), NS1 (NS1), and ORF1 (ORF2) genes, complete cds"
+  },
+  "MT733016": {
+    "pmids": [],
+    "host": "Evasterias troschelii; adult",
+    "organism": "Aquambidensovirus asteroid5",
+    "definition": "Aquambidensovirus asteroid5 clone EtaDV3 NS3 (NS3), NS1 (NS1), NS2 (NS2), VP (VP), and ORF1 (ORF2) genes, complete cds"
+  },
+  "MT733017": {
+    "pmids": [],
+    "host": "Labidiaster annulatus; adult",
+    "organism": "Aquambidensovirus asteroid6",
+    "definition": "Aquambidensovirus asteroid6 clone LaaDV1 NS3 (NS3), NS1 (NS1), NS2 (NS2), VP (VP), and ORF1 (ORF2) genes, complete cds"
+  },
+  "MT733018": {
+    "pmids": [],
+    "host": "Labidiaster annulatus; adult",
+    "organism": "Aquambidensovirus asteroid7",
+    "definition": "Aquambidensovirus asteroid7 clone LaaDV2 NS3 (NS3), NS1 (NS1), NS2 (NS2), VP (VP), and ORF1 (ORF2) genes, complete cds"
+  },
+  "MT733019": {
+    "pmids": [],
+    "host": "Labidiaster annulatus; adult",
+    "organism": "Aquambidensovirus asteroid8",
+    "definition": "Aquambidensovirus asteroid8 clone LaaDV3 NS3 (NS3), NS1 (NS1), NS2 (NS2), VP (VP), and ORF1 (ORF2) genes, complete cds"
+  },
+  "MT733023": {
+    "pmids": [],
+    "host": "Luidia maculata; adult",
+    "organism": "Aquambidensovirus asteroid9",
+    "definition": "Aquambidensovirus asteroid9 clone LmaDV1 NS3 (NS3), NS1 (NS1), NS2 (NS2), VP (VP), and ORF1 (ORF2) genes, complete cds"
+  },
+  "MT733025": {
+    "pmids": [],
+    "host": "Neosmilaster georgianus; adult",
+    "organism": "Aquambidensovirus asteroid10",
+    "definition": "Aquambidensovirus asteroid10 clone NgaDV1 NS3 (NS3), NS1 (NS1), NS2 (NS2), VP (VP), and ORF1 (ORF2) genes, complete cds"
+  },
+  "MT733027": {
+    "pmids": [],
+    "host": "Neosmilaster georgianus; adult",
+    "organism": "Aquambidensovirus asteroid11",
+    "definition": "Aquambidensovirus asteroid11 clone NgaDV3 NS3 (NS3), NS1 (NS1), NS2 (NS2), VP (VP), and ORF1 (ORF2) genes, complete cds"
+  },
+  "MT733028": {
+    "pmids": [],
+    "host": "Neosmilaster georgianus; adult",
+    "organism": "Aquambidensovirus asteroid12",
+    "definition": "Aquambidensovirus asteroid12 clone NgaDV4 NS3 (NS3), NS1 (NS1), NS2 (NS2), and VP (VP) genes, complete cds"
+  },
+  "MT733034": {
+    "pmids": [],
+    "host": "Pycnopodia helianthoides; adult",
+    "organism": "Aquambidensovirus asteroid13",
+    "definition": "Aquambidensovirus asteroid13 clone PhaDV4 NS3 (NS3), NS1 (NS1), NS2 (NS2), and VP (VP) genes, complete cds"
+  },
+  "MT733038": {
+    "pmids": [],
+    "host": "Pisaster ochraceus; adult",
+    "organism": "Aquambidensovirus asteroid14",
+    "definition": "Aquambidensovirus asteroid14 clone PoaDV2 NS3 (NS3), NS1 (NS1), NS2 (NS2), and VP (VP) genes, complete cds"
+  },
+  "MT733039": {
+    "pmids": [],
+    "host": "Pisaster ochraceus; adult",
+    "organism": "Aquambidensovirus asteroid15",
+    "definition": "Aquambidensovirus asteroid15 clone PoaDV3 NS3 (NS3), NS1 (NS1), NS2 (NS2), and VP (VP) genes, complete cds"
+  },
+  "MT733040": {
+    "pmids": [],
+    "host": "Pisaster ochraceus; adult",
+    "organism": "Aquambidensovirus asteroid16",
+    "definition": "Aquambidensovirus asteroid16 clone PoaDV4 NS3 (NS3), NS1 (NS1), NS2 (NS2), VP (VP), and ORF1 (ORF2) genes, complete cds"
+  },
+  "MT733041": {
+    "pmids": [],
+    "host": "Pisaster ochraceus; adult",
+    "organism": "Aquambidensovirus asteroid17",
+    "definition": "Aquambidensovirus asteroid17 clone PoaDV5 NS3 (NS3), NS1 (NS1), NS2 (NS2), and VP (VP) genes, complete cds"
+  },
+  "MT733042": {
+    "pmids": [],
+    "host": "Pisaster ochraceus; adult",
+    "organism": "Aquambidensovirus asteroid18",
+    "definition": "Aquambidensovirus asteroid18 clone PoaDV6 NS3 (NS3), NS1 (NS1), NS2 (NS2), and VP (VP) genes, complete cds"
+  },
+  "MT733043": {
+    "pmids": [],
+    "host": "Pisaster ochraceus; adult",
+    "organism": "Aquambidensovirus asteroid19",
+    "definition": "Aquambidensovirus asteroid19 clone PoaDV7 NS3 (NS3), NS1 (NS1), NS2 (NS2), and VP (VP) genes, complete cds"
+  },
+  "MT733044": {
+    "pmids": [],
+    "host": "Pisaster ochraceus; adult",
+    "organism": "Aquambidensovirus asteroid20",
+    "definition": "Aquambidensovirus asteroid20 clone PoaDV8 NS3 (NS3), NS1 (NS1), NS2 (NS2), and VP (VP) genes, complete cds"
+  },
+  "MT733047": {
+    "pmids": [],
+    "host": "Pisaster ochraceus; adult",
+    "organism": "Aquambidensovirus asteroid22",
+    "definition": "Aquambidensovirus asteroid22 clone PoaDV11 NS3 (NS3), NS2 (NS2), NS1 (NS1), VP (VP), and ORF1 (ORF2) genes, complete cds"
+  },
+  "MT733049": {
+    "pmids": [],
+    "host": "Pisaster ochraceus; adult",
+    "organism": "Aquambidensovirus asteroid21",
+    "definition": "Aquambidensovirus asteroid21 clone PoaDV13 NS3 (NS3), NS1 (NS1), NS2 (NS2), and VP (VP) genes, complete cds"
+  },
+  "PQ846775": {
+    "pmids": [],
+    "host": "Cerastoderma edule",
+    "organism": "Bivalve iridovirus 1",
+    "definition": "Bivalve iridovirus 1 isolate BiIV1/exCerastodermaEdule/WashEstuary, complete genome"
+  }
+}

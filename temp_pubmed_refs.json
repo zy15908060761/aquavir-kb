@@ -1,0 +1,29 @@
+[
+  {
+    "pmid": "11062047",
+    "title": "Infectious hypodermal and hematopoietic necrosis virus of shrimp is related to mosquito brevidensoviruses.",
+    "authors": "Shike H; Dhar A K; Burns J C; Shimizu C; Jousset F X; Klimpel K R; Bergoin M",
+    "journal": "Virology",
+    "year": "2000",
+    "doi": "",
+    "abstract": "We purified and sequenced infectious hypodermal and hematopoietic necrosis virus (IHHNV), a small DNA virus of shrimp, from wild Penaeus stylirostris. The virion has a buoyant density of 1.45 as determined by cesium chloride gradient. Analysis of 3873 nucleotides of the viral genome revealed three large open reading frames (ORFs) and parts of the noncoding termini of the viral genome. The left, mid, and right ORFs on the complementary (plus) strand have potential coding capacities of 666 amino acids (aa) (75.77 kDa), 363 aa (42.11 kDa), and 329 aa (37.48 kDa), respectively. The overall genomic organization is similar to that of the mosquito brevidensoviruses. The left ORF most likely encodes the major nonstructural (NS) protein (NS-1) since it contains conserved replication initiator motifs and NTP-binding and helicase domains similar to those in NS-1 from all other parvoviruses. The IHHNV putative NS-1 shares the highest aa sequence homology with the NS-1 of mosquito brevidensoviruses, Aedes densovirus and Aedes albopictus parvovirus. A search for putative splicing sites revealed that the N-terminal region of NS-1 is very likely located in a small ORF upstream of the left ORF. The right ORF is presumed to encode structural polypeptides (VPs), as in other parvoviruses. Two putative promoters, located upstream of the left and right ORFs, are presumed to regulate expression of NS and VP genes, respectively. Thus, IHHNV is closely related to densoviruses of the genus Brevidensovirus in the family Parvoviridae, and we therefore propose to rename this virus Penaeus stylirostris densovirus (PstDNV)."
+  },
+  {
+    "pmid": "25999569",
+    "title": "Near-Full-Length Genome Sequence of a Novel Reovirus from the Chinese Mitten Crab, Eriocheir sinensis.",
+    "authors": "Shen Huaishun; Ma Yuanchao; Hu Yacheng",
+    "journal": "Genome announcements",
+    "year": "2015",
+    "doi": "10.1128/genomeA.00447-15",
+    "abstract": "A novel Eriocheir sinensis reovirus (EsRV) was identified using deep-sequencing techniques in crabs afflicted with trembling disease (TD). Near-full-length genome sequences of 12 segments of EsRV were obtained. The genome of EsRV will facilitate further studies on the causative agent of TD."
+  },
+  {
+    "pmid": "27880757",
+    "title": "Redefining the invertebrate RNA virosphere.",
+    "authors": "Shi Mang; Lin Xian-Dan; Tian Jun-Hua; Chen Liang-Jun; Chen Xiao; Li Ci-Xiu; Qin Xin-Cheng; Li Jun; Cao Jian-Ping; Eden John-Sebastian; Buchmann Jan; Wang Wen; Xu Jianguo; Holmes Edward C; Zhang Yong-Zhen",
+    "journal": "Nature",
+    "year": "2016",
+    "doi": "10.1038/nature20167",
+    "abstract": "Current knowledge of RNA virus biodiversity is both biased and fragmentary, reflecting a focus on culturable or disease-causing agents. Here we profile the transcriptomes of over 220 invertebrate species sampled across nine animal phyla and report the discovery of 1,445 RNA viruses, including some that are sufficiently divergent to comprise new families. The identified viruses fill major gaps in the RNA virus phylogeny and reveal an evolutionary history that is characterized by both host switching and co-divergence. The invertebrate virome also reveals remarkable genomic flexibility that includes frequent recombination, lateral gene transfer among viruses and hosts, gene gain and loss, and complex genomic rearrangements. Together, these data present a view of the RNA virosphere that is more phylogenetically and genomically diverse than that depicted in current classification schemes and provide a more solid foundation for studies in virus ecology and evolution."
+  }
+]

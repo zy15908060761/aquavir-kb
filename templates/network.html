@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Host-Virus Interaction Network - AquaVir-KB{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-extrabold text-slate-800">🔗 Host-Virus Interaction Network</h1>
+        <p class="text-slate-500 mt-2 text-sm">Sankey diagram of infection associations between viruses and hosts. Line thickness represents record count. Click nodes to jump to search.</p>
+    </div>
+
+    <!-- Stats Summary -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6" id="network-stats">
+        <div class="card-hover p-4 text-center border-l-[4px] border-l-red-400 rounded-l-none">
+            <div class="text-2xl font-extrabold text-red-600 font-mono" id="ns-viruses">--</div>
+            <div class="text-xs text-slate-500 mt-1 font-medium">Virus Nodes</div>
+        </div>
+        <div class="card-hover p-4 text-center border-l-[4px] border-l-green-400 rounded-l-none">
+            <div class="text-2xl font-extrabold text-green-600 font-mono" id="ns-hosts">--</div>
+            <div class="text-xs text-slate-500 mt-1 font-medium">Host Nodes</div>
+        </div>
+        <div class="card-hover p-4 text-center border-l-[4px] border-l-teal-400 rounded-l-none">
+            <div class="text-2xl font-extrabold text-teal-600 font-mono" id="ns-edges">--</div>
+            <div class="text-xs text-slate-500 mt-1 font-medium">Interaction Edges</div>
+        </div>
+        <div class="card-hover p-4 text-center border-l-[4px] border-l-purple-400 rounded-l-none">
+            <div class="text-2xl font-extrabold text-purple-600 font-mono" id="ns-total">--</div>
+            <div class="text-xs text-slate-500 mt-1 font-medium">Total Records</div>
+        </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="card p-5 mb-4 shadow-md">
+        <div id="chart-network" style="width:100%;height:620px"></div>
+    </div>
+
+    <!-- Legend -->
+    <div class="flex flex-wrap gap-5 text-sm text-slate-500 justify-center">
+        <span class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded-full bg-red-500 shadow-sm"></span> Virus Nodes</span>
+        <span class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded-full bg-green-500 shadow-sm"></span> Host Nodes</span>
+        <span class="flex items-center gap-2 text-xs text-slate-400">| Thicker lines = more infection records | Click nodes to search</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    async function initNetwork() {
+        const dom = document.getElementById('chart-network');
+        if (!dom || typeof echarts === 'undefined') return;
+        try {
+            UI.showLoading(dom);
+            const res = await fetch('/api/network');
+            const netData = await res.json();
+            if (!netData.length) {
+                UI.showEmpty(dom, '🔗', 'No network data available', 'Will auto-generate after data import');
+                return;
+            }
+
+            const virusSet = new Set();
+            const hostSet = new Set();
+            let totalRecords = 0;
+            netData.forEach(d => { virusSet.add(d.virus_name); hostSet.add(d.host_name); totalRecords += d.count; });
+
+            // Update stats
+            document.getElementById('ns-viruses').textContent = virusSet.size;
+            document.getElementById('ns-hosts').textContent = hostSet.size;
+            document.getElementById('ns-edges').textContent = netData.length;
+            document.getElementById('ns-total').textContent = totalRecords.toLocaleString();
+
+            const nodes = [];
+            const nodeMap = {};
+            let idx = 0;
+            virusSet.forEach(v => {
+                nodes.push({ name: v, itemStyle: { color: '#ef4444' } });
+                nodeMap[v] = idx++;
+            });
+            hostSet.forEach(h => {
+                nodes.push({ name: h, itemStyle: { color: '#22c55e' } });
+                nodeMap[h] = idx++;
+            });
+
+            const links = netData
+                .map(d => ({ source: nodeMap[d.virus_name], target: nodeMap[d.host_name], value: d.count }))
+                .filter(l => l.value >= 2);
+
+            const chart = echarts.init(dom);
+            chart.setOption({
+                tooltip: {
+                    trigger: 'item',
+                    formatter: p => {
+                        if (p.dataType === 'edge') return `${p.data.source} → ${p.data.target}<br/>Records: ${p.data.value}`;
+                        return `${p.name}<br/>${p.data.itemStyle.color === '#ef4444' ? 'Virus' : 'Host'}`;
+                    }
+                },
+                series: [{
+                    type: 'sankey', layout: 'none', emphasis: { focus: 'adjacency' },
+                    data: nodes, links: links,
+                    lineStyle: { color: 'gradient', curveness: 0.5 },
+                    label: { fontSize: 11, color: '#475569', formatter: p => p.name.length > 28 ? p.name.slice(0, 25) + '...' : p.name }
+                }]
+            });
+            chart.on('click', params => {
+                if (params.dataType !== 'node' || !params.data?.itemStyle?.color) return;
+                if (params.data.itemStyle.color === '#ef4444') {
+                    window.location.href = '/search?q=' + encodeURIComponent(params.name);
+                } else {
+                    window.location.href = '/search?host=' + encodeURIComponent(params.name);
+                }
+            });
+            window.addEventListener('resize', () => chart.resize());
+        } catch (e) {
+            UI.showError(dom, 'Network data loading failed');
+        }
+    }
+    document.addEventListener('DOMContentLoaded', initNetwork);
+</script>
+{% endblock %}

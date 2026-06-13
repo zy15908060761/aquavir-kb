@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-title">AquaVir-KB</div>
+<p style="color:var(--text-secondary);margin-bottom:12px;font-size:13px">A literature-mined evidence index for viruses infecting aquatic invertebrates</p>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+  <form action="/search" method="get" class="search-box">
+    <input type="text" name="q" placeholder="Search by virus name, host, accession, family ..." style="font-size:13px">
+    <button type="submit">Search</button>
+  </form>
+  <div>
+    <select onchange="if(this.value)location=this.value" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;background:var(--surface)">
+      <option value="">Quick jump to virus ...</option>
+      <option value="/search?q=White+spot+syndrome+virus">WSSV (White spot syndrome virus)</option>
+      <option value="/search?q=Taura+syndrome+virus">TSV (Taura syndrome virus)</option>
+      <option value="/search?q=Infectious+hypodermal+and+hematopoietic+necrosis+virus">IHHNV (Infectious hypodermal & hematopoietic necrosis virus)</option>
+      <option value="/search?q=Yellow+head+virus">YHV (Yellow head virus)</option>
+      <option value="/search?q=Ostreid+herpesvirus+1">OsHV-1 (Ostreid herpesvirus 1)</option>
+      <option value="/search?q=Infectious+myonecrosis+virus">IMNV (Infectious myonecrosis virus)</option>
+      <option value="" disabled>---</option>
+      <option value="/hosts">Browse all host species</option>
+      <option value="/families">Browse taxonomy</option>
+      <option value="/stats">Statistics & charts</option>
+    </select>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="num">1,595</div><div class="lbl">Virus species</div></div>
+  <div class="stat"><div class="num">13,891</div><div class="lbl">Target isolates</div></div>
+  <div class="stat"><div class="num">353,160</div><div class="lbl">Evidence records</div></div>
+  <div class="stat"><div class="num">9,065</div><div class="lbl">References</div></div>
+  <div class="stat"><div class="num">29,004</div><div class="lbl">Viral proteins</div></div>
+  <div class="stat"><div class="num">8</div><div class="lbl">Host phyla</div></div>
+  <div class="stat"><div class="num">63</div><div class="lbl">Countries</div></div>
+  <div class="stat"><div class="num">389</div><div class="lbl">Complete genomes</div></div>
+</div>
+
+<div class="two-col">
+  <div class="card">
+    <div class="card-h">Viruses by Host Phylum</div>
+    <table>
+      <tr><td>Arthropoda</td><td style="text-align:right;font-weight:600">609</td><td style="width:40%"><div style="background:var(--primary);height:8px;border-radius:2px;width:100%"></div></td></tr>
+      <tr><td>Mollusca</td><td style="text-align:right;font-weight:600">396</td><td><div style="background:var(--primary);height:8px;border-radius:2px;width:65%"></div></td></tr>
+      <tr><td>Echinodermata</td><td style="text-align:right;font-weight:600">50</td><td><div style="background:var(--primary);height:8px;border-radius:2px;width:8%"></div></td></tr>
+      <tr><td>Porifera</td><td style="text-align:right;font-weight:600">42</td><td><div style="background:var(--primary);height:8px;border-radius:2px;width:7%"></div></td></tr>
+      <tr><td>Cnidaria</td><td style="text-align:right;font-weight:600">38</td><td><div style="background:var(--primary);height:8px;border-radius:2px;width:6%"></div></td></tr>
+      <tr><td>Platyhelminthes</td><td style="text-align:right;font-weight:600">30</td><td><div style="background:var(--primary);height:8px;border-radius:2px;width:5%"></div></td></tr>
+      <tr><td>Annelida</td><td style="text-align:right;font-weight:600">26</td><td><div style="background:var(--primary);height:8px;border-radius:2px;width:4%"></div></td></tr>
+      <tr><td>Rotifera</td><td style="text-align:right;font-weight:600">2</td><td><div style="background:var(--accent);height:8px;border-radius:2px;width:0.3%"></div></td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <div class="card-h">Key Statistics</div>
+    <table>
+      <tr><td>ICTV mapped species</td><td style="text-align:right;font-weight:600">1,200</td></tr>
+      <tr><td>VMR mappings</td><td style="text-align:right;font-weight:600">476</td></tr>
+      <tr><td>Infection records</td><td style="text-align:right;font-weight:600">9,535</td></tr>
+      <tr><td>Data provenance records</td><td style="text-align:right;font-weight:600">100,599</td></tr>
+      <tr><td>Virus families covered</td><td style="text-align:right;font-weight:600">30+</td></tr>
+      <tr><td>Curated profiles</td><td style="text-align:right;font-weight:600">10,302</td></tr>
+      <tr><td>Manual-checked evidence</td><td style="text-align:right;font-weight:600">93,180</td></tr>
+      <tr><td>Protein annotation rate</td><td style="text-align:right;font-weight:600">82%</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="section">Evidence Stratification</div>
+<div class="three-col">
+  <div class="card">
+    <div class="card-h">By origin</div>
+    <div style="margin:8px 0 4px"><div style="background:var(--primary);height:50px;border-radius:2px;width:95.3%"></div></div>
+    <table>
+      <tr><td>Secondary (literature)</td><td style="text-align:right">336,512</td></tr>
+      <tr><td>Primary (lab/field)</td><td style="text-align:right">13,121</td></tr>
+      <tr><td>Database</td><td style="text-align:right">3,527</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <div class="card-h">By strength</div>
+    <div style="margin:8px 0 4px"><div style="background:var(--primary);height:50px;border-radius:2px;width:86.6%"></div></div>
+    <table>
+      <tr><td>Medium</td><td style="text-align:right">305,771</td></tr>
+      <tr><td>High</td><td style="text-align:right">46,033</td></tr>
+      <tr><td>Low</td><td style="text-align:right">1,356</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <div class="card-h">By curation</div>
+    <div style="display:flex;gap:2px;height:50px;margin:8px 0 4px">
+      <div style="background:var(--primary);flex:41.3%;border-radius:2px"></div>
+      <div style="background:var(--accent);flex:26.4%;border-radius:2px"></div>
+      <div style="background:var(--text-muted);flex:30.2%;border-radius:2px"></div>
+      <div style="background:#e8a838;flex:2.2%;border-radius:2px"></div>
+    </div>
+    <table>
+      <tr><td>Auto imported</td><td style="text-align:right">145,705</td></tr>
+      <tr><td>Manual checked</td><td style="text-align:right">93,180</td></tr>
+      <tr><td>Rejected</td><td style="text-align:right">106,594</td></tr>
+      <tr><td>Needs review</td><td style="text-align:right">7,681</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="section">Quick Links</div>
+<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">
+  <a href="/search?q=White+spot+syndrome+virus" class="tag">WSSV</a>
+  <a href="/search?q=Taura+syndrome+virus" class="tag">TSV</a>
+  <a href="/search?q=Infectious+hypodermal+and+hematopoietic+necrosis+virus" class="tag">IHHNV</a>
+  <a href="/search?q=Yellow+head+virus" class="tag">YHV</a>
+  <a href="/search?q=Ostreid+herpesvirus+1" class="tag">OsHV-1</a>
+  <a href="/search?q=Infectious+myonecrosis+virus" class="tag">IMNV</a>
+  <span style="flex:1"></span>
+  <select onchange="if(this.value)location=this.value" style="padding:2px 6px;border:1px solid var(--border);border-radius:2px;font-size:11px;background:var(--surface)">
+    <option value="">Jump to phylum ...</option>
+    <option value="/search?phylum=Arthropoda">Arthropoda</option>
+    <option value="/search?phylum=Mollusca">Mollusca</option>
+    <option value="/search?phylum=Echinodermata">Echinodermata</option>
+    <option value="/search?phylum=Porifera">Porifera</option>
+    <option value="/search?phylum=Cnidaria">Cnidaria</option>
+    <option value="/search?phylum=Platyhelminthes">Platyhelminthes</option>
+    <option value="/search?phylum=Annelida">Annelida</option>
+    <option value="/search?phylum=Rotifera">Rotifera</option>
+  </select>
+</div>
+{% endblock %}

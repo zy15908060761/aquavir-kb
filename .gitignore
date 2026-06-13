@@ -1,0 +1,87 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# SQLite database files (large binary)
+*.db
+*.db-wal
+*.db-shm
+
+# Backup directory
+backups/
+
+# Virtual environments
+.venv/
+venv/
+
+# Log files
+*.log
+*.out
+*.err
+
+# Local notification secrets
+notification_config.json
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.crt
+
+# Download export & completeness artifacts
+downloads/exports/
+downloads/completeness_release_*/
+public_downloads/
+sequences/
+ncbi_metadata/
+external_data/
+blastdb/
+tools/
+cdhit-4.8.1/
+cdhit-4.8.1.zip
+test_dl.zip
+graphviz_installer.exe
+
+# Release bundles
+releases/
+
+# Backup files
+*.bak
+
+# Generated reports and local audit scratch files
+reports/
+maintenance_archive/
+literature_curation_v2/
+tmp_*.py
+tmp_*.json
+tmp_*.txt
+_tmp_*.py
+_tmp_*.json
+*_audit*.py
+*_check*.py
+*_probe*.py
+
+# Generated documents / local manuscripts
+*.docx
+*.pptx
+*.xlsx
+*.zip
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+
+# Large data files and generated artifacts (v2.0)
+downloads/
+public_download/
+*.tar.gz
+*.fasta
+*.fa
+*.clstr
+*.gb
+*.tif
+crustacean_virus_core.db.*
+
+ncbi_mollusk/
