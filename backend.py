@@ -36,7 +36,6 @@ from api_models import (
     VirusDetailResponse,
 )
 from db_utils import get_db_connection, get_db as _db_get_db
-from db_pg import get_query_connection, check_db_connection, get_raw_db_connection, _IS_PG
 from sync_runtime import HISTORY_FILE, NOTIFICATION_LOG_FILE, load_status
 
 APP_DIR = Path(__file__).resolve().parent
@@ -51,25 +50,29 @@ PUBLIC_ASSETS_DIR.mkdir(exist_ok=True)
 PUBLIC_DOWNLOADS_DIR.mkdir(exist_ok=True)
 STRICT_TARGET_SUBQUERY = "SELECT isolate_id FROM analysis_strict_target_isolates"
 STRICT_TARGET_CONDITION = f"v.isolate_id IN ({STRICT_TARGET_SUBQUERY})"
+# ── Lightweight TTL cache (Phase 3) ──
+import time as _time, functools as _functools
+_ttl_store = {}
+def ttl_cache(ttl_seconds=30):
+    """In-memory TTL cache for 2C/4GB single-worker deployment."""
+    def decorator(fn):
+        @_functools.wraps(fn)
+        def wrapper(*args, **kwargs):
+            key = f"{fn.__name__}:{args}:{kwargs}"
+            now = _time.time()
+            if key in _ttl_store:
+                val, expiry = _ttl_store[key]
+                if now < expiry:
+                    return val
+            result = fn(*args, **kwargs)
+            _ttl_store[key] = (result, now + ttl_seconds)
+            # Lazy cleanup: drop expired entries occasionally
+            if len(_ttl_store) > 200:
+                _ttl_store.clear()
+            return result
+        return wrapper
+    return decorator
 
-# Inclusive target: covers ALL aquatic invertebrate phyla (not just crustaceans).
-# Used by public search/export endpoints so mollusk, cnidarian, echinoderm and
-# other non-crustacean viruses are visible.
-_INCLUSIVE_TARGET_NON_TYPES = (
-    "'non_target'", "'ictv_non_target'", "'host_genome'",
-    "'duplicate_ictv_vmr_placeholder'", "'duplicate_alias_placeholder'",
-)
-INCLUSIVE_TARGET_SUBQUERY = (
-    "SELECT vi.isolate_id FROM viral_isolates vi "
-    "JOIN virus_master vm ON vi.master_id = vm.master_id "
-    f"WHERE vm.entry_type NOT IN ({', '.join(_INCLUSIVE_TARGET_NON_TYPES)}) "
-    "AND vm.host_phylum IS NOT NULL "
-    "AND vi.isolate_id IN ("
-    "  SELECT isolate_id FROM isolate_curated_profiles"
-    "  WHERE COALESCE(curation_status, 'auto_seeded') <> 'conflict_open'"
-    ")"
-)
-INCLUSIVE_TARGET_CONDITION = f"v.isolate_id IN ({INCLUSIVE_TARGET_SUBQUERY})"
 
 def _escape_like(text: str) -> str:
     """Escape SQL LIKE wildcards to prevent unintended pattern matching.
@@ -80,7 +83,7 @@ VIRULENCE_EVIDENCE_TYPES = ("virulence", "pathogenicity", "mortality")
 TEMPERATURE_EVIDENCE_TYPES = ("temperature", "thermal_stability", "thermal_inactivation", "temperature_range")
 
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
-BLAST_DIR = Path(os.environ.get("AQUAVIR_BLAST_DIR", str(Path(__file__).resolve().parent / "blastdb")))
+BLAST_DIR = Path(os.environ.get("AQUAVIR_BLAST_DIR", "/app/blastdb"))
 RDRP_BLAST_FASTA = BLAST_DIR / "rdrp_proteins.faa"
 RDRP_BLAST_DB = BLAST_DIR / "rdrp_proteins"
 LOGGER = logging.getLogger("aquavir.backend")
@@ -115,6 +118,7 @@ PUBLIC_DOWNLOAD_EXTENSIONS = {
     ".tree",
     ".nwk",
     ".newick",
+    ".cff",
 }
 PUBLIC_DOWNLOAD_ALLOWLIST = {
     "all_sequences.fasta",
@@ -175,8 +179,8 @@ def _safe_accession_fasta(accession: str) -> Path:
 app = FastAPI(
     title="AquaVir-KB API",
     description=(
-        "A comprehensive knowledge base of aquatic invertebrate viruses across 5 phyla "
-        "(Arthropoda, Mollusca, Cnidaria, Echinodermata, Porifera), integrating release-filtered isolate records, "
+        "A comprehensive knowledge base of aquatic invertebrate viruses across 8 phyla "
+        "(Arthropoda, Mollusca, Cnidaria, Echinodermata, Porifera, Annelida, Platyhelminthes, Rotifera), integrating release-filtered isolate records, "
         "genomic annotations, protein structures (AlphaFold / ESMFold / PDB), enrichment data "
         "(KEGG, InterPro, UniProt, STRING, PRIDE, ViralZone), literature mining (Europe PMC, "
         "bioRxiv), and ecological observations (GBIF, OBIS). Exploratory prediction tables, "
@@ -339,40 +343,70 @@ async def global_exception_handler(request: Request, exc: Exception):
         status_code=500
     )
 
+# ── Display-layer withdrawal (2026-10-14) ──────────────────────────────
+# The frozen release still ships a batch of withdrawn host associations:
+#   * 3,750 synthetic placeholder rows (host_id 37 + isolation_source
+#     'sequence_database' + a PALMDB_u* accession), and
+#   * 523 'flag_pending' records flagged in
+#     HOST_FIX_CHANGESET_v3_20261013.csv (host-mapping review).
+# host_id 37 (Acanthaster planci) is withdrawn in full.  It is an echinoderm
+# mislabelled target_mollusk, 3,750 of its 4,418 rows are the synthetic batch
+# above, and the remaining rows are host-genome / cross-species contamination
+# (oyster, abalone and bivalve viruses recovered from starfish genome and
+# transcriptome libraries -- the source papers are about a crab and a shrimp
+# lymphoid organ), so no sound virus-host evidence survives for it.
+# Normally this would be a database write, but the release is frozen, so both
+# tables are shadowed with connection-local TEMP VIEWs instead: an unqualified
+# reference sees the withdrawn view while main.* and the schema stay intact.
+_WITHDRAWN_HOST_IDS = (37,)
+_WITHDRAWN_RECORD_IDS = (294, 296, 297, 298, 299, 300, 301, 303, 304, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 315, 318, 319, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 334, 335, 336, 337, 338, 339, 340, 341, 342, 343, 345, 346, 347, 349, 350, 351, 352, 353, 354, 355, 356, 357, 358, 359, 360, 361, 362, 363, 364, 365, 366, 367, 368, 369, 370, 371, 372, 373, 374, 375, 376, 377, 378, 379, 380, 381, 382, 383, 384, 385, 386, 387, 388, 389, 390, 391, 392, 393, 394, 395, 396, 397, 398, 399, 400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 432, 433, 434, 435, 436, 437, 438, 439, 440, 502, 503, 504, 505, 506, 507, 509, 510, 511, 512, 513, 514, 515, 516, 518, 519, 521, 770, 772, 773, 820, 1389, 1398, 1399, 1457, 1458, 1823, 1865, 2058, 2059, 2060, 2082, 2085, 2086, 2205, 2268, 2269, 2270, 2271, 2272, 2519, 3101, 3106, 3322, 3323, 3324, 3325, 3326, 3327, 3329, 3330, 3331, 3335, 3336, 3337, 3338, 3339, 3341, 3342, 3343, 3344, 3345, 3354, 3366, 3631, 3698, 3709, 3781, 3788, 3790, 3791, 3792, 3794, 3795, 3796, 3797, 3798, 3799, 3800, 3922, 3987, 3993, 4020, 4021, 4022, 4023, 4024, 4034, 4035, 4036, 4053, 4811, 4812, 4813, 4814, 4815, 4816, 4817, 4818, 4819, 4820, 4821, 4822, 4823, 4824, 4825, 4826, 4827, 4828, 4829, 4830, 4831, 4832, 4833, 4834, 4835, 4836, 4837, 4838, 4839, 4840, 4841, 4842, 4843, 4844, 4845, 4846, 4847, 4848, 4849, 4850, 4851, 4852, 4853, 4854, 4855, 4856, 4857, 4858, 4859, 4860, 4861, 4862, 4863, 4864, 4865, 4866, 4867, 4868, 4869, 4870, 4871, 4872, 4873, 4874, 4875, 4876, 4877, 4881, 5274, 5276, 5282, 5284, 5287, 5308, 5311, 5313, 5315, 5324, 5332, 5337, 5342, 5349, 5363, 5365, 5370, 5373, 5374, 5375, 5377, 5384, 5391, 5392, 5393, 5394, 5395, 5399, 5400, 5402, 5403, 5406, 5409, 5410, 5412, 5413, 5423, 5424, 5425, 5426, 5427, 5429, 5430, 5431, 5433, 5436, 5438, 5440, 5441, 5442, 5448, 5449, 5450, 5456, 5457, 5461, 5462, 5464, 5465, 5467, 5470, 5475, 5478, 5479, 5481, 5482, 5487, 5493, 5494, 5497, 5498, 5502, 5504, 5506, 5508, 5510, 5512, 5513, 5514, 5520, 5527, 5535, 5538, 5539, 5541, 5542, 5546, 5549, 5561, 5563, 5566, 5571, 5574, 5576, 5578, 5580, 5582, 5585, 5586, 5594, 5596, 5599, 5600, 5602, 5603, 5604, 5607, 5609, 5613, 5614, 5621, 5622, 5623, 5624, 5626, 5628, 5630, 5632, 5633, 5637, 5639, 5640, 5642, 5643, 5647, 5655, 5656, 5666, 5668, 5669, 5670, 5671, 5672, 5675, 5676, 5677, 5678, 5681, 5682, 5683, 5685, 5687, 5689, 5692, 5695, 5700, 5701, 5702, 5704, 5707, 5708, 5710, 5712, 5715, 5717, 5718, 5719, 5720, 5724, 9230, 9231, 9233, 9235, 9236, 9238, 9243, 9244, 9245, 9246, 9247, 9248, 9249, 9250, 9251, 9252, 9253, 9254, 9255, 9256, 9257, 9258, 9261, 9262, 9263, 9264, 9265, 9267, 9269, 9270, 9271, 9272, 9273, 9306, 9317, 9318, 9319, 9320, 9321, 9322, 9323, 9324, 9411, 9490, 9491, 9492, 9493, 9502, 9504, 9505, 9506, 9507, 9531, 9534, 9535, 9575, 9589, 9590, 9593, 9594, 9724, 9725, 9726, 9727, 9728, 9729, 9730, 9731, 9732, 9736, 9737, 9738, 9739, 9740, 9761, 9762, 9763, 9774, 9776, 9786, 9793, 10166)
+
+
+def _install_display_views(conn):
+    """Apply the withdrawal by shadowing infection_records / crustacean_hosts.
+
+    Called once per connection by get_db() and _get_db().  Creating a TEMP
+    VIEW writes to the in-memory temp schema, which the ``PRAGMA query_only``
+    set by the read-only enrichment connection blocks, so it is toggled off
+    around the CREATEs and restored immediately afterwards.
+    """
+    qo = 0
+    try:
+        qo = conn.execute("PRAGMA query_only").fetchone()[0]
+    except sqlite3.Error:
+        pass
+    if qo:
+        conn.execute("PRAGMA query_only = OFF")
+    try:
+        conn.execute(
+            "CREATE TEMP VIEW IF NOT EXISTS infection_records AS "
+            "SELECT * FROM main.infection_records WHERE "
+            "IFNULL(host_id, 0) NOT IN (%s) AND record_id NOT IN (%s)"
+            % (",".join(str(i) for i in _WITHDRAWN_HOST_IDS),
+               ",".join(str(i) for i in _WITHDRAWN_RECORD_IDS))
+        )
+        conn.execute(
+            "CREATE TEMP VIEW IF NOT EXISTS crustacean_hosts AS "
+            "SELECT * FROM main.crustacean_hosts WHERE host_id NOT IN (%s)"
+            % ",".join(str(i) for i in _WITHDRAWN_HOST_IDS)
+        )
+    finally:
+        if qo:
+            conn.execute("PRAGMA query_only = ON")
+
+
 @contextmanager
 def get_db():
-    """Unified DB connection context-manager (SQLite or PostgreSQL, auto-detected).
-
-    Yields a PEP-249 connection whose rows support dict-like access.
-    """
-    from db_pg import _IS_PG, _pool
-    if _IS_PG:
-        conn = _pool.getconn()
-        try:
-            with conn.cursor() as cur:
-                cur.execute("SET timezone = 'UTC'")
-                cur.execute("SET default_transaction_read_only = on")
-            yield conn
-        finally:
-            try: conn.rollback()
-            except Exception: pass
-            _pool.putconn(conn)
-    else:
-        conn = _db_get_db(wal_mode=True, timeout=60)
-        try:
-            yield conn
-        finally:
-            conn.close()
+    conn = _db_get_db(wal_mode=True, timeout=60)
+    try:
+        _install_display_views(conn)
+        yield conn
+    finally:
+        conn.close()
 
 
-def table_exists(conn, table_name: str) -> bool:
-    """Return True when a table/view exists in the current database."""
-    if _IS_PG:
-        return conn.execute(
-            "SELECT 1 FROM information_schema.tables WHERE table_name = ?",
-            (table_name,),
-        ).fetchone() is not None
-    # SQLite
+def table_exists(conn: sqlite3.Connection, table_name: str) -> bool:
+    """Return True when a table/view exists in the current SQLite database."""
     return conn.execute(
         "SELECT 1 FROM sqlite_master WHERE name = ? AND type IN ('table', 'view')",
         (table_name,),
@@ -389,13 +423,7 @@ def count_optional_table(conn: sqlite3.Connection, table_name: str, where: str =
     return int(conn.execute(f"SELECT COUNT(*) FROM {table_name}").fetchone()[0] or 0)
 
 
-def has_fts_search(conn) -> bool:
-    """Return True when full-text search index is available."""
-    if _IS_PG:
-        # PostgreSQL — check for tsvector column or GIN index
-        return conn.execute(
-            "SELECT 1 FROM information_schema.columns WHERE table_name = 'virus_master' AND column_name = 'search_vector'"
-        ).fetchone() is not None
+def has_fts_search(conn: sqlite3.Connection) -> bool:
     return (
         conn.execute(
             "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'virus_search_fts'"
@@ -404,16 +432,30 @@ def has_fts_search(conn) -> bool:
     )
 
 
+# FTS5 column filter: the two Chinese-name columns (chinese_name, host_cn) are
+# deliberately excluded so that Chinese text is no longer searchable (v1.52).
+# Every other indexed column stays in, including country (verified to contain
+# no CJK), so Latin-script search behaviour is unchanged.
+FTS_SEARCH_COLUMNS = (
+    "{accession virus_name canonical_name abbreviations "
+    "taxon_family taxon_genus host_name country}"
+)
+
+
 def build_fts_match_query(query: str) -> Optional[str]:
     tokens = re.findall(r"[0-9A-Za-z_\u4e00-\u9fff]+", query or "")
     tokens = [token for token in tokens if token]
     if not tokens:
         return None
-    if _IS_PG:
-        # PostgreSQL tsquery: token:* & token:* ...
-        return " & ".join(f"{token[:64]}:*" for token in tokens[:8])
-    # SQLite FTS5: "token"* AND "token"* ...
-    return " AND ".join(f'"{token[:64]}"*' for token in tokens[:8])
+    body = " AND ".join(f'"{token[:64]}"*' for token in tokens[:8])
+    # Parentheses are required: a column filter only applies to the immediately
+    # following phrase, so wrapping the whole expression applies it to every term.
+    return f"{FTS_SEARCH_COLUMNS} : ({body})"
+
+
+def looks_like_accession(query: str) -> bool:
+    """Heuristic: does the query look like an NCBI accession (AF295123, OL311066, NC_001234.1)?"""
+    return bool(re.fullmatch(r"[A-Za-z]{1,6}_?\d{5,}(?:\.\d+)?", (query or "").strip()))
 
 
 def build_search_where(
@@ -427,41 +469,56 @@ def build_search_where(
     phylum: Optional[str] = None,
     conn: Optional[sqlite3.Connection] = None,
 ):
-    """Build a release-scoped WHERE clause and parameter list for search/export.
-
-    NOTE: Uses INCLUSIVE_TARGET_CONDITION (all aquatic invertebrate phyla)
-    instead of STRICT_TARGET_CONDITION (crustacean-only).  If callers need
-    the old crustacean-only scope they must add their own condition.
-    """
-    where_clauses = [INCLUSIVE_TARGET_CONDITION]
+    """Build a release-scoped WHERE clause and parameter list for search/export."""
+    where_clauses = [STRICT_TARGET_CONDITION]
+    # D1 (2026-10-04): public search/browse results and the CSV export must not
+    # surface isolates whose master is not a virus entry (host-genome rows,
+    # duplicate placeholders, aggregation buckets, merged duplicates) -- the same
+    # exclusion the site virus-species counts use. Matched on master_id via a
+    # subquery so it works for every caller (export_search does not join
+    # virus_master). These isolates stay part of the strict-target analysis set.
+    where_clauses.append(
+        "v.master_id NOT IN (SELECT master_id FROM virus_master "
+        "WHERE entry_type IN (%s))"
+        % ",".join("'%s'" % t for t in _NON_VIRUS_ENTRY_TYPES))
     params = []
 
     if q:
-        fts_query = build_fts_match_query(q)
-        like_q = f"%{_escape_like(q)}%"
-        if conn is not None and fts_query and has_fts_search(conn):
-            # Use BOTH FTS and LIKE together with OR for robustness,
-            # so abbreviations like "WSSV" match even if FTS doesn't index them.
-            if _IS_PG:
+        if looks_like_accession(q):
+            # Exact accession search (version-insensitive: "AF295123" matches "AF295123" and "AF295123.1").
+            base = q.strip().split(".")[0]
+            where_clauses.append("(v.accession = ? OR v.accession LIKE ?)")
+            params.extend([q.strip(), base + ".%"])
+        else:
+            fts_query = build_fts_match_query(q)
+            like_q = f"%{_escape_like(q)}%"
+            # Alternate names / abbreviations live in two places: the legacy
+            # virus_master.abbreviations column (indexed by FTS) and the
+            # virus_aliases table (ICTV VMR abbreviations, synonyms, manual
+            # aliases). The FTS index only covers the former, so alias hits are
+            # OR-ed in on every branch. Matched on v.master_id (present for all
+            # callers -- export_search does not join virus_master).
+            _alias_hit = (
+                "v.master_id IN (SELECT master_id FROM virus_aliases "
+                "WHERE alias LIKE ? ESCAPE '\\')"
+            )
+            if conn is not None and fts_query and has_fts_search(conn):
                 where_clauses.append(
-                    "(vm.search_vector @@ to_tsquery('english', ?) OR vm.canonical_name ILIKE ? OR vm.abbreviations ILIKE ?)"
+                    "(v.master_id IN (SELECT rowid FROM virus_search_fts WHERE virus_search_fts MATCH ?)"
+                    " OR " + _alias_hit + ")"
                 )
-                params.extend([fts_query, like_q, like_q])
+                params.extend([fts_query, like_q])
             else:
                 where_clauses.append(
-                    "(v.master_id IN (SELECT rowid FROM virus_search_fts WHERE virus_search_fts MATCH ?) OR v.virus_name LIKE ? ESCAPE '\\' OR vm.canonical_name LIKE ? ESCAPE '\\')"
+                    "(v.virus_name LIKE ? ESCAPE '\\' OR v.accession LIKE ? ESCAPE '\\' OR v.taxon_family LIKE ? ESCAPE '\\' OR v.taxon_genus LIKE ? ESCAPE '\\' OR vm.canonical_name LIKE ? ESCAPE '\\' OR vm.abbreviations LIKE ? ESCAPE '\\' OR " + _alias_hit + ")"
                 )
-                params.extend([fts_query, like_q, like_q])
-        else:
-            where_clauses.append(
-                "(v.virus_name LIKE ? ESCAPE '\\' OR v.accession LIKE ? ESCAPE '\\' OR v.taxon_family LIKE ? ESCAPE '\\' OR v.taxon_genus LIKE ? ESCAPE '\\' OR vm.canonical_name LIKE ? ESCAPE '\\' OR vm.abbreviations LIKE ? ESCAPE '\\' OR vm.chinese_name LIKE ? ESCAPE '\\')"
-            )
-            params.extend([like_q, like_q, like_q, like_q, like_q, like_q, like_q])
+                params.extend([like_q, like_q, like_q, like_q, like_q, like_q, like_q])
 
     if host:
         like_host = f"%{_escape_like(host)}%"
-        where_clauses.append("(h.scientific_name LIKE ? ESCAPE '\\' OR h.common_name_cn LIKE ? ESCAPE '\\')")
-        params.extend([like_host, like_host])
+        # Chinese host names are no longer searchable (v1.52): scientific_name only.
+        where_clauses.append("(h.scientific_name LIKE ? ESCAPE '\\')")
+        params.extend([like_host])
 
     if phylum:
         where_clauses.append("vm.host_phylum = ?")
@@ -472,7 +529,9 @@ def build_search_where(
         params.append(family)
 
     if country:
-        where_clauses.append("s.country = ?")
+        # Normalized so that picking "China" also returns the Taiwan rows the
+        # dropdown folded into it -- count and filter stay consistent.
+        where_clauses.append(_norm_country("s.country") + " = ?")
         params.append(country)
 
     if completeness:
@@ -835,8 +894,7 @@ def health_check():
     """Health-check endpoint reporting database connectivity, table record
     counts, and server uptime.  Intended for monitoring / load-balancer
     probes and quick sanity checks from the frontend."""
-    db_info = check_db_connection()
-    db_ok = db_info["healthy"]
+    db_ok = False
     tables = {}
     try:
         with get_db() as conn:
@@ -853,6 +911,7 @@ def health_check():
                 )
                 c.execute(f"SELECT COUNT(*) FROM {tbl}")
                 tables[tbl] = c.fetchone()[0]
+            db_ok = True
     except Exception as exc:
         LOGGER.exception("Health-check database query failed")
         db_ok = False
@@ -860,10 +919,9 @@ def health_check():
 
     return {
         "status": "healthy" if db_ok else "degraded",
-        "backend": db_info["backend"],
         "database": {"connected": db_ok, "tables": tables},
         "uptime_seconds": int(time.time() - _APP_START_TIME),
-        "version": "2.0.0",
+        "version": "1.0.0",
     }
 
 
@@ -885,21 +943,126 @@ def get_notification_history(limit: int = Query(10, ge=1, le=100)):
     return {"items": read_jsonl_tail(NOTIFICATION_LOG_FILE, limit)}
 
 
+# ── Public definition of a "virus species" ─────────────────────────
+# Five entry_types in virus_master are NOT viruses:
+#   * host_genome                    -- rows named after the HOST species
+#                                       ('Portunus trituberculatus',
+#                                       'Procambarus clarkii') plus one
+#                                       'Unknown/Unclassified' container;
+#   * duplicate_alias_placeholder    -- canonical_name literally reads
+#                                       "duplicate of ...";
+#   * duplicate_ictv_vmr_placeholder -- import artefacts ("ICTV VMR row N
+#                                       duplicate of ...");
+#   * aggregation_bucket             -- dataset containers that gather the
+#                                       sequences of many unnamed viruses
+#                                       under one label (e.g.
+#                                       'Mollusk-associated RdRP from
+#                                       Serratus/PALMdb', 'Crassostrea
+#                                       gigas metagenomic virus cluster N').
+#   * merged_duplicate               -- duplicates of another virus entry that
+#                                       were folded into it: their isolates and evidence
+#                                       now point at the surviving entry, and the name is
+#                                       kept as an alias.
+# They stay in the database for traceability (some still carry isolate and
+# evidence links) but they are not virus species, so they are excluded from
+# every public virus-species count and listing, including /viruses.
+# (Membership here is a data-quality judgement, unlike entry_type='non_target',
+# which is a *scope* category and is still listed on /viruses. Since 2026-10-14
+# its host_phylum label is no longer offered as a Host Phylum filter option on
+# /viruses: the rows remain, but that panel now lists real host phyla only.)
+_NON_VIRUS_ENTRY_TYPES = ("host_genome", "duplicate_alias_placeholder",
+                          "duplicate_ictv_vmr_placeholder", "aggregation_bucket",
+                          "merged_duplicate")
+# SQL fragment; the values are code constants, never user input.
+_NON_VIRUS_SQL = "entry_type NOT IN ({})".format(
+    ",".join("'%s'" % t for t in _NON_VIRUS_ENTRY_TYPES))
+# ── A second, independent public-visibility judgement: placeholder NAMES ──
+# A further 214 rows in virus_master ARE virus sequence records -- they keep
+# their isolates and their evidence -- but their canonical_name is a sequence-
+# or dataset-level label rather than a species name, so any count that calls
+# them "virus species" is wrong:
+#   154  'Oyster virome virus contig_<n>'          assembled contigs
+#    48  '... PalmDB virus SOTU_<n>'               operational taxonomic units
+#    11  'Oyster-associated <taxon> (DOV 2023)'    dataset rows
+#     1  'Magallana gigas RNA virome (2024)'       dataset row
+# The four patterns are disjoint and sum to 214 (measured 2026-09-29 against
+# the production DB), and none of the 214 has an isolate in
+# analysis_strict_target_isolates. Because this is a *naming* judgement while
+# the three entry_types above are a *data-quality* judgement, they stay two
+# separate constants with two separate numbers in scope_note -- do not merge.
+_PLACEHOLDER_NAME_PATTERNS = (
+    "canonical_name LIKE 'Oyster virome virus contig%'",
+    # \_ so that SOTU_ matches SOTU_ literally and not "SOTU<any one char>".
+    r"canonical_name LIKE '%SOTU\_%' ESCAPE '\'",
+    "canonical_name LIKE '%(DOV 2023)%'",
+    "canonical_name LIKE 'Magallana gigas RNA virome%'",
+)
+# SQL fragment meaning "canonical_name is NOT a placeholder name". Call sites
+# that alias virus_master add the alias with
+# .replace("canonical_name", "vm.canonical_name").
+_PLACEHOLDER_NAME_SQL = "NOT ({})".format(
+    " OR ".join(_PLACEHOLDER_NAME_PATTERNS))
+# ── Public Genome Type grouping (display-level, 2026-10-19) ──
+# /viruses and /api/stats expose six public groups instead of the eight raw
+# values in virus_master.genome_type. The database is NOT modified: each virus
+# row and detail page still shows its raw value. ssDNA merges the ambisense
+# and unspecified strands; '其他' is the catch-all (including rows with no
+# genome_type at all), so the six counts sum to the /viruses total (3242).
+_GENOME_NAMED_VALUES = ("dsDNA", "dsRNA", "ssRNA(+)", "ssRNA(-)",
+                        "ssDNA(ambisense)", "ssDNA(unspecified)")
+_GENOME_GROUP_EXPR = (
+    "CASE WHEN genome_type IN ('ssDNA(ambisense)','ssDNA(unspecified)') THEN 'ssDNA' "
+    "WHEN genome_type IN ('dsDNA','dsRNA','ssRNA(+)','ssRNA(-)') THEN genome_type "
+    "ELSE '其他' END"
+)
+_GENOME_GROUP_ORDER_SQL = (
+    "CASE " + _GENOME_GROUP_EXPR +
+    " WHEN 'dsDNA' THEN 1 WHEN 'dsRNA' THEN 2 WHEN 'ssRNA(+)' THEN 3"
+    " WHEN 'ssRNA(-)' THEN 4 WHEN 'ssDNA' THEN 5 ELSE 6 END"
+)
+# Host species in the curated target scope -- the same set the /hosts browse
+# page lists. 'total_hosts' (crustacean_hosts) is larger: it also holds
+# needs_review and excluded hosts.
+_HOST_SCOPE_SQL = "host_scope_status LIKE 'target%'"
+
+
+def _norm_country(col: str) -> str:
+    """SQL expression folding 'Taiwan' into 'China' for a country column.
+
+    Applied to every country-facing surface -- counts, dropdowns, charts, maps
+    and filters -- so the whole site reports 63 countries, matching the curated
+    geography layer (isolate_curated_profiles) and the audit view
+    v_nar_database_summary, both of which treat Taiwan as China. Counting and
+    listing are normalised by the same expression, so the number can never
+    disagree with the list underneath it.
+    """
+    return "CASE WHEN {c} = 'Taiwan' THEN 'China' ELSE {c} END".format(c=col)
+
+
 @app.get("/api/stats", tags=["Stats"])
+@ttl_cache(ttl_seconds=300)
 def get_stats():
     """
     Return aggregated database statistics for the homepage dashboard.
 
-    This endpoint returns counts at THREE scopes, all clearly labelled:
+    This endpoint returns counts at TWO scopes, both clearly labelled:
 
-    * ``strict_target_*`` -- scoped to ``analysis_strict_target_isolates``
-      (release-filtered records; not necessarily manual-reviewed).
-    * ``target_*`` -- scoped to ``analysis_target_isolates``
-      (broad target set; excludes only serious conflicts).
-    * ``total_*`` -- raw table counts (the full database).
+    * ``target_*`` / ``strict_target_*`` -- scoped to
+      ``analysis_strict_target_isolates`` (the analysis/release set; every row
+      carries ``curation_status='manual_checked'``). The two keys are
+      **aliases of the same query** and always agree.
+    * ``total_*`` -- raw table counts (the full database; reference only).
 
-    Backward-compatible aliases: ``viral_isolates``, ``aquatic_invertebrate_hosts`` (formerly ``crustacean_hosts``),
-    and ``virus_species`` all alias the *strict_target_* values.
+    Until 2026-09-29 ``target_*`` was scoped to ``analysis_target_isolates``,
+    a *broad* set that additionally carried ``conflict_open`` records
+    (virus_name='associated virus', dataset_tier='unverified'). Those 133
+    records were never listed on any page; they only inflated the headline
+    number and the /stats coverage denominators. The site now presents the
+    confirmed set only.
+
+    Backward-compatible aliases: ``viral_isolates``, ``virus_species`` and
+    ``aquatic_invertebrate_hosts`` (formerly ``crustacean_hosts``) echo the
+    *raw table* totals.
 
     The ``scope_note`` field explains the difference for reviewers.
     """
@@ -915,36 +1078,14 @@ def get_stats():
         c.execute("SELECT COUNT(*) FROM crustacean_hosts")
         stats["total_hosts"] = c.fetchone()[0]
 
-        # 2. analysis_target_isolates view (broad target set)
-        c.execute("SELECT COUNT(*) FROM analysis_target_isolates")
-        stats["target_isolates"] = c.fetchone()[0]
-        stats["target_species"] = 0
-        stats["target_hosts"] = 0
-        if stats["target_isolates"]:
-            c.execute("""
-                SELECT COUNT(DISTINCT vm.canonical_name)
-                FROM analysis_target_isolates v
-                JOIN virus_master vm ON v.master_id = vm.master_id
-                WHERE vm.host_phylum IN ('Arthropoda','Mollusca','Cnidaria','Echinodermata','Porifera','Annelida','Nematoda','Platyhelminthes','Rotifera')
-            """)
-            stats["target_species"] = c.fetchone()[0]
-            c.execute("""
-                SELECT COUNT(DISTINCT ir.host_id)
-                FROM infection_records ir
-                WHERE ir.isolate_id IN (SELECT isolate_id FROM analysis_target_isolates)
-                  AND ir.host_id IS NOT NULL
-            """)
-            stats["target_hosts"] = c.fetchone()[0]
-
-        # ── 3. analysis_strict_target_isolates (strict publication) ─
+        # 2. analysis_strict_target_isolates -- THE analysis/release set.
+        #    Every row carries curation_status='manual_checked'. The former
+        #    broad view (analysis_target_isolates) is no longer exposed: its
+        #    extra 133 conflict_open rows were never listed on any page and
+        #    only inflated the headline number and the /stats denominators.
         c.execute("SELECT COUNT(*) FROM analysis_strict_target_isolates")
         strict_iso = c.fetchone()[0]
-        c.execute("""
-            SELECT COUNT(DISTINCT vm.canonical_name)
-            FROM analysis_strict_target_isolates v
-            JOIN virus_master vm ON v.master_id = vm.master_id
-            WHERE vm.host_phylum IN ('Arthropoda','Mollusca','Cnidaria','Echinodermata','Porifera','Annelida','Nematoda','Platyhelminthes','Rotifera')
-        """)
+        c.execute("SELECT COUNT(DISTINCT master_id) FROM analysis_strict_target_isolates")
         strict_spp = c.fetchone()[0]
         c.execute("""
             SELECT COUNT(DISTINCT ir.host_id)
@@ -956,27 +1097,90 @@ def get_stats():
         stats["strict_target_isolates"] = strict_iso
         stats["strict_target_species"] = strict_spp
         stats["strict_target_hosts"] = strict_hosts
+        # ``target_*`` now ALIAS the strict set -- one source of truth, so the
+        # two never disagree. (They used to come from the broad view.)
+        stats["target_isolates"] = strict_iso
+        stats["target_species"] = strict_spp
+        stats["target_hosts"] = strict_hosts
+        # ── 宏基因组候选序列（方向 A：内部 ID + VMR，非真 NCBI）──
+        c.execute("SELECT COUNT(*) FROM analysis_metagenomic_candidates")
+        stats["metagenomic_candidates"] = c.fetchone()[0]
         # Main display numbers (use total counts for full database)
         # Main display numbers: use TOTAL database counts
-        stats["viral_isolates"] = c.execute("SELECT COUNT(*) FROM viral_isolates").fetchone()[0]
-        stats["virus_species"] = c.execute("SELECT COUNT(*) FROM virus_master WHERE canonical_name IS NOT NULL AND canonical_name != ''").fetchone()[0]
-        stats["aquatic_invertebrate_hosts"] = c.execute("SELECT COUNT(*) FROM crustacean_hosts").fetchone()[0]
+        stats["viral_isolates"] = stats["total_isolates"]  # reuse total_isolates
+        stats["virus_species"] = c.execute(
+            "SELECT COUNT(*) FROM virus_master "
+            "WHERE canonical_name IS NOT NULL AND canonical_name != '' "
+            "AND " + _NON_VIRUS_SQL + " AND " + _PLACEHOLDER_NAME_SQL).fetchone()[0]
+        stats["host_species_curated"] = c.execute(
+            f"SELECT COUNT(*) FROM crustacean_hosts WHERE {_HOST_SCOPE_SQL}"
+        ).fetchone()[0]
+        # How many raw rows the definition above leaves out (for scope_note).
+        # Two counters: rows that are not viruses at all, and rows that are
+        # virus sequence records under a placeholder name.
+        stats["virus_species_excluded_rows"] = c.execute(
+            "SELECT COUNT(*) FROM virus_master WHERE canonical_name IS NOT NULL "
+            "AND canonical_name != '' AND NOT (" + _NON_VIRUS_SQL + ")"
+        ).fetchone()[0]
+        stats["virus_species_placeholder_rows"] = c.execute(
+            "SELECT COUNT(*) FROM virus_master WHERE canonical_name IS NOT NULL "
+            "AND canonical_name != '' AND " + _NON_VIRUS_SQL
+            + " AND NOT (" + _PLACEHOLDER_NAME_SQL + ")"
+        ).fetchone()[0]
+        stats["aquatic_invertebrate_hosts"] = stats["total_hosts"]  # reuse total_hosts
 
         # ── Scope note ─────────────────────────────────────────────
         stats["scope_note"] = (
-            "'target_*' counts use analysis_target_isolates (publication set, "
-            "excludes conflict_open); 'strict_target_*' uses "
-            "analysis_strict_target_isolates (also excludes unpublished "
-            "candidates); 'total_*' counts use the raw database tables "
-            "(full database)."
-        )
+            "Everything the site presents is scoped to "
+            "analysis_strict_target_isolates: 'target_*' and "
+            "'strict_target_*' are aliases of that one set (they always "
+            "agree). Every row in it is curation_status='manual_checked'. "
+            "The older database view 'analysis_target_isolates' is "
+            "deliberately NOT used as a source here: it reports a larger "
+            "count because it still carries 133 'conflict_open' records "
+            "that were never shown on any page. If you query the database "
+            "directly and see a different number, that view is the reason; "
+            "this API always answers from analysis_strict_target_isolates. "
+            "'total_*' counts use the raw database tables and are reference "
+            "only -- the raw table holds historical and superseded records "
+            "that are not part of the analysed set. Separately, "
+            "'metagenomic_candidates' counts environmental sequence "
+            "candidates, which are unverified and are not part of the "
+            "target set. Note: the 107 isolates unbound from WSSV on "
+            "2026-09-29 are excluded from the public exports by "
+            "isolate_publish_deny (an export-time gate); they are NOT part "
+            "of the analysed set here either, and their taxonomy has not "
+            "been re-verified. 'virus_species' excludes "
+            "{} rows in virus_master that are not viruses (host-genome "
+            "rows named after the host, duplicate import placeholders, and "
+            "aggregation buckets that gather many unnamed virus sequences "
+            "under one dataset label, and duplicate entries that were "
+            "merged into another entry), "
+            "and a further {} rows whose canonical_name is a sequence- or "
+            "dataset-level label rather than a species name (assembled "
+            "contigs named 'Oyster virome virus contig_*', 'SOTU_*' "
+            "operational taxonomic units, the 'Dataset of Oyster Virome "
+            "(DOV 2023)' rows, and one 'Magallana gigas RNA virome (2024)' "
+            "row). Those rows are real virus sequence records and stay in "
+            "virus_master with their isolates and evidence; 'total_species' "
+            "is the raw row count and includes them all. For "
+            "hosts: 'host_species_curated' counts the curated target scope "
+            "(the set the /hosts page lists), 'target_hosts' counts hosts "
+            "that carry at least one isolate in the analysed set, and "
+            "'total_hosts' is the raw row count. 'phyla_covered' is scoped "
+            "the same way as 'host_species_curated' (target scope only), "
+            "so it reports 8 -- the raw table would give 9. "
+            "Separately, the search results and /api/export downloads omit "
+            "isolates whose master is not a virus entry (aggregation buckets, "
+            "host-genome and duplicate placeholder rows); those isolates are "
+            "still counted in the strict-target analysis figures above."
+        ).format(stats["virus_species_excluded_rows"],
+                 stats["virus_species_placeholder_rows"])
 
         # ── 4. Remaining counts (strict-target or table, unchanged) ─
         base_counts = {
             "ref_literatures": """
-                SELECT COUNT(DISTINCT reference_id)
-                FROM analysis_strict_target_isolates
-                WHERE reference_id IS NOT NULL
+                SELECT COUNT(*) FROM ref_literatures
             """,
             "sample_collections": """
                 SELECT COUNT(DISTINCT ir.collection_id)
@@ -1046,14 +1250,19 @@ def get_stats():
         except sqlite3.Error:
             stats["hosts_by_phylum"] = {}
 
-        # Virus distribution by host_phylum (v2.1 — reflects expansion)
+        # Virus distribution by host_phylum (v2.1 — reflects expansion).
+        # 2026-10-14: internal scope labels (non_target*, non_aquatic, multiple,
+        # unknown) are QC labels, not host phyla — they must not appear in the
+        # public /api/stats payload. Keep real phyla only.
         try:
             c.execute("""
-                SELECT COALESCE(host_phylum, 'Unknown') AS phylum, COUNT(*) AS cnt
+                SELECT host_phylum AS phylum, COUNT(*) AS cnt
                 FROM virus_master
-                WHERE host_phylum NOT IN ('non_target', 'non_target (vertebrate)',
-                    'non_target (fungus)', 'non_target (plant)', 'non_target (algae)',
-                    'non_target (bacteria)', 'non_aquatic', 'unknown')
+                WHERE host_phylum IS NOT NULL
+                  AND host_phylum NOT LIKE 'non%'
+                  AND host_phylum NOT IN ('multiple', 'unknown')
+                  AND """ + _NON_VIRUS_SQL + """
+                  AND """ + _PLACEHOLDER_NAME_SQL + """
                 GROUP BY host_phylum
                 ORDER BY cnt DESC
             """)
@@ -1069,13 +1278,71 @@ def get_stats():
             stats["sra_runs"] = 0
 
         try:
-            c.execute("""
-                SELECT COUNT(DISTINCT COALESCE(phylum, 'Unknown'))
+            # Scoped to the curated target host set, same as 'host_species_curated'
+            # and the /hosts browse page. Without the scope filter this counted
+            # needs_review/excluded hosts too and reported 9 phyla instead of 8.
+            c.execute(f"""
+                SELECT COUNT(DISTINCT phylum)
                 FROM crustacean_hosts
+                WHERE {_HOST_SCOPE_SQL}
+                  AND phylum IN ('Arthropoda','Mollusca','Porifera','Cnidaria','Nematoda',
+                                 'Echinodermata','Annelida','Platyhelminthes','Rotifera')
             """)
             stats["phyla_covered"] = c.fetchone()[0]
         except sqlite3.Error:
             stats["phyla_covered"] = 0
+
+        # ── Dashboard enrichment fields (v3.0 — dynamic homepage) ──
+        try:
+            c.execute("SELECT evidence_type, COUNT(*) FROM analysis_reviewed_evidence_records GROUP BY evidence_type ORDER BY COUNT(*) DESC")
+            stats["evidence_by_type"] = {r[0]: r[1] for r in c.fetchall()}
+        except sqlite3.Error:
+            stats["evidence_by_type"] = {}
+        try:
+            c.execute("SELECT evidence_strength, COUNT(*) FROM analysis_reviewed_evidence_records GROUP BY evidence_strength")
+            stats["evidence_by_strength"] = {r[0]: r[1] for r in c.fetchall()}
+        except sqlite3.Error:
+            stats["evidence_by_strength"] = {}
+        try:
+            c.execute("SELECT curation_status, COUNT(*) FROM evidence_records GROUP BY curation_status")
+            stats["evidence_by_curation"] = {r[0]: r[1] for r in c.fetchall()}
+        except sqlite3.Error:
+            stats["evidence_by_curation"] = {}
+        try:
+            c.execute("SELECT virus_family, COUNT(*) as cnt FROM virus_master WHERE virus_family IS NOT NULL AND virus_family != '' AND " + _NON_VIRUS_SQL + " AND " + _PLACEHOLDER_NAME_SQL + " AND host_phylum NOT IN ('non_target','non_target (vertebrate)','non_target (fungus)','non_target (plant)','non_target (algae)','non_target (bacteria)','non_aquatic','unknown') GROUP BY virus_family ORDER BY cnt DESC LIMIT 15")
+            stats["top_families"] = [{"family": r[0], "count": r[1]} for r in c.fetchall()]
+        except sqlite3.Error:
+            stats["top_families"] = []
+        try:
+            c.execute("SELECT " + _GENOME_GROUP_EXPR + " AS genome_group, COUNT(*) FROM virus_master WHERE " + _NON_VIRUS_SQL + " AND " + _PLACEHOLDER_NAME_SQL + " GROUP BY genome_group ORDER BY " + _GENOME_GROUP_ORDER_SQL)
+            stats["genome_types"] = {r[0]: r[1] for r in c.fetchall()}
+        except sqlite3.Error:
+            stats["genome_types"] = {}
+        try:
+            c.execute("SELECT COUNT(*) FROM virus_ictv_status WHERE ictv_status = 'mapped'")
+            stats["ictv_mapped"] = c.fetchone()[0]
+        except sqlite3.Error:
+            stats["ictv_mapped"] = 0
+        try:
+            # Taiwan is folded into China so that the site's country count
+            # matches the curated geography layer (isolate_curated_profiles)
+            # and v_nar_database_summary -- both report 63, not 64.
+            c.execute("SELECT COUNT(DISTINCT {}) FROM sample_collections "
+                      "WHERE country IS NOT NULL AND country != ''".format(
+                          _norm_country("country")))
+            stats["country_count"] = c.fetchone()[0]
+        except sqlite3.Error:
+            stats["country_count"] = 0
+        try:
+            c.execute("SELECT COUNT(*) FROM virus_master WHERE entry_type = 'complete_genome'")
+            stats["complete_genomes"] = c.fetchone()[0]
+        except sqlite3.Error:
+            stats["complete_genomes"] = 0
+        try:
+            c.execute("SELECT COUNT(DISTINCT protein_id) FROM interpro_annotations")
+            stats["proteins_annotated"] = c.fetchone()[0]
+        except sqlite3.Error:
+            stats["proteins_annotated"] = 0
 
         try:
             c.execute("""
@@ -1096,9 +1363,15 @@ def get_stats():
             stats["experimentally_validated"] = c.fetchone()[0]
         except sqlite3.Error:
             stats["experimentally_validated"] = 0
-        # Data update date
+        # Data update date (MAX across data tables; schema_version excluded so migrations don't bump it)
         try:
-            c.execute("SELECT MAX(updated_at) FROM sync_runtime")
+            c.execute("""
+                SELECT MAX(ts) FROM (
+                    SELECT MAX(created_at) AS ts FROM curation_logs
+                    UNION ALL SELECT MAX(updated_at) FROM evidence_records
+                    UNION ALL SELECT MAX(created_at) FROM data_provenance
+                )
+            """)
             row = c.fetchone()
             stats["data_update_date"] = row[0] if row and row[0] else ""
         except sqlite3.Error:
@@ -1132,44 +1405,54 @@ def get_stats():
         """)
         stats["entry_types"] = {r[0]: r[1] for r in c.fetchall()}
         # Data quality metrics
-        c.execute("SELECT COUNT(DISTINCT master_id) FROM analysis_strict_target_isolates")
-        total_species = c.fetchone()[0]
+        target_species = stats["target_species"]  # reuse earlier COUNT(DISTINCT master_id)
         c.execute("""
             SELECT COUNT(DISTINCT vim.master_id)
             FROM virus_ictv_mappings vim
             JOIN analysis_strict_target_isolates ati ON ati.master_id = vim.master_id
-            WHERE vim.confidence = 'high'
-              AND vim.match_status <> 'rejected'
         """)
         mapped_species = c.fetchone()[0]
-        stats["ictv_mapping_rate"] = round(mapped_species / total_species * 100, 1) if total_species else 0
-        c.execute("SELECT COUNT(*) FROM infection_records ir JOIN sample_collections sc ON ir.collection_id = sc.collection_id WHERE sc.country IS NOT NULL AND sc.country != ''")
+        stats["ictv_mapped_species"] = mapped_species
+        stats["ictv_target_species"] = target_species
+        stats["ictv_mapping_rate"] = round(mapped_species / target_species * 100, 1) if target_species else 0
+        c.execute("""
+            SELECT COUNT(DISTINCT isolate_id)
+            FROM analysis_isolate_completeness
+            WHERE has_country = 1
+              AND isolate_id IN (SELECT isolate_id FROM analysis_strict_target_isolates)
+        """)
         stats["geo_covered_isolates"] = c.fetchone()[0]
-        c.execute(f"SELECT COUNT(DISTINCT isolate_id) FROM infection_records WHERE host_id IS NOT NULL AND isolate_id IN ({STRICT_TARGET_SUBQUERY})")
+        c.execute("""
+            SELECT COUNT(DISTINCT isolate_id)
+            FROM infection_records
+            WHERE host_id IS NOT NULL
+              AND isolate_id IN (SELECT isolate_id FROM analysis_strict_target_isolates)
+        """)
         stats["host_covered_isolates"] = c.fetchone()[0]
         # Current release-quality completeness metrics use the curated analysis
         # views. Keep legacy fields above for older widgets, and expose target
         # denominators for pages that show data quality rates.
         try:
-            c.execute("SELECT COUNT(*) FROM analysis_strict_target_isolates")
-            stats["analysis_target_isolates_total"] = c.fetchone()[0]
-            target_checks = {
-                "target_host_covered": "has_host",
-                "target_country_covered": "has_country",
-                "target_reference_covered": "has_reference",
-                "target_genome_type_covered": "has_genome_type",
-                "target_collection_year_covered": "has_collection_year",
-                "target_isolation_source_covered": "has_isolation_source",
-            }
-            for key, field in target_checks.items():
-                c.execute(
-                    f"""
-                    SELECT COALESCE(SUM({field}), 0)
-                    FROM analysis_isolate_completeness
-                    WHERE isolate_id IN (SELECT isolate_id FROM analysis_strict_target_isolates)
-                    """
-                )
-                stats[key] = c.fetchone()[0] or 0
+            stats["analysis_target_isolates_total"] = strict_iso  # reuse strict count
+            c.execute(
+                """
+                SELECT COALESCE(SUM(has_host), 0),
+                       COALESCE(SUM(has_country), 0),
+                       COALESCE(SUM(has_reference), 0),
+                       COALESCE(SUM(has_genome_type), 0),
+                       COALESCE(SUM(has_collection_year), 0),
+                       COALESCE(SUM(has_isolation_source), 0)
+                FROM analysis_isolate_completeness
+                WHERE isolate_id IN (SELECT isolate_id FROM analysis_strict_target_isolates)
+                """
+            )
+            _row = c.fetchone()
+            stats["target_host_covered"] = _row[0] or 0
+            stats["target_country_covered"] = _row[1] or 0
+            stats["target_reference_covered"] = _row[2] or 0
+            stats["target_genome_type_covered"] = _row[3] or 0
+            stats["target_collection_year_covered"] = _row[4] or 0
+            stats["target_isolation_source_covered"] = _row[5] or 0
         except sqlite3.Error:
             stats["analysis_target_isolates_total"] = 0
         # Dataset tier stats
@@ -1318,7 +1601,7 @@ def get_hosts():
     with get_db() as conn:
         c = conn.cursor()
         c.execute("""
-            SELECT host_id, scientific_name, common_name_cn
+            SELECT host_id, scientific_name
             FROM crustacean_hosts
             ORDER BY scientific_name
         """)
@@ -1357,10 +1640,19 @@ def get_expansion_status():
         c = conn.cursor()
         result = {}
         try:
-            c.execute("SELECT COUNT(*) FROM virus_master")
+            # Deliberately the same expression as /api/stats['virus_species'], so this
+            # endpoint can never report a species total that contradicts the site
+            # headline.  A bare COUNT(*) here returns raw virus_master rows (3,531),
+            # which is a different measure.
+            c.execute(
+                "SELECT COUNT(*) FROM virus_master "
+                "WHERE canonical_name IS NOT NULL AND canonical_name != '' "
+                "AND " + _NON_VIRUS_SQL + " AND " + _PLACEHOLDER_NAME_SQL)
             result["total_virus_species"] = c.fetchone()[0]
-            c.execute("""SELECT COUNT(DISTINCT phylum) FROM crustacean_hosts
-                         WHERE phylum IS NOT NULL AND phylum != ''""")
+            c.execute(f"""SELECT COUNT(DISTINCT phylum) FROM crustacean_hosts
+                         WHERE {_HOST_SCOPE_SQL}
+                           AND phylum IN ('Arthropoda','Mollusca','Porifera','Cnidaria','Nematoda',
+                                          'Echinodermata','Annelida','Platyhelminthes','Rotifera')""")
             result["phyla_covered"] = c.fetchone()[0]
             c.execute("""SELECT host_scope_status, COUNT(*) AS cnt
                          FROM crustacean_hosts
@@ -1373,13 +1665,24 @@ def get_expansion_status():
                          FROM infection_records""")
             row = c.fetchone()
             result["evidence_coverage_pct"] = row[0] if row and row[0] is not None else 0.0
-            c.execute("""SELECT COUNT(DISTINCT vm.master_id) FROM virus_master vm
-                         WHERE vm.master_id IN (SELECT DISTINCT vp.master_id FROM viral_proteins vp
-                         WHERE vp.protein_id IN (SELECT protein_id FROM uniprot_structures
-                         WHERE protein_id IS NOT NULL UNION SELECT protein_id FROM protein_structures
-                         WHERE protein_id IS NOT NULL))""")
+            # viral_proteins has no master_id: the only route to virus_master is
+            # through viral_isolates (vp.isolate_id -> vi.master_id).  The previous
+            # query selected vp.master_id, which does not exist, so it raised and
+            # the except below zeroed this AND every other field.
+            c.execute("""SELECT COUNT(DISTINCT vm.master_id)
+                         FROM viral_proteins vp
+                         JOIN viral_isolates vi ON vp.isolate_id = vi.isolate_id
+                         JOIN virus_master vm ON vi.master_id = vm.master_id
+                         WHERE vp.protein_id IN (
+                             SELECT protein_id FROM uniprot_structures WHERE protein_id IS NOT NULL
+                             UNION
+                             SELECT protein_id FROM protein_structures WHERE protein_id IS NOT NULL)""")
             result["species_with_structures"] = c.fetchone()[0]
         except sqlite3.Error:
+            # Keep the zero-fill fallback so the endpoint never 500s, but log it:
+            # until 2026-09-29 this branch discarded five already-correct fields
+            # without a trace, which is how a bad column reference survived here.
+            LOGGER.exception("expansion status query failed; returning zeros")
             result = {"total_virus_species": 0, "phyla_covered": 0,
                       "target_hosts_by_phylum": {}, "evidence_coverage_pct": 0.0,
                       "species_with_structures": 0}
@@ -1475,23 +1778,21 @@ def get_suggestions(
                 c.execute(
                     """
                     SELECT
-                        scientific_name AS value,
-                        common_name_cn AS subtitle
+                        scientific_name AS value
                     FROM crustacean_hosts
-                    WHERE scientific_name LIKE ? ESCAPE '\\' OR common_name_cn LIKE ? ESCAPE '\\'
+                    WHERE scientific_name LIKE ? ESCAPE '\\'
                     ORDER BY
                         CASE WHEN scientific_name LIKE ? ESCAPE '\\' THEN 0 ELSE 1 END,
                         scientific_name
                     LIMIT ?
                     """,
-                    (like_q, like_q, prefix_q, limit),
+                    (like_q, prefix_q, limit),
                 )
             else:
                 c.execute(
                     """
                     SELECT
                         h.scientific_name AS value,
-                        h.common_name_cn AS subtitle,
                         COUNT(*) AS cnt
                     FROM crustacean_hosts h
                     JOIN infection_records ir ON h.host_id = ir.host_id
@@ -1509,18 +1810,17 @@ def get_suggestions(
                     """
                     SELECT
                         vm.canonical_name AS value,
-                        vm.chinese_name AS subtitle,
                         COUNT(*) AS cnt
                     FROM analysis_strict_target_isolates v
                     JOIN virus_master vm ON v.master_id = vm.master_id
-                    WHERE vm.host_phylum IN ('Arthropoda','Mollusca','Cnidaria','Echinodermata','Porifera')
+                    WHERE vm.host_phylum IN ('Arthropoda','Mollusca','Cnidaria','Echinodermata','Porifera','Annelida','Platyhelminthes','Rotifera')
                       AND (
                           vm.canonical_name LIKE ? ESCAPE '\\'
-                          OR vm.chinese_name LIKE ? ESCAPE '\\'
                           OR vm.abbreviations LIKE ? ESCAPE '\\'
                           OR v.virus_name LIKE ? ESCAPE '\\'
+                          OR v.master_id IN (SELECT master_id FROM virus_aliases WHERE alias LIKE ? ESCAPE '\\')
                       )
-                    GROUP BY vm.canonical_name, vm.chinese_name
+                    GROUP BY vm.canonical_name
                     ORDER BY
                         CASE WHEN vm.canonical_name LIKE ? ESCAPE '\\' THEN 0 ELSE 1 END,
                         cnt DESC,
@@ -1534,22 +1834,135 @@ def get_suggestions(
                     """
                     SELECT
                         vm.canonical_name AS value,
-                        vm.chinese_name AS subtitle,
                         COUNT(*) AS cnt
                     FROM analysis_strict_target_isolates v
                     JOIN virus_master vm ON v.master_id = vm.master_id
-                    WHERE vm.host_phylum IN ('Arthropoda','Mollusca','Cnidaria','Echinodermata','Porifera')
+                    WHERE vm.host_phylum IN ('Arthropoda','Mollusca','Cnidaria','Echinodermata','Porifera','Annelida','Platyhelminthes','Rotifera')
                       AND vm.entry_type NOT IN ('EST', 'patent', 'non_target', 'unknown')
-                    GROUP BY vm.canonical_name, vm.chinese_name
+                    GROUP BY vm.canonical_name
                     ORDER BY cnt DESC, vm.canonical_name
                     LIMIT ?
                     """,
                     (limit,),
                 )
     
-        rows = [{"value": r["value"], "subtitle": r["subtitle"]} for r in c.fetchall() if r["value"]]
+        rows = [{"value": r["value"]} for r in c.fetchall() if r["value"]]
     return {"items": rows}
 
+
+@app.get("/api/search/facets", tags=["Core Data"])
+def get_search_facets(
+    q: Optional[str] = Query(None, description="Search query"),
+    phylum: Optional[str] = Query(None),
+    family: Optional[str] = Query(None),
+    completeness: Optional[str] = Query(None),
+    country: Optional[str] = Query(None),
+    year_from: Optional[int] = Query(None),
+    year_to: Optional[int] = Query(None),
+):
+    """Return facet counts with record numbers for faceted search sidebar."""
+    with get_db() as conn:
+        c = conn.cursor()
+        conditions = [f"v.isolate_id IN ({STRICT_TARGET_SUBQUERY})"]
+        params = []
+        keyword = (q or "").strip()
+        if keyword:
+            like_q = f"%{_escape_like(keyword)}%"
+            conditions.append("(v.virus_name LIKE ? OR v.accession LIKE ? OR vm.canonical_name LIKE ? OR vm.abbreviations LIKE ? OR vm.virus_family LIKE ? OR vm.virus_genus LIKE ? OR v.master_id IN (SELECT master_id FROM virus_aliases WHERE alias LIKE ?))")
+            params.extend([like_q]*7)
+        if phylum:
+            conditions.append("vm.host_phylum = ?"); params.append(phylum)
+        if family:
+            conditions.append("v.taxon_family = ?"); params.append(family)
+        if completeness:
+            conditions.append("v.completeness = ?"); params.append(completeness)
+        # Geography filters are applied as a subquery on v.isolate_id, NOT by joining
+        # sample_collections into the FROM clause.  Two reasons:
+        #   1. sample_collections has no isolate_id -- the link is
+        #      viral_isolates -> infection_records -> sample_collections, and joining
+        #      it the short way raised "no such column: sc.isolate_id".
+        #   2. All the facets below share one FROM.  A join there fans out the counts
+        #      whenever an isolate maps to more than one collection record, so the
+        #      numbers would stop matching the lists underneath them.
+        _sample_of_isolate = ("v.isolate_id IN (SELECT ir.isolate_id FROM infection_records ir "
+                              "JOIN sample_collections sc ON ir.collection_id = sc.collection_id "
+                              "WHERE ")
+        if country:
+            conditions.append(_sample_of_isolate + _norm_country("sc.country") + " = ?)"); params.append(country)
+        if year_from is not None:
+            conditions.append(_sample_of_isolate + "sc.collection_year >= ?)"); params.append(year_from)
+        if year_to is not None:
+            conditions.append(_sample_of_isolate + "sc.collection_year <= ?)"); params.append(year_to)
+
+        where_sql = " AND ".join(conditions)
+        base_from = "FROM viral_isolates v JOIN virus_master vm ON v.master_id = vm.master_id"
+        # Only the countries facet needs sample_collections; it reads the same route
+        # as the filters above.
+        base_from_sc = ("FROM viral_isolates v JOIN virus_master vm ON v.master_id = vm.master_id "
+                        "LEFT JOIN infection_records ir ON v.isolate_id = ir.isolate_id "
+                        "LEFT JOIN sample_collections sc ON ir.collection_id = sc.collection_id")
+
+        facets = {}
+        try:
+            c.execute(f"SELECT COUNT(*) {base_from} WHERE {where_sql}", params)
+            facets["total"] = c.fetchone()[0]
+        except Exception:
+            LOGGER.exception("facet 'total' failed")
+            facets["total"] = 0
+
+        try:
+            c.execute(f"SELECT COALESCE(vm.host_phylum,'Unknown'), COUNT(*) {base_from} WHERE {where_sql} GROUP BY vm.host_phylum ORDER BY COUNT(*) DESC", params)
+            facets["phyla"] = [{"value": r[0], "count": r[1]} for r in c.fetchall() if r[0] and r[0] != 'Unknown']
+        except Exception:
+            LOGGER.exception("facet 'phyla' failed")
+            facets["phyla"] = []
+
+        try:
+            c.execute(f"SELECT v.taxon_family, COUNT(*) {base_from} WHERE {where_sql} AND v.taxon_family IS NOT NULL AND v.taxon_family != '' GROUP BY v.taxon_family ORDER BY COUNT(*) DESC LIMIT 20", params)
+            facets["families"] = [{"value": r[0], "count": r[1]} for r in c.fetchall()]
+        except Exception:
+            LOGGER.exception("facet 'families' failed")
+            facets["families"] = []
+
+        try:
+            c.execute(f"SELECT COALESCE(v.completeness,'unknown'), COUNT(*) {base_from} WHERE {where_sql} GROUP BY v.completeness ORDER BY COUNT(*) DESC", params)
+            facets["completeness"] = [{"value": r[0], "count": r[1]} for r in c.fetchall()]
+        except Exception:
+            LOGGER.exception("facet 'completeness' failed")
+            facets["completeness"] = []
+
+        try:
+            # COUNT(DISTINCT v.isolate_id), not COUNT(*): the join above can produce
+            # several sample_collections rows per isolate, which would inflate the
+            # per-country count beyond the isolate count the filters select.
+            c.execute(f"SELECT {_norm_country('sc.country')} AS country, COUNT(DISTINCT v.isolate_id) {base_from_sc} WHERE {where_sql} AND sc.country IS NOT NULL AND sc.country != '' GROUP BY {_norm_country('sc.country')} ORDER BY COUNT(DISTINCT v.isolate_id) DESC LIMIT 20", params)
+            facets["countries"] = [{"value": r[0], "count": r[1]} for r in c.fetchall()]
+        except Exception:
+            LOGGER.exception("facet 'countries' failed")
+            facets["countries"] = []
+
+        try:
+            c.execute(f"""SELECT COALESCE(er.evidence_strength,'unknown'), COUNT(DISTINCT v.isolate_id)
+                FROM viral_isolates v JOIN virus_master vm ON v.master_id = vm.master_id
+                LEFT JOIN evidence_records er ON vm.master_id = er.virus_master_id
+                WHERE {where_sql} AND er.evidence_strength IS NOT NULL AND er.evidence_strength != ''
+                GROUP BY er.evidence_strength ORDER BY COUNT(DISTINCT v.isolate_id) DESC""", params)
+            facets["evidence_strength"] = [{"value": r[0], "count": r[1]} for r in c.fetchall()]
+        except Exception:
+            LOGGER.exception("facet 'evidence_strength' failed")
+            facets["evidence_strength"] = []
+
+        try:
+            c.execute(f"""SELECT COALESCE(icp.dataset_tier,'unknown'), COUNT(*)
+                FROM viral_isolates v JOIN virus_master vm ON v.master_id = vm.master_id
+                LEFT JOIN isolate_curated_profiles icp ON v.isolate_id = icp.isolate_id
+                WHERE {where_sql} GROUP BY icp.dataset_tier ORDER BY COUNT(*) DESC""", params)
+            facets["dataset_tiers"] = [{"value": r[0], "count": r[1]} for r in c.fetchall() if r[0]]
+        except Exception:
+            LOGGER.exception("facet 'dataset_tiers' failed")
+            facets["dataset_tiers"] = []
+
+    return facets
 
 @app.get("/api/search", tags=["Core Data"])
 def search_viruses(
@@ -1587,9 +2000,9 @@ def search_viruses(
             phylum=phylum, conn=conn,
         )
     
-        offset = (page - 1) * page_size
+        # Corrupted legacy comment removed.
         count_sql = f"""
-            SELECT COUNT(*) FROM viral_isolates v
+            SELECT COUNT(DISTINCT v.isolate_id) FROM analysis_strict_target_isolates v
             LEFT JOIN virus_master vm ON v.master_id = vm.master_id
             LEFT JOIN infection_records ir ON v.isolate_id = ir.isolate_id
             LEFT JOIN crustacean_hosts h ON ir.host_id = h.host_id
@@ -1598,32 +2011,32 @@ def search_viruses(
         """
         c.execute(count_sql, params)
         total = c.fetchone()[0]
-
+    
+        # Corrupted legacy comment removed.
+        offset = (page - 1) * page_size
         data_sql = f"""
             SELECT
                 v.isolate_id,
                 v.accession,
                 v.virus_name,
                 vm.canonical_name,
-                vm.chinese_name as canonical_name_cn,
                 vm.abbreviations,
                 vm.entry_type,
                 v.taxon_family,
                 v.taxon_genus,
                 v.genome_length,
-                h.scientific_name AS host_name,
-                h.common_name_cn AS host_cn,
-                s.country,
-                s.collection_year,
-                s.collection_date,
-                s.note AS isolation_source,
+                GROUP_CONCAT(DISTINCT h.scientific_name) AS host_name,
+                GROUP_CONCAT(DISTINCT {_norm_country('s.country')}) AS country,
+                GROUP_CONCAT(DISTINCT s.collection_year) AS collection_year,
+                GROUP_CONCAT(DISTINCT s.collection_date) AS collection_date,
+                GROUP_CONCAT(DISTINCT s.note) AS isolation_source,
                 l.title AS ref_title,
                 l.pmid,
                 l.doi,
                 icp.dataset_tier,
                 icp.curation_status,
                 icp.confidence AS curation_confidence
-            FROM viral_isolates v
+            FROM analysis_strict_target_isolates v
             LEFT JOIN virus_master vm ON v.master_id = vm.master_id
             LEFT JOIN infection_records ir ON v.isolate_id = ir.isolate_id
             LEFT JOIN crustacean_hosts h ON ir.host_id = h.host_id
@@ -1631,6 +2044,7 @@ def search_viruses(
             LEFT JOIN ref_literatures l ON v.reference_id = l.reference_id
             LEFT JOIN isolate_curated_profiles icp ON icp.isolate_id = v.isolate_id
             WHERE {where_sql}
+            GROUP BY v.isolate_id
             ORDER BY v.isolate_id
             LIMIT ? OFFSET ?
         """
@@ -1672,22 +2086,21 @@ def get_virus_detail(accession: str):
     """
     with get_db() as conn:
         c = conn.cursor()
-        c.execute("""
+        c.execute(f"""
             SELECT
                 v.*,
                 vm.canonical_name,
-                vm.chinese_name as canonical_name_cn,
                 vm.abbreviations,
                 vm.entry_type,
                 vm.discovery_context,
                 vm.host_phylum as virus_host_phylum,
                 h.scientific_name AS host_name,
-                h.common_name_cn AS host_cn,
                 h.phylum AS host_phylum,
                 h.class AS host_class,
                 h.host_scope_status,
                 ir.host_association_method,
-                s.country, s.province, s.city, s.latitude, s.longitude,
+                {_norm_country('s.country')} AS country,
+                s.province, s.city, s.latitude, s.longitude,
                 s.collection_year, s.collection_date, s.note AS isolation_source,
                 l.title AS ref_title, l.authors AS ref_authors, l.journal,
                 l.year AS ref_year, l.doi, l.pmid, l.abstract
@@ -1697,8 +2110,8 @@ def get_virus_detail(accession: str):
             LEFT JOIN crustacean_hosts h ON ir.host_id = h.host_id
             LEFT JOIN sample_collections s ON ir.collection_id = s.collection_id
             LEFT JOIN ref_literatures l ON v.reference_id = l.reference_id
-            WHERE v.accession = ?
-        """, (accession,))
+            WHERE v.accession = ? OR v.accession LIKE ?
+        """, (accession, accession.split(".")[0] + ".%"))
         row = c.fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="Virus record not found")
@@ -1706,11 +2119,12 @@ def get_virus_detail(accession: str):
         result = dict(row)
         virus_name = result.get("canonical_name") or result.get("virus_name", "")
         
-        # Add NCBI links
-        result["ncbi_nucleotide_url"] = f"https://www.ncbi.nlm.nih.gov/nuccore/{accession}"
-        
+        # Add NCBI links (use stored accession so a version-less query still resolves)
+        resolved_accession = result.get("accession") or accession
+        result["ncbi_nucleotide_url"] = f"https://www.ncbi.nlm.nih.gov/nuccore/{resolved_accession}"
+
         # Check if sequence file exists
-        seq_file = SEQUENCES_DIR / f"{accession}.fasta"
+        seq_file = SEQUENCES_DIR / f"{resolved_accession}.fasta"
         result["has_sequence_file"] = seq_file.exists()
         
         # Public detail pages expose only reviewed evidence records.
@@ -1881,7 +2295,8 @@ def search_proteins(
         data_sql = f"""
             SELECT
                 vp.protein_id, vp.protein_accession, vp.protein_name,
-                vp.gene_symbol, vp.locus_tag, vp.aa_length,
+                COALESCE(vp.gene_symbol, '') AS gene_symbol,
+                vp.locus_tag, vp.aa_length,
                 vp.functional_category,
                 vp.functional_annotation_status,
                 vi.accession,
@@ -2228,6 +2643,7 @@ def blast_rdrp_sequence(
     evalue: float = Query(1e-5, gt=0),
 ):
     """Run local BLASTP/BLASTX against the built-in RDRP protein database."""
+    global _last_blast_search_time
     # Global cooldown: prevent rapid successive searches
     with _blast_search_lock:
         now = time.time()
@@ -2393,6 +2809,251 @@ def search_rdrp_by_sequence(
     }
 
 
+# ── Full-database BLAST (blastn / blastp / blastx / tblastn) ─────────────────
+AA_BLAST_DB = BLAST_DIR / "aa"
+NT_BLAST_DB = BLAST_DIR / "nt"
+
+_BLAST_PROGRAM_DB = {
+    "blastn": NT_BLAST_DB,
+    "blastp": AA_BLAST_DB,
+    "blastx": AA_BLAST_DB,
+    "tblastn": NT_BLAST_DB,
+}
+_BLAST_OUTFMT = "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen slen"
+
+
+def _blast_db_ready(db_path) -> bool:
+    return (
+        Path(str(db_path) + ".pin").exists()
+        or Path(str(db_path) + ".psq").exists()
+        or Path(str(db_path) + ".nsq").exists()
+    )
+
+
+def _normalize_query(sequence: str, program: str) -> str:
+    if program in {"blastp", "tblastn"}:
+        return normalize_protein_sequence(sequence).replace("*", "")
+    lines = []
+    for line in (sequence or "").splitlines():
+        s = line.strip()
+        if not s or s.startswith(">"):
+            continue
+        lines.append(s)
+    return "".join(ch for ch in "".join(lines).upper() if ch in "ACGTUN")
+
+
+def _get_protein_hit_metadata(protein_ids) -> dict:
+    if not protein_ids:
+        return {}
+    ph = ",".join("?" for _ in protein_ids)
+    with get_db() as conn:
+        c = conn.cursor()
+        c.execute(
+            f"""
+            SELECT vp.protein_id, vp.protein_accession, vp.protein_name, vp.gene_symbol, vp.aa_length,
+                   vi.accession, vi.isolate_id,
+                   vm.master_id, vm.canonical_name AS virus_species, vm.virus_family, vm.genome_type
+            FROM viral_proteins vp
+            JOIN viral_isolates vi ON vp.isolate_id = vi.isolate_id
+            JOIN virus_master vm ON vi.master_id = vm.master_id
+            WHERE vp.protein_id IN ({ph})
+            """,
+            protein_ids,
+        )
+        return {row["protein_id"]: dict(row) for row in c.fetchall()}
+
+
+def _strip_acc_version(accession: str) -> str:
+    """Drop a trailing numeric accession version (PP054173.1 -> PP054173).
+
+    The BLAST db keeps versioned ids while nucleotide_records stores a mix of
+    versioned and versionless accessions, so exact matching misses most hits.
+    """
+    return re.sub(r"\.\d+$", "", (accession or "").strip())
+
+
+def _get_nucleotide_hit_metadata(accessions) -> dict:
+    """Look up hit metadata, ignoring accession versions on both sides."""
+    if not accessions:
+        return {}
+    keys = list(dict.fromkeys(_strip_acc_version(a) for a in accessions))
+    ph = ",".join("?" for _ in keys)
+    with get_db() as conn:
+        c = conn.cursor()
+        c.execute(
+            f"""
+            SELECT nr.accession AS nucleotide_accession, nr.isolate_id,
+                   vi.accession, vi.master_id,
+                   vm.canonical_name AS virus_species, vm.virus_family, vm.genome_type
+            FROM nucleotide_records nr
+            JOIN viral_isolates vi ON nr.isolate_id = vi.isolate_id
+            JOIN virus_master vm ON vi.master_id = vm.master_id
+            WHERE CASE WHEN instr(nr.accession, '.') > 0
+                       THEN substr(nr.accession, 1, instr(nr.accession, '.') - 1)
+                       ELSE nr.accession END IN ({ph})
+            """,
+            keys,
+        )
+        return {_strip_acc_version(row["nucleotide_accession"]): dict(row) for row in c.fetchall()}
+
+
+def run_full_blast(query_sequence: str, program: str, limit: int, evalue: float) -> dict:
+    program = program.lower()
+    if program not in _BLAST_PROGRAM_DB:
+        return {"engine": "blast", "available": False, "results": [], "error": "program must be blastn, blastp, blastx or tblastn"}
+
+    blast_bin = find_blast_binary(program)
+    if not blast_bin:
+        return {"engine": program, "available": False, "results": [], "error": "BLAST+ binary not found"}
+
+    db_path = _BLAST_PROGRAM_DB[program]
+    if not _blast_db_ready(db_path):
+        return {"engine": program, "available": True, "results": [], "error": f"BLAST database not built: {db_path.name}"}
+
+    seq = _normalize_query(query_sequence, program)
+    min_len = 9 if program in {"blastn", "blastx", "tblastn"} else 3
+    if len(seq) < min_len:
+        return {"engine": program, "available": True, "results": [], "error": "Query sequence is too short for BLAST."}
+    if len(seq) > 2000000:
+        return {"engine": program, "available": True, "results": [], "error": "Query too long (>2000000 residues). Please submit a shorter sequence."}
+
+    suffix = ".faa" if program in {"blastp", "tblastn"} else ".fna"
+    with tempfile.NamedTemporaryFile("w", encoding="utf-8", suffix=suffix, delete=False) as qf:
+        qp = Path(qf.name)
+        qf.write(">query\n")
+        for i in range(0, len(seq), 60):
+            qf.write(seq[i:i + 60] + "\n")
+
+    cmd = [
+        blast_bin, "-query", str(qp), "-db", str(db_path),
+        "-outfmt", _BLAST_OUTFMT, "-max_target_seqs", str(limit),
+        "-evalue", str(evalue), "-num_threads", "1",
+    ]
+    try:
+        completed = subprocess.run(cmd, capture_output=True, text=True, timeout=120, check=False)
+    finally:
+        try:
+            qp.unlink()
+        except OSError:
+            pass
+
+    if completed.returncode != 0:
+        LOGGER.warning("BLAST %s failed rc=%s: %s", program, completed.returncode, completed.stderr.strip())
+        return {"engine": program, "available": True, "results": [], "error": "BLAST failed. Check server logs."}
+
+    protein_mode = program in {"blastp", "blastx"}
+    rows = []
+    keys = []
+    for line in completed.stdout.splitlines():
+        f = line.split("\t")
+        if len(f) != 14:
+            continue
+        sid = f[1]
+        key = None
+        if protein_mode:
+            if sid.startswith("prot_"):
+                try:
+                    key = int(sid[5:])
+                except ValueError:
+                    continue
+        else:
+            key = _strip_acc_version(sid)
+        keys.append(key)
+        rows.append((key, f))
+
+    if protein_mode:
+        meta = _get_protein_hit_metadata(list(dict.fromkeys(keys)))
+    else:
+        meta = _get_nucleotide_hit_metadata(list(dict.fromkeys(keys)))
+
+    results = []
+    for key, f in rows:
+        m = meta.get(key, {})
+        qlen = int(float(f[12])) if f[12] else 0
+        slen = int(float(f[13])) if f[13] else 0
+        alen = int(float(f[3]))
+        results.append({
+            **m,
+            "subject_id": f[1],
+            "program": program,
+            "pident": round(float(f[2]), 2),
+            "alignment_length": alen,
+            "mismatches": int(float(f[4])),
+            "gap_opens": int(float(f[5])),
+            "qstart": int(float(f[6])),
+            "qend": int(float(f[7])),
+            "sstart": int(float(f[8])),
+            "send": int(float(f[9])),
+            "evalue": f[10],
+            "bitscore": round(float(f[11]), 1),
+            "query_length": qlen,
+            "subject_length": slen,
+            "query_coverage": round(alen / qlen * 100, 2) if qlen else 0,
+            "subject_coverage": round(alen / slen * 100, 2) if slen else 0,
+        })
+
+    return {
+        "engine": program,
+        "available": True,
+        "query_length": len(seq),
+        "returned": len(results),
+        "results": results,
+    }
+
+
+@app.get("/api/blast/status", tags=["BLAST"])
+def get_full_blast_status_api():
+    version = ""
+    vf = BLAST_DIR / "VERSION"
+    if vf.exists():
+        version = vf.read_text(encoding="utf-8", errors="ignore").strip()
+    return {
+        "blast_plus_available": bool(find_blast_binary("blastn") and find_blast_binary("blastp") and find_blast_binary("makeblastdb")),
+        "aa_database_ready": _blast_db_ready(AA_BLAST_DB),
+        "nt_database_ready": _blast_db_ready(NT_BLAST_DB),
+        "version": version,
+    }
+
+
+@app.post("/api/blast", tags=["BLAST"])
+def blast_sequence_api(
+    request: Request,
+    payload: dict = Body(...),
+    program: str = Query("blastp", pattern="^(blastn|blastp|blastx|tblastn)$"),
+    limit: int = Query(20, ge=1, le=100),
+    evalue: float = Query(1e-5, gt=0),
+):
+    """Run BLAST against the full AquaVir-KB nucleotide + protein databases."""
+    global _last_blast_search_time
+    with _blast_search_lock:
+        now = time.time()
+        if _last_blast_search_time > 0 and now - _last_blast_search_time < BLAST_SEARCH_COOLDOWN_SECONDS:
+            raise HTTPException(status_code=429, detail="BLAST search rate limited. Please wait a few seconds before searching again.")
+        _last_blast_search_time = now
+
+    client_ip = request.client.host if request.client else "unknown"
+    with _blast_search_ip_lock:
+        now = time.time()
+        for ip in [ip for ip, ts in _blast_search_ip_times.items() if now - ts > 120]:
+            _blast_search_ip_times.pop(ip, None)
+            _blast_search_ip_counts.pop(ip, None)
+        if _blast_search_ip_counts.get(client_ip, 0) >= MAX_CONCURRENT_BLAST_SEARCHES_PER_IP:
+            raise HTTPException(status_code=429, detail="Too many concurrent BLAST searches from your IP.")
+        _blast_search_ip_counts[client_ip] = _blast_search_ip_counts.get(client_ip, 0) + 1
+        _blast_search_ip_times[client_ip] = now
+
+    try:
+        return run_full_blast(str(payload.get("sequence", "")), program=program, limit=limit, evalue=evalue)
+    finally:
+        with _blast_search_ip_lock:
+            n = _blast_search_ip_counts.get(client_ip, 0)
+            if n > 1:
+                _blast_search_ip_counts[client_ip] = n - 1
+            else:
+                _blast_search_ip_counts.pop(client_ip, None)
+                _blast_search_ip_times.pop(client_ip, None)
+
+
 @app.get("/api/rdrp/{accession}", tags=["RDRP"])
 def get_rdrp_by_accession(accession: str):
     """Return RDRP protein records linked to a nucleotide accession."""
@@ -2481,27 +3142,33 @@ def export_rdrp_fasta_api(species: str):
 
 
 @app.get("/api/stats/sequences", tags=["Stats"])
-def get_sequence_stats():
-    """API endpoint."""
+def get_sequence_stats(phylum: str = None):
+    """API endpoint. Optionally filter record counts by host phylum."""
     with get_db() as conn:
         c = conn.cursor()
-        c.execute("""
-            SELECT s.country, COUNT(*) as count
+        sql = """
+            SELECT {country}, COUNT(*) as count
             FROM analysis_strict_target_isolates v
             LEFT JOIN infection_records ir ON v.isolate_id = ir.isolate_id
             LEFT JOIN sample_collections s ON ir.collection_id = s.collection_id
-            WHERE s.country IS NOT NULL AND s.country != ''
-            GROUP BY s.country
-            ORDER BY count DESC
-        """)
+        """.format(country=_norm_country("s.country") + " AS country")
+        params = []
+        if phylum:
+            sql += "            LEFT JOIN virus_master vm ON v.master_id = vm.master_id\n"
+        sql += "            WHERE s.country IS NOT NULL AND s.country != ''\n"
+        if phylum:
+            sql += "              AND vm.host_phylum = ?\n"
+            params.append(phylum)
+        sql += "            GROUP BY {}\n            ORDER BY count DESC\n        ".format(_norm_country("s.country"))
+        c.execute(sql, params)
         rows = [dict(r) for r in c.fetchall()]
     return rows
 
 
 @app.get("/api/stats_by_country", tags=["Stats"])
-def get_stats_by_country_legacy():
+def get_stats_by_country_legacy(phylum: str = None):
     """Compatibility route used by the map template."""
-    return get_sequence_stats()
+    return get_sequence_stats(phylum=phylum)
 
 
 @app.get("/api/collection_points", tags=["Core Data"])
@@ -2515,7 +3182,7 @@ def get_collection_points(include_inferred: bool = False):
                     v.accession, v.virus_name,
                     h.scientific_name AS host_name,
                     vm.host_phylum,
-                    sgp.country, sgp.latitude, sgp.longitude,
+                    {country} AS country, sgp.latitude, sgp.longitude,
                     sgp.map_precision_class AS coordinate_precision,
                     sgp.default_map_eligible
                 FROM submission_target_geography_precision sgp
@@ -2526,14 +3193,14 @@ def get_collection_points(include_inferred: bool = False):
                 LEFT JOIN crustacean_hosts h ON ir.host_id = h.host_id
                 WHERE sgp.latitude IS NOT NULL AND sgp.longitude IS NOT NULL
                 LIMIT 1500
-            """)
+            """.format(country=_norm_country("sgp.country")))
         else:
             c.execute("""
                 SELECT
                     v.accession, v.virus_name,
                     h.scientific_name AS host_name,
                     vm.host_phylum,
-                    sgp.country, sgp.latitude, sgp.longitude,
+                    {country} AS country, sgp.latitude, sgp.longitude,
                     s.collection_year,
                     sgp.map_precision_class AS coordinate_precision,
                     sgp.default_map_eligible
@@ -2546,7 +3213,7 @@ def get_collection_points(include_inferred: bool = False):
                 WHERE sgp.default_map_eligible = 1
                   AND sgp.latitude IS NOT NULL AND sgp.longitude IS NOT NULL
                 LIMIT 1500
-            """)
+            """.format(country=_norm_country("sgp.country")))
         rows = [dict(r) for r in c.fetchall()]
     return rows
 
@@ -2579,14 +3246,14 @@ def get_timeline(by_virus: bool = False):
             LEFT JOIN infection_records ir ON v.isolate_id = ir.isolate_id
             LEFT JOIN sample_collections s ON ir.collection_id = s.collection_id
             WHERE s.collection_year IS NOT NULL AND s.collection_year != ''
-              AND vm.host_phylum IN ('Arthropoda','Mollusca','Cnidaria','Echinodermata','Porifera')
+              AND vm.host_phylum IN ('Arthropoda','Mollusca','Cnidaria','Echinodermata','Porifera','Annelida','Platyhelminthes','Rotifera')
               AND vm.entry_type NOT IN ('EST', 'patent', 'non_target')
               AND vm.canonical_name IN (
                   SELECT canonical_name FROM (
                       SELECT vm2.canonical_name, COUNT(*) as cnt
                       FROM analysis_strict_target_isolates v2
                       JOIN virus_master vm2 ON v2.master_id = vm2.master_id
-                      WHERE vm2.host_phylum IN ('Arthropoda','Mollusca','Cnidaria','Echinodermata','Porifera')
+                      WHERE vm2.host_phylum IN ('Arthropoda','Mollusca','Cnidaria','Echinodermata','Porifera','Annelida','Platyhelminthes','Rotifera')
                         AND vm2.entry_type NOT IN ('EST', 'patent', 'non_target')
                       GROUP BY vm2.canonical_name
                       ORDER BY cnt DESC
@@ -2610,7 +3277,7 @@ def get_top_viruses(limit: int = 10, filter_noise: bool = True):
                 SELECT vm.canonical_name as virus_name, COUNT(*) as count
                 FROM analysis_strict_target_isolates v
                 JOIN virus_master vm ON v.master_id = vm.master_id
-                WHERE vm.host_phylum IN ('Arthropoda','Mollusca','Cnidaria','Echinodermata','Porifera') 
+                WHERE vm.host_phylum IN ('Arthropoda','Mollusca','Cnidaria','Echinodermata','Porifera','Annelida','Platyhelminthes','Rotifera') 
                   AND vm.entry_type NOT IN ('EST', 'patent', 'non_target', 'unknown')
                 GROUP BY vm.canonical_name
                 ORDER BY count DESC
@@ -2635,7 +3302,7 @@ def get_top_hosts(limit: int = 10):
     with get_db() as conn:
         c = conn.cursor()
         c.execute("""
-            SELECT h.scientific_name as host_name, h.common_name_cn, h.phylum AS host_phylum, COUNT(*) as count
+            SELECT h.scientific_name as host_name, h.phylum AS host_phylum, COUNT(*) as count
             FROM crustacean_hosts h
             JOIN infection_records ir ON h.host_id = ir.host_id
             JOIN analysis_strict_target_isolates v ON ir.isolate_id = v.isolate_id
@@ -2672,11 +3339,10 @@ def export_search(
         c.execute(f"""
             SELECT
                 v.accession, v.virus_name, v.taxon_family, v.taxon_genus,
-                v.genome_length, h.scientific_name as host_name, h.common_name_cn,
-                s.country, s.collection_year,
+                v.genome_length, h.scientific_name as host_name,
+                {_norm_country('s.country')} AS country, s.collection_year,
                 l.title as ref_title, l.pmid, l.doi
-            FROM viral_isolates v
-            LEFT JOIN virus_master vm ON v.master_id = vm.master_id
+            FROM analysis_strict_target_isolates v
             LEFT JOIN infection_records ir ON v.isolate_id = ir.isolate_id
             LEFT JOIN crustacean_hosts h ON ir.host_id = h.host_id
             LEFT JOIN sample_collections s ON ir.collection_id = s.collection_id
@@ -2690,7 +3356,7 @@ def export_search(
     output = io.StringIO()
     writer = csv.writer(output)
     writer.writerow(["Accession", "VirusName", "Family", "Genus", "GenomeLength",
-                     "Host", "HostCN", "Country", "Year", "ReferenceTitle",
+                     "Host", "Country", "Year", "ReferenceTitle",
                      "PMID", "DOI"])
     for r in rows:
         writer.writerow(r)
@@ -2853,19 +3519,137 @@ def get_host_virus_network():
             SELECT
                 vm.canonical_name as virus_name,
                 h.scientific_name as host_name,
-                h.common_name_cn as host_cn,
                 COUNT(*) as count
             FROM analysis_strict_target_isolates v
             JOIN virus_master vm ON v.master_id = vm.master_id
             JOIN infection_records ir ON v.isolate_id = ir.isolate_id
             JOIN crustacean_hosts h ON ir.host_id = h.host_id
-            WHERE vm.host_phylum IN ('Arthropoda','Mollusca','Cnidaria','Echinodermata','Porifera')
+            WHERE vm.host_phylum IN ('Arthropoda','Mollusca','Cnidaria','Echinodermata','Porifera','Annelida','Platyhelminthes','Rotifera')
               AND vm.entry_type NOT IN ('EST', 'patent', 'non_target')
             GROUP BY vm.canonical_name, h.scientific_name
             ORDER BY count DESC
         """)
         rows = [dict(r) for r in c.fetchall()]
     return rows
+
+
+@app.get("/api/evidence_graph/{master_id}", tags=["Core Data"])
+def get_evidence_graph(master_id: int):
+    """Return an aggregated evidence graph (<=60 nodes) for a virus master record."""
+    with get_db() as conn:
+        c = conn.cursor()
+
+        c.execute("""
+            SELECT master_id, canonical_name, virus_family,
+                   (SELECT MIN(accession) FROM analysis_strict_target_isolates a
+                    WHERE a.master_id = vm.master_id) AS accession
+            FROM virus_master vm WHERE master_id = ?
+        """, (master_id,))
+        vrow = c.fetchone()
+        if not vrow:
+            raise HTTPException(status_code=404, detail="Virus not found")
+        virus = dict(vrow)
+        virus_name = virus["canonical_name"] or f"Virus {master_id}"
+
+        nodes = [{"id": "virus", "name": virus_name, "category": 0,
+                  "symbolSize": 60, "accession": virus.get("accession")}]
+        links = []
+
+        # Hosts (top 10 by evidence count)
+        c.execute("""
+            SELECT h.scientific_name AS name, COUNT(*) AS cnt
+            FROM evidence_records er
+            JOIN crustacean_hosts h ON er.host_id = h.host_id
+            WHERE er.virus_master_id = ? AND h.scientific_name IS NOT NULL
+            GROUP BY h.scientific_name ORDER BY cnt DESC LIMIT 10
+        """, (master_id,))
+        for i, r in enumerate(c.fetchall()):
+            hid = f"host_{i}"
+            nodes.append({"id": hid, "name": r["name"], "category": 1,
+                          "symbolSize": 28, "value": r["cnt"]})
+            links.append({"source": "virus", "target": hid, "value": r["cnt"]})
+
+        # WOAH diseases
+        c.execute("""
+            SELECT disease_name AS name, woah_category
+            FROM virus_disease_mapping
+            WHERE virus_master_id = ? AND agent_type = 'virus'
+        """, (master_id,))
+        for i, r in enumerate(c.fetchall()):
+            did = f"disease_{i}"
+            nodes.append({"id": did, "name": r["name"], "category": 2, "symbolSize": 34})
+            links.append({"source": "virus", "target": did})
+
+        # Curated diagnostics
+        c.execute("""
+            SELECT method_name AS name
+            FROM diagnostic_methods
+            WHERE virus_master_id = ? AND data_quality IN ('curated', 'candidate_unreferenced')
+              AND method_name IS NOT NULL AND method_name != ''
+            LIMIT 10
+        """, (master_id,))
+        for i, r in enumerate(c.fetchall()):
+            did = f"diag_{i}"
+            nodes.append({"id": did, "name": r["name"], "category": 3, "symbolSize": 22})
+            links.append({"source": "virus", "target": did})
+
+        # Annotated proteins (top 15)
+        c.execute("""
+            SELECT vp.protein_name AS name, vp.gene_symbol
+            FROM viral_proteins vp
+            JOIN viral_isolates vi ON vp.isolate_id = vi.isolate_id
+            WHERE vi.master_id = ? AND vp.functional_annotation_status != 'unannotated'
+              AND vp.protein_name IS NOT NULL
+            GROUP BY vp.protein_name
+            LIMIT 15
+        """, (master_id,))
+        for i, r in enumerate(c.fetchall()):
+            pid = f"prot_{i}"
+            nodes.append({"id": pid, "name": r["name"], "category": 4, "symbolSize": 20})
+            links.append({"source": "virus", "target": pid})
+
+        # References (top 12 by evidence count)
+        c.execute("""
+            SELECT COALESCE(rl.title, 'Ref ' || er.reference_id) AS name, COUNT(*) AS cnt
+            FROM evidence_records er
+            JOIN ref_literatures rl ON er.reference_id = rl.reference_id
+            WHERE er.virus_master_id = ? AND er.reference_id IS NOT NULL
+            GROUP BY er.reference_id ORDER BY cnt DESC LIMIT 12
+        """, (master_id,))
+        for i, r in enumerate(c.fetchall()):
+            rid = f"ref_{i}"
+            nodes.append({"id": rid, "name": (r["name"] or "")[:60], "category": 5,
+                          "symbolSize": 18, "value": r["cnt"]})
+            links.append({"source": "virus", "target": rid, "value": r["cnt"]})
+
+        # Evidence types (aggregated)
+        c.execute("""
+            SELECT evidence_type AS name, COUNT(*) AS cnt,
+                   SUM(CASE WHEN evidence_strength = 'high' THEN 1 ELSE 0 END) AS high_cnt
+            FROM evidence_records
+            WHERE virus_master_id = ? AND evidence_type IS NOT NULL
+            GROUP BY evidence_type ORDER BY cnt DESC LIMIT 10
+        """, (master_id,))
+        for i, r in enumerate(c.fetchall()):
+            eid = f"evt_{i}"
+            nodes.append({"id": eid, "name": r["name"], "category": 6,
+                          "symbolSize": 18, "value": r["cnt"], "high_cnt": r["high_cnt"] or 0})
+            links.append({"source": "virus", "target": eid, "value": r["cnt"]})
+
+    return {
+        "virus": virus,
+        "nodes": nodes,
+        "links": links,
+        "categories": [
+            {"name": "Virus"},
+            {"name": "Host"},
+            {"name": "WOAH disease"},
+            {"name": "Diagnostic"},
+            {"name": "Protein"},
+            {"name": "Reference"},
+            {"name": "Evidence type"},
+        ],
+    }
 
 
 @app.get("/api/download/{filename}", tags=["Downloads"])
@@ -2933,10 +3717,10 @@ def get_stats_by_province(country: str = "China"):
             FROM analysis_strict_target_isolates v
             LEFT JOIN infection_records ir ON v.isolate_id = ir.isolate_id
             LEFT JOIN sample_collections s ON ir.collection_id = s.collection_id
-            WHERE s.country = ? AND s.province IS NOT NULL AND s.province != ''
+            WHERE {country} = ? AND s.province IS NOT NULL AND s.province != ''
             GROUP BY s.province
             ORDER BY count DESC
-        """, (country,))
+        """.format(country=_norm_country("s.country")), (country,))
         rows = c.fetchall()
     results = {}
     for row in rows:
@@ -2968,15 +3752,6 @@ def get_families():
     return {"families": families}
 
 
-@app.get("/family/{family_name}", response_class=HTMLResponse, tags=["Pages"])
-def family_page(request: Request, family_name: str):
-    """Render family summary page."""
-    return templates.TemplateResponse(request, "family.html", {
-        "family_name": family_name,
-        "active_page": "families",
-    })
-
-
 @app.get("/api/family/{family_name}", tags=["Core Data"])
 def get_family_detail(family_name: str):
     """Return summary statistics for a family."""
@@ -2988,7 +3763,7 @@ def get_family_detail(family_name: str):
             SELECT COUNT(*) as isolate_count,
                    COUNT(DISTINCT v.master_id) as species_count,
                    COUNT(DISTINCT h.host_id) as host_count,
-                   COUNT(DISTINCT s.country) as country_count,
+                   COUNT(DISTINCT {country}) as country_count,
                    MIN(s.collection_year) as min_year,
                    MAX(s.collection_year) as max_year,
                    ROUND(AVG(v.genome_length), 0) as avg_genome_length,
@@ -2998,7 +3773,7 @@ def get_family_detail(family_name: str):
             LEFT JOIN crustacean_hosts h ON ir.host_id = h.host_id
             LEFT JOIN sample_collections s ON ir.collection_id = s.collection_id
             WHERE v.taxon_family = ?
-        """, (family_name,))
+        """.format(country=_norm_country("s.country")), (family_name,))
         stats = dict(c.fetchone())
 
         # Top viruses
@@ -3067,14 +3842,14 @@ def get_family_detail(family_name: str):
 
         # Countries (top 15)
         c.execute("""
-            SELECT s.country, COUNT(*) as count
+            SELECT {country} AS country, COUNT(*) as count
             FROM analysis_strict_target_isolates v
             LEFT JOIN infection_records ir ON v.isolate_id = ir.isolate_id
             LEFT JOIN sample_collections s ON ir.collection_id = s.collection_id
             WHERE v.taxon_family = ? AND s.country IS NOT NULL AND s.country != ''
-            GROUP BY s.country
+            GROUP BY {country}
             ORDER BY count DESC LIMIT 15
-        """, (family_name,))
+        """.format(country=_norm_country("s.country")), (family_name,))
         countries = [dict(r) for r in c.fetchall()]
 
     return {
@@ -3200,26 +3975,26 @@ def get_api_status():
     data_update_date = ""
     database_size_mb = 0
 
-    # Try to get the most recent timestamp from curation_logs
+    # Last data update = MAX of the latest data-modifying timestamps
+    # (curation actions, evidence edits, provenance backfills).
+    # schema_version is intentionally excluded: a pure schema migration (adding
+    # empty columns) is not a data update and must not bump db_update_date.
+    # The legacy sync_runtime table no longer exists; do not query it.
     with get_db() as conn:
         c = conn.cursor()
         try:
-            c.execute("SELECT MAX(created_at) FROM curation_logs")
+            c.execute("""
+                SELECT MAX(ts) FROM (
+                    SELECT MAX(created_at) AS ts FROM curation_logs
+                    UNION ALL SELECT MAX(updated_at) FROM evidence_records
+                    UNION ALL SELECT MAX(created_at) FROM data_provenance
+                )
+            """)
             row = c.fetchone()
             if row and row[0]:
                 db_update_date = row[0]
         except sqlite3.Error:
             pass
-
-        # Fallback: check sync_runtime
-        if not db_update_date:
-            try:
-                c.execute("SELECT MAX(updated_at) FROM sync_runtime")
-                row = c.fetchone()
-                if row and row[0]:
-                    db_update_date = row[0]
-            except sqlite3.Error:
-                pass
 
         data_update_date = db_update_date
 
@@ -3235,22 +4010,122 @@ def get_api_status():
     }
 
 
+def get_homepage_stats():
+    """Live headline statistics for the homepage (single source of truth = DB)."""
+    # Nine aquatic-invertebrate host phyla represented in crustacean_hosts.
+    # Viruses are assigned to 8 of these; Nematoda hosts exist but their
+    # associated viruses are classified as agricultural non-target.
+    target_phyla = ("Arthropoda", "Mollusca", "Porifera", "Cnidaria", "Nematoda",
+                    "Echinodermata", "Annelida", "Platyhelminthes", "Rotifera")
+    stats = dict(get_stats())  # shallow copy: homepage augmentation must not leak into the shared ttl-cache dict
+    with get_db() as conn:
+        c = conn.cursor()
+        stats["virus_species_target"] = c.execute(
+            "SELECT COUNT(DISTINCT master_id) FROM analysis_strict_target_isolates"
+        ).fetchone()[0]
+        stats["virus_species_total"] = c.execute(
+            "SELECT COUNT(*) FROM virus_master WHERE " + _NON_VIRUS_SQL
+            + " AND " + _PLACEHOLDER_NAME_SQL
+        ).fetchone()[0]
+        stats["target_isolates"] = c.execute(
+            "SELECT COUNT(*) FROM analysis_strict_target_isolates"
+        ).fetchone()[0]
+        stats["evidence_records"] = c.execute(
+            "SELECT COUNT(*) FROM evidence_records"
+        ).fetchone()[0]
+        stats["references"] = c.execute(
+            "SELECT COUNT(*) FROM ref_literatures"
+        ).fetchone()[0]
+        # Taiwan folded into China: same normalization as the curated layer, so
+        # this agrees with v_nar_database_summary and /api/stats country_count.
+        stats["countries"] = c.execute(
+            "SELECT COUNT(DISTINCT {}) FROM sample_collections "
+            "WHERE country IS NOT NULL AND country != ''".format(
+                _norm_country("country"))
+        ).fetchone()[0]
+        ph_placeholders = ",".join("?" for _ in target_phyla)
+        stats["host_phyla"] = c.execute(
+            f"SELECT COUNT(DISTINCT phylum) FROM crustacean_hosts "
+            f"WHERE phylum IN ({ph_placeholders})",
+            target_phyla,
+        ).fetchone()[0]
+        rows = c.execute(
+            "SELECT host_phylum, COUNT(*) AS n FROM virus_master "
+            "WHERE host_phylum IS NOT NULL AND host_phylum != '' "
+            "AND " + _NON_VIRUS_SQL + " "
+            "AND " + _PLACEHOLDER_NAME_SQL + " "
+            "GROUP BY host_phylum"
+        ).fetchall()
+        by_phylum = {r["host_phylum"]: r["n"] for r in rows if r["host_phylum"] in target_phyla}
+        stats["viruses_by_phylum"] = [
+            {"phylum": p, "count": by_phylum[p]}
+            for p in sorted(by_phylum, key=lambda k: by_phylum[k], reverse=True)
+        ]
+        for key, table in (
+            ("virus_disease_mapping", "virus_disease_mapping"),
+            ("vaccine_targets", "vaccine_antigen_targets"),
+            ("resistance_genes", "disease_resistance_genes"),
+        ):
+            try:
+                stats[key] = c.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+            except sqlite3.Error:
+                stats[key] = 0
+
+    evidence_by_type = stats.get("evidence_by_type") or {}
+    evidence_total = sum(evidence_by_type.values())
+    stats["reviewed_evidence"] = evidence_total
+    stats["evidence_by_type_rows"] = [
+        {
+            "key": key.replace("_", " ").title(),
+            "count": count,
+            "pct": round(count / evidence_total * 100, 1) if evidence_total else 0,
+        }
+        for key, count in sorted(evidence_by_type.items(), key=lambda item: item[1], reverse=True)
+    ]
+
+    curation_labels = {
+        "manual_checked": "Manual checked",
+        "auto_imported": "Auto imported",
+        "needs_review": "Needs review",
+        "rejected": "Rejected",
+    }
+    evidence_by_curation = stats.get("evidence_by_curation") or {}
+    stats["evidence_by_curation_rows"] = [
+        {
+            "key": key,
+            "label": curation_labels.get(key, key.replace("_", " ").title()),
+            "count": count,
+        }
+        for key, count in sorted(evidence_by_curation.items(), key=lambda item: item[1], reverse=True)
+    ]
+    return stats
+
+
 @app.get("/", response_class=HTMLResponse, tags=["Pages"])
 def serve_homepage(request: Request):
     """Render the database homepage."""
-    return templates.TemplateResponse(request, "index.html", {"active_page": "home"})
+    return templates.TemplateResponse(request, "index.html", {
+        "active_page": "home",
+        **get_homepage_stats(),
+    })
 
 
 @app.get("/viruses", response_class=HTMLResponse, tags=["Pages"])
 def serve_viruses_browse(request: Request, page: int = 1, sort_by: str = "canonical_name",
-                         sort_order: str = "asc", family: str = None):
+                         sort_order: str = "asc", family: str = None, q: Optional[str] = None):
     """Render virus browse page with filters."""
     valid_sort_cols = {"canonical_name", "virus_family", "genome_type", "host_phylum", "isolate_count", "host_count"}
     if sort_by not in valid_sort_cols:
         sort_by = "canonical_name"
     sort_order = "ASC" if sort_order == "asc" else "DESC"
-    per_page = 50
+    try:
+        per_page = int(request.query_params.get("per_page", 50))
+    except (TypeError, ValueError):
+        per_page = 50
+    if per_page not in (20, 50, 100):
+        per_page = 50
     offset = (page - 1) * per_page
+    query = (q or "").strip()
 
     with get_db() as conn:
         c = conn.cursor()
@@ -3261,10 +4136,27 @@ def serve_viruses_browse(request: Request, page: int = 1, sort_by: str = "canoni
         selected_genome_types = qp.get("genome_type", [])
         selected_contexts = qp.get("discovery_context", [])
         selected_family = family or request.query_params.get("family", "")
+        has_filters = bool(query or selected_phyla or selected_genome_types or selected_contexts or selected_family)
 
         # Build WHERE clause
-        where_clauses = ["vm.canonical_name IS NOT NULL"]
+        # Exclude (a) rows that are not viruses (host-genome rows named after
+        # the host, duplicate import placeholders, aggregation buckets, and
+        # merged duplicates)
+        # and (b) rows that are virus sequence records under a placeholder
+        # name (assembled contigs, SOTU_ OTUs, dataset rows). Both fragments
+        # are qualified with the vm alias used below.
+        where_clauses = ["vm.canonical_name IS NOT NULL",
+                         _NON_VIRUS_SQL.replace("entry_type", "vm.entry_type"),
+                         _PLACEHOLDER_NAME_SQL.replace("canonical_name", "vm.canonical_name")]
         params_ = []
+        if query:
+            where_clauses.append("""
+                (vm.canonical_name LIKE ? OR vm.abbreviations LIKE ?
+                 OR vm.virus_family LIKE ? OR vm.virus_genus LIKE ? OR vm.host_phylum LIKE ?
+                 OR vm.master_id IN (SELECT master_id FROM virus_aliases WHERE alias LIKE ?))
+            """)
+            like = f"%{query}%"
+            params_.extend([like] * 6)
         if selected_family:
             where_clauses.append("vm.virus_family = ?")
             params_.append(selected_family)
@@ -3273,9 +4165,40 @@ def serve_viruses_browse(request: Request, page: int = 1, sort_by: str = "canoni
             where_clauses.append(f"vm.host_phylum IN ({placeholders})")
             params_.extend(selected_phyla)
         if selected_genome_types:
-            placeholders = ",".join("?" * len(selected_genome_types))
-            where_clauses.append(f"vm.genome_type IN ({placeholders})")
-            params_.extend(selected_genome_types)
+            # Public groups (see _GENOME_GROUP_EXPR) map to one or more raw
+            # values. Old links carrying a raw value still work as an exact
+            # match.
+            _group_map = {
+                "dsDNA": ("dsDNA",),
+                "dsRNA": ("dsRNA",),
+                "ssRNA(+)": ("ssRNA(+)",),
+                "ssRNA(-)": ("ssRNA(-)",),
+                "ssDNA": ("ssDNA(ambisense)", "ssDNA(unspecified)"),
+            }
+            exact_values = []
+            include_other = False
+            for g in selected_genome_types:
+                if g in _group_map:
+                    exact_values.extend(_group_map[g])
+                elif g == "其他":
+                    include_other = True
+                else:
+                    exact_values.append(g)
+            exact_values = list(dict.fromkeys(exact_values))
+            genome_clauses = []
+            if exact_values:
+                placeholders = ",".join("?" * len(exact_values))
+                genome_clauses.append(f"vm.genome_type IN ({placeholders})")
+                params_.extend(exact_values)
+            if include_other:
+                named = ",".join("?" * len(_GENOME_NAMED_VALUES))
+                genome_clauses.append(
+                    f"(vm.genome_type IS NULL OR vm.genome_type = '' "
+                    f"OR vm.genome_type NOT IN ({named}))"
+                )
+                params_.extend(_GENOME_NAMED_VALUES)
+            if genome_clauses:
+                where_clauses.append("(" + " OR ".join(genome_clauses) + ")")
         if selected_contexts:
             placeholders = ",".join("?" * len(selected_contexts))
             where_clauses.append(f"vm.discovery_context IN ({placeholders})")
@@ -3286,32 +4209,44 @@ def serve_viruses_browse(request: Request, page: int = 1, sort_by: str = "canoni
         c.execute(f"SELECT COUNT(*) FROM virus_master vm WHERE {where_sql}", params_)
         total_count = c.fetchone()[0]
 
-        # Fetch viruses
-        c.execute(f"""
-            SELECT vm.canonical_name, vm.chinese_name, vm.virus_family, vm.genome_type,
-                   vm.host_phylum, vm.discovery_context,
-                   COUNT(DISTINCT v.isolate_id) as isolate_count,
-                   COUNT(DISTINCT ir.host_id) as host_count,
-                   COUNT(DISTINCT er.evidence_id) as evidence_count
-            FROM virus_master vm
-            LEFT JOIN viral_isolates v ON vm.master_id = v.master_id
-            LEFT JOIN infection_records ir ON v.isolate_id = ir.isolate_id
-            LEFT JOIN evidence_records er ON vm.master_id = er.virus_master_id
-            WHERE {where_sql}
-            GROUP BY vm.master_id
-            ORDER BY {sort_by} {sort_order}
-            LIMIT ? OFFSET ?
-        """, params_ + [per_page, offset])
-        viruses = [dict(r) for r in c.fetchall()]
+        if has_filters:
+            # Fetch viruses
+            c.execute(f"""
+                SELECT vm.canonical_name, vm.chinese_name, vm.virus_family, vm.genome_type,
+                       vm.host_phylum, vm.discovery_context,
+                       COUNT(DISTINCT v.isolate_id) as isolate_count,
+                       COUNT(DISTINCT ir.host_id) as host_count,
+                       COUNT(DISTINCT er.evidence_id) as evidence_count
+                FROM virus_master vm
+                LEFT JOIN viral_isolates v ON vm.master_id = v.master_id
+                LEFT JOIN infection_records ir ON v.isolate_id = ir.isolate_id
+                LEFT JOIN evidence_records er ON vm.master_id = er.virus_master_id
+                WHERE {where_sql}
+                GROUP BY vm.master_id
+                ORDER BY {sort_by} {sort_order}
+                LIMIT ? OFFSET ?
+            """, params_ + [per_page, offset])
+            viruses = [dict(r) for r in c.fetchall()]
+        else:
+            viruses = []
 
         # Filter options
-        c.execute("SELECT host_phylum as name, COUNT(*) as count FROM virus_master WHERE host_phylum IS NOT NULL GROUP BY host_phylum ORDER BY count DESC")
+        # Same two exclusions as the list above, so every filter-panel count
+        # matches what clicking that filter actually returns (and the phylum
+        # counts still sum to the listed total).
+        # The Host Phylum facet is additionally restricted to real host phyla:
+        # it drops the internal scope label 'non_target' (and its
+        # 'non_target (...)' / 'non_aquatic' variants) plus the non-phylum
+        # values 'multiple' and 'unknown'. Those rows still exist and are still
+        # reachable by search / family / genome filters -- only the phylum
+        # panel stops presenting an internal tag as if it were a phylum.
+        c.execute("SELECT host_phylum as name, COUNT(*) as count FROM virus_master WHERE host_phylum IS NOT NULL AND host_phylum NOT LIKE 'non%' AND host_phylum NOT IN ('multiple','unknown') AND " + _NON_VIRUS_SQL + " AND " + _PLACEHOLDER_NAME_SQL + " GROUP BY host_phylum ORDER BY count DESC")
         phyla = [dict(r) for r in c.fetchall()]
-        c.execute("SELECT genome_type as name, COUNT(*) as count FROM virus_master WHERE genome_type IS NOT NULL AND genome_type != '' GROUP BY genome_type ORDER BY count DESC")
+        c.execute("SELECT " + _GENOME_GROUP_EXPR + " as name, COUNT(*) as count FROM virus_master WHERE " + _NON_VIRUS_SQL + " AND " + _PLACEHOLDER_NAME_SQL + " GROUP BY name ORDER BY " + _GENOME_GROUP_ORDER_SQL)
         genome_types = [dict(r) for r in c.fetchall()]
-        c.execute("SELECT discovery_context as name, COUNT(*) as count FROM virus_master WHERE discovery_context IS NOT NULL GROUP BY discovery_context ORDER BY count DESC")
+        c.execute("SELECT discovery_context as name, COUNT(*) as count FROM virus_master WHERE discovery_context IS NOT NULL AND " + _NON_VIRUS_SQL + " AND " + _PLACEHOLDER_NAME_SQL + " GROUP BY discovery_context ORDER BY count DESC")
         discovery_contexts = [dict(r) for r in c.fetchall()]
-        c.execute("SELECT virus_family as name, COUNT(*) as count FROM virus_master WHERE virus_family IS NOT NULL GROUP BY virus_family ORDER BY count DESC")
+        c.execute("SELECT virus_family as name, COUNT(*) as count FROM virus_master WHERE virus_family IS NOT NULL AND " + _NON_VIRUS_SQL + " AND " + _PLACEHOLDER_NAME_SQL + " GROUP BY virus_family ORDER BY count DESC")
         families = [dict(r) for r in c.fetchall()]
 
         total_pages = max(1, (total_count + per_page - 1) // per_page)
@@ -3328,6 +4263,8 @@ def serve_viruses_browse(request: Request, page: int = 1, sort_by: str = "canoni
         "active_page": "viruses",
         "viruses": viruses,
         "total_count": total_count,
+        "query": query,
+        "has_filters": has_filters,
         "phyla": phyla,
         "genome_types": genome_types,
         "discovery_contexts": discovery_contexts,
@@ -3337,6 +4274,7 @@ def serve_viruses_browse(request: Request, page: int = 1, sort_by: str = "canoni
         "selected_contexts": selected_contexts,
         "selected_family": selected_family,
         "page": page,
+        "per_page": per_page,
         "total_pages": total_pages,
         "page_range": page_range,
         "sort_by": request.query_params.get("sort_by", "canonical_name"),
@@ -3346,18 +4284,27 @@ def serve_viruses_browse(request: Request, page: int = 1, sort_by: str = "canoni
 
 
 @app.get("/hosts", response_class=HTMLResponse, tags=["Pages"])
-def serve_hosts_browse(request: Request):
+def serve_hosts_browse(request: Request, q: Optional[str] = None):
     """Render host browse page with filters."""
     import urllib.parse
     qp = urllib.parse.parse_qs(str(request.query_params))
     selected_phyla = qp.get("phylum", [])
     selected_groups = qp.get("host_group", [])
     selected_aquaculture = qp.get("aquaculture", [])
+    query = (q or "").strip()
+    has_filters = bool(query or selected_phyla or selected_groups or selected_aquaculture)
 
     with get_db() as conn:
         c = conn.cursor()
         where_clauses = ["h.host_scope_status LIKE 'target%'"]
         params_ = []
+        if query:
+            where_clauses.append("""
+                (h.scientific_name LIKE ? OR h.phylum LIKE ?
+                 OR h.host_group LIKE ? OR h.habitat LIKE ?)
+            """)
+            like = f"%{query}%"
+            params_.extend([like] * 4)
         if selected_phyla:
             placeholders = ",".join("?" * len(selected_phyla))
             where_clauses.append(f"h.phylum IN ({placeholders})")
@@ -3372,28 +4319,43 @@ def serve_hosts_browse(request: Request):
             params_.extend(selected_aquaculture)
         where_sql = " AND ".join(where_clauses)
 
-        c.execute(f"""
-            SELECT h.host_id, h.scientific_name, h.common_name_cn, h.phylum, h.class,
-                   h.host_group, h.habitat, h.aquaculture_status,
-                   COUNT(DISTINCT ir.isolate_id) as virus_count
-            FROM crustacean_hosts h
-            LEFT JOIN infection_records ir ON h.host_id = ir.host_id
-            WHERE {where_sql}
-            GROUP BY h.host_id
-            ORDER BY h.phylum, h.host_group, h.scientific_name
-        """, params_)
-        hosts = [dict(r) for r in c.fetchall()]
+        # Only hosts with at least one surviving association are listed.  Hosts
+        # that carry no virus record are curated taxonomy awaiting evidence,
+        # not an association, so the browse page omits them (HAVING below and
+        # the _HOST_HAS_ASSOC guard on the facet counts).  This is a
+        # page-level rule only: the headline host counts in /api/stats are
+        # unaffected.
+        _HOST_HAS_ASSOC = ("EXISTS (SELECT 1 FROM infection_records ir "
+                           "WHERE ir.host_id = h.host_id AND ir.isolate_id IS NOT NULL)")
 
-        c.execute("SELECT phylum as name, COUNT(*) as count FROM crustacean_hosts WHERE host_scope_status LIKE 'target%' AND phylum IS NOT NULL GROUP BY phylum ORDER BY count DESC")
+        if has_filters:
+            c.execute(f"""
+                SELECT h.host_id, h.scientific_name, h.common_name_cn, h.phylum, h.class,
+                       h.host_group, h.habitat, h.aquaculture_status,
+                       COUNT(DISTINCT ir.isolate_id) as virus_count
+                FROM crustacean_hosts h
+                LEFT JOIN infection_records ir ON h.host_id = ir.host_id
+                WHERE {where_sql}
+                GROUP BY h.host_id
+                HAVING COUNT(DISTINCT ir.isolate_id) > 0
+                ORDER BY h.phylum, h.host_group, h.scientific_name
+            """, params_)
+            hosts = [dict(r) for r in c.fetchall()]
+        else:
+            hosts = []
+
+        c.execute(f"SELECT phylum as name, COUNT(*) as count FROM crustacean_hosts h WHERE host_scope_status LIKE 'target%' AND phylum IS NOT NULL AND {_HOST_HAS_ASSOC} GROUP BY phylum ORDER BY count DESC")
         phyla = [dict(r) for r in c.fetchall()]
-        c.execute("SELECT host_group as name, COUNT(*) as count FROM crustacean_hosts WHERE host_scope_status LIKE 'target%' AND host_group IS NOT NULL GROUP BY host_group ORDER BY count DESC")
+        c.execute(f"SELECT host_group as name, COUNT(*) as count FROM crustacean_hosts h WHERE host_scope_status LIKE 'target%' AND host_group IS NOT NULL AND {_HOST_HAS_ASSOC} GROUP BY host_group ORDER BY count DESC")
         host_groups = [dict(r) for r in c.fetchall()]
-        c.execute("SELECT aquaculture_status as name, COUNT(*) as count FROM crustacean_hosts WHERE host_scope_status LIKE 'target%' AND aquaculture_status IS NOT NULL GROUP BY aquaculture_status ORDER BY count DESC")
+        c.execute(f"SELECT aquaculture_status as name, COUNT(*) as count FROM crustacean_hosts h WHERE host_scope_status LIKE 'target%' AND aquaculture_status IS NOT NULL AND {_HOST_HAS_ASSOC} GROUP BY aquaculture_status ORDER BY count DESC")
         aquaculture_statuses = [dict(r) for r in c.fetchall()]
 
     return templates.TemplateResponse(request, "hosts.html", {
         "active_page": "hosts",
         "hosts": hosts,
+        "query": query,
+        "has_filters": has_filters,
         "phyla": phyla,
         "host_groups": host_groups,
         "aquaculture_statuses": aquaculture_statuses,
@@ -3424,61 +4386,66 @@ def serve_search(
     """Render the searchable isolate table."""
     with get_db() as conn:
         c = conn.cursor()
+        has_search = bool(q or host or family or country or completeness or year_from or year_to or phylum)
 
         where_sql, params = build_search_where(
             q=q, host=host, family=family, country=country,
             completeness=completeness, year_from=year_from, year_to=year_to,
             phylum=phylum, conn=conn,
         )
-    
-        # Count
-        count_sql = f"""
-            SELECT COUNT(*) FROM viral_isolates v
-            LEFT JOIN virus_master vm ON v.master_id = vm.master_id
-            LEFT JOIN infection_records ir ON v.isolate_id = ir.isolate_id
-            LEFT JOIN crustacean_hosts h ON ir.host_id = h.host_id
-            LEFT JOIN sample_collections s ON ir.collection_id = s.collection_id
-            WHERE {where_sql}
-        """
-        c.execute(count_sql, params)
-        total = c.fetchone()[0]
-    
-        # Data
-        offset = (page - 1) * page_size
-        data_sql = f"""
-            SELECT
-                v.isolate_id, v.accession, v.virus_name,
-                vm.canonical_name, vm.chinese_name as canonical_name_cn, vm.abbreviations, vm.entry_type,
-                vm.discovery_context, vm.host_phylum as virus_host_phylum,
-                v.taxon_family, v.taxon_genus, v.genome_length,
-                h.host_id, h.scientific_name AS host_name, h.common_name_cn AS host_cn,
-                h.phylum AS host_phylum, h.class AS host_class, h.host_scope_status,
-                ir.host_association_method,
-                s.country, s.collection_year, s.collection_date, s.note AS isolation_source,
-                l.title AS ref_title, l.pmid, l.doi,
-                icp.dataset_tier
-            FROM viral_isolates v
-            LEFT JOIN virus_master vm ON v.master_id = vm.master_id
-            LEFT JOIN infection_records ir ON v.isolate_id = ir.isolate_id
-            LEFT JOIN crustacean_hosts h ON ir.host_id = h.host_id
-            LEFT JOIN sample_collections s ON ir.collection_id = s.collection_id
-            LEFT JOIN ref_literatures l ON v.reference_id = l.reference_id
-            LEFT JOIN isolate_curated_profiles icp ON v.isolate_id = icp.isolate_id
-            WHERE {where_sql}
-            ORDER BY v.isolate_id
-            LIMIT ? OFFSET ?
-        """
-        c.execute(data_sql, params + [page_size, offset])
-        viruses = [dict(r) for r in c.fetchall()]
-    
+        if has_search:
+            # Count
+            count_sql = f"""
+                SELECT COUNT(*) FROM viral_isolates v
+                LEFT JOIN virus_master vm ON v.master_id = vm.master_id
+                LEFT JOIN infection_records ir ON v.isolate_id = ir.isolate_id
+                LEFT JOIN crustacean_hosts h ON ir.host_id = h.host_id
+                LEFT JOIN sample_collections s ON ir.collection_id = s.collection_id
+                WHERE {where_sql}
+            """
+            c.execute(count_sql, params)
+            total = c.fetchone()[0]
+
+            # Data
+            offset = (page - 1) * page_size
+            data_sql = f"""
+                SELECT
+                    v.isolate_id, v.accession, v.virus_name,
+                    vm.canonical_name, vm.chinese_name as canonical_name_cn, vm.abbreviations, vm.entry_type,
+                    vm.discovery_context, vm.host_phylum as virus_host_phylum,
+                    v.taxon_family, v.taxon_genus, v.genome_length,
+                    h.host_id, h.scientific_name AS host_name, h.common_name_cn AS host_cn,
+                    h.phylum AS host_phylum, h.class AS host_class, h.host_scope_status,
+                    ir.host_association_method,
+                    {_norm_country('s.country')} AS country,
+                    s.collection_year, s.collection_date, s.note AS isolation_source,
+                    l.title AS ref_title, l.pmid, l.doi,
+                    icp.dataset_tier
+                FROM analysis_strict_target_isolates v
+                LEFT JOIN virus_master vm ON v.master_id = vm.master_id
+                LEFT JOIN infection_records ir ON v.isolate_id = ir.isolate_id
+                LEFT JOIN crustacean_hosts h ON ir.host_id = h.host_id
+                LEFT JOIN sample_collections s ON ir.collection_id = s.collection_id
+                LEFT JOIN ref_literatures l ON v.reference_id = l.reference_id
+                LEFT JOIN isolate_curated_profiles icp ON v.isolate_id = icp.isolate_id
+                WHERE {where_sql}
+                ORDER BY v.isolate_id
+                LIMIT ? OFFSET ?
+            """
+            c.execute(data_sql, params + [page_size, offset])
+            viruses = [dict(r) for r in c.fetchall()]
+        else:
+            total = 0
+            viruses = []
+
         # Countries for filter dropdown
         c.execute("""
-            SELECT DISTINCT s.country FROM viral_isolates v
+            SELECT DISTINCT {country} FROM viral_isolates v
             LEFT JOIN infection_records ir ON v.isolate_id = ir.isolate_id
             LEFT JOIN sample_collections s ON ir.collection_id = s.collection_id
             WHERE s.country IS NOT NULL AND s.country != ''
-            ORDER BY s.country
-        """)
+            ORDER BY 1
+        """.format(country=_norm_country("s.country")))
         countries = [r[0] for r in c.fetchall()]
 
         # Families for filter dropdown (dynamic, not hardcoded)
@@ -3507,6 +4474,7 @@ def serve_search(
         "total": total,
         "total_pages": total_pages,
         "viruses": viruses,
+        "has_search": has_search,
         "countries": countries,
         "families": families,
     }
@@ -3529,7 +4497,8 @@ def serve_virus_detail(request: Request, accession: str):
                 h.scientific_name AS host_name, h.common_name_cn AS host_cn,
                 h.phylum AS host_phylum, h.class AS host_class, h.host_scope_status,
                 ir.host_association_method,
-                s.country, s.province, s.city, s.latitude, s.longitude,
+                {country} AS country,
+                s.province, s.city, s.latitude, s.longitude,
                 s.collection_year, s.collection_date, s.note AS isolation_source,
                 l.title AS ref_title, l.authors AS ref_authors, l.journal,
                 l.year AS ref_year, l.doi, l.pmid, l.abstract,
@@ -3542,7 +4511,7 @@ def serve_virus_detail(request: Request, accession: str):
             LEFT JOIN ref_literatures l ON v.reference_id = l.reference_id
             LEFT JOIN isolate_curated_profiles icp ON v.isolate_id = icp.isolate_id
             WHERE v.accession = ?
-        """, (accession,))
+        """.format(country=_norm_country("s.country")), (accession,))
         row = c.fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="Accession not found")
@@ -3600,9 +4569,9 @@ def serve_virus_detail(request: Request, accession: str):
     
         # Isolates for this master (fallback to curated profiles if sample_collections missing)
         c.execute("""
-            SELECT 
+            SELECT
                 v.accession, v.genome_length, v.gc_content, v.completeness,
-                COALESCE(NULLIF(s.country, ''), icp.country) as country,
+                COALESCE(NULLIF({country}, ''), icp.country) as country,
                 COALESCE(NULLIF(s.collection_year, ''), icp.collection_year) as collection_year
             FROM analysis_strict_target_isolates v
             LEFT JOIN infection_records ir ON v.isolate_id = ir.isolate_id
@@ -3610,7 +4579,7 @@ def serve_virus_detail(request: Request, accession: str):
             LEFT JOIN isolate_curated_profiles icp ON v.isolate_id = icp.isolate_id
             WHERE v.master_id = ?
             ORDER BY v.accession
-        """, (master_id,))
+        """.format(country=_norm_country('s.country')), (master_id,))
         isolates = [dict(r) for r in c.fetchall()]
     
         # Counts
@@ -3760,14 +4729,14 @@ def serve_virus_detail(request: Request, accession: str):
         virus_geo = []
         try:
             c.execute("""
-                SELECT s.country, COUNT(DISTINCT v.isolate_id) as cnt
+                SELECT {country} AS country, COUNT(DISTINCT v.isolate_id) as cnt
                 FROM sample_collections s
                 JOIN infection_records ir ON s.collection_id = ir.collection_id
                 JOIN analysis_strict_target_isolates v ON ir.isolate_id = v.isolate_id
                 WHERE v.master_id = ? AND s.country IS NOT NULL AND s.country != ''
-                GROUP BY s.country
+                GROUP BY {country}
                 ORDER BY cnt DESC
-            """, (master_id,))
+            """.format(country=_norm_country("s.country")), (master_id,))
             virus_geo = [dict(r) for r in c.fetchall()]
         except sqlite3.Error:
             pass
@@ -3801,8 +4770,14 @@ def serve_virus_detail(request: Request, accession: str):
 
 @app.get("/stats", response_class=HTMLResponse, tags=["Pages"])
 def serve_stats(request: Request):
-    """Render the statistics page."""
-    return templates.TemplateResponse(request, "stats.html", {"active_page": "stats"})
+    """Render the statistics page with server-side stats for no-JS fallback."""
+    stats = get_stats()
+    target_total = stats.get("target_isolates") or stats.get("analysis_target_isolates_total") or 0
+    stats["_geo_rate"] = round((stats.get("geo_covered_isolates") or 0) / target_total * 100, 1) if target_total else 0
+    stats["_host_rate"] = round((stats.get("host_covered_isolates") or 0) / target_total * 100, 1) if target_total else 0
+    virus_species = stats.get("virus_species") or 0
+    stats["_diff_rate"] = round(((stats.get("virulence_covered") or 0) + (stats.get("temperature_covered") or 0)) / 2 / virus_species * 100) if virus_species else 0
+    return templates.TemplateResponse(request, "stats.html", {"active_page": "stats", "stats": stats})
 
 
 @app.get("/map", response_class=HTMLResponse, tags=["Pages"])
@@ -3827,6 +4802,12 @@ def serve_phylogeny(request: Request):
 def serve_rdrp(request: Request):
     """Render the RDRP page."""
     return templates.TemplateResponse(request, "rdrp.html", {"active_page": "rdrp"})
+
+
+@app.get("/blast", response_class=HTMLResponse, tags=["Pages"])
+def serve_blast(request: Request):
+    """Render the full-database BLAST search page."""
+    return templates.TemplateResponse(request, "blast.html", {"active_page": "blast"})
 
 
 @app.get("/download", response_class=HTMLResponse, tags=["Pages"])
@@ -3856,6 +4837,103 @@ def serve_download(request: Request):
     })
 
 
+@app.get("/application", response_class=HTMLResponse, tags=["Pages"])
+def serve_application(request: Request):
+    """Render the application knowledge base: virus -> WOAH disease -> diagnostics -> vaccine -> resistance genes."""
+    with get_db() as conn:
+        c = conn.cursor()
+
+        # WOAH disease mapping (viral causative agents first, then non-viral reference rows)
+        c.execute("""
+            SELECT vdm.mapping_id, vdm.virus_master_id, vm.canonical_name AS virus_name,
+                   vm.virus_family, vdm.disease_name, vdm.woah_listed, vdm.woah_category,
+                   vdm.causative_agent, vdm.agent_type, vdm.diagnostic_note,
+                   (SELECT MIN(a.accession) FROM analysis_strict_target_isolates a
+                    WHERE a.master_id = vdm.virus_master_id) AS rep_accession
+            FROM virus_disease_mapping vdm
+            LEFT JOIN virus_master vm ON vdm.virus_master_id = vm.master_id
+            ORDER BY CASE WHEN vdm.agent_type = 'virus' THEN 0 ELSE 1 END,
+                     vdm.woah_category, vdm.disease_name
+        """)
+        disease_rows = [dict(r) for r in c.fetchall()]
+
+        # Curated diagnostics only (manual_checked + curated/candidate_unreferenced with a real method name)
+        c.execute("""
+            SELECT dm.method_id, dm.virus_master_id, vm.canonical_name AS virus_name,
+                   dm.method_name, dm.method_category, dm.method_subcategory,
+                   dm.target_gene_or_region, dm.sample_type, dm.detection_limit,
+                   dm.evidence_strength, dm.data_quality,
+                   (SELECT MIN(a.accession) FROM analysis_strict_target_isolates a
+                    WHERE a.master_id = dm.virus_master_id) AS rep_accession
+            FROM diagnostic_methods dm
+            JOIN virus_master vm ON dm.virus_master_id = vm.master_id
+            WHERE dm.curation_status = 'manual_checked'
+              AND dm.data_quality IN ('curated', 'candidate_unreferenced')
+              AND dm.method_name IS NOT NULL AND dm.method_name != ''
+            ORDER BY vm.canonical_name, dm.method_category, dm.method_name
+        """)
+        diagnostic_rows = [dict(r) for r in c.fetchall()]
+
+        c.execute("""
+            SELECT COUNT(*) FROM diagnostic_methods
+            WHERE curation_status = 'manual_checked'
+              AND method_name IS NOT NULL AND method_name != ''
+        """)
+        diagnostic_total = c.fetchone()[0] or 0
+
+        # Vaccine antigen targets
+        c.execute("""
+            SELECT vat.target_id, vat.virus_master_id, vm.canonical_name AS virus_name,
+                   vat.target_protein, vat.vaccine_type, vat.antigen_type,
+                   vat.host_id, vat.efficacy_summary, vat.evidence_strength,
+                   (SELECT MIN(a.accession) FROM analysis_strict_target_isolates a
+                    WHERE a.master_id = vat.virus_master_id) AS rep_accession
+            FROM vaccine_antigen_targets vat
+            LEFT JOIN virus_master vm ON vat.virus_master_id = vm.master_id
+            ORDER BY vat.target_id
+        """)
+        vaccine_rows = [dict(r) for r in c.fetchall()]
+
+        # Disease resistance genes (sorted by category for grouped display)
+        c.execute("""
+            SELECT drg.gene_id, drg.virus_master_id, vm.canonical_name AS virus_name,
+                   drg.host_id, drg.gene_name, drg.gene_category, drg.evidence_type,
+                   drg.mechanism, drg.evidence_strength,
+                   (SELECT MIN(a.accession) FROM analysis_strict_target_isolates a
+                    WHERE a.master_id = drg.virus_master_id) AS rep_accession
+            FROM disease_resistance_genes drg
+            LEFT JOIN virus_master vm ON drg.virus_master_id = vm.master_id
+            ORDER BY drg.gene_category, drg.gene_name
+        """)
+        resistance_rows = [dict(r) for r in c.fetchall()]
+
+    return templates.TemplateResponse(request, "application.html", {
+        "active_page": "application",
+        "disease_rows": disease_rows,
+        "diagnostic_rows": diagnostic_rows,
+        "diagnostic_total": diagnostic_total,
+        "vaccine_rows": vaccine_rows,
+        "resistance_rows": resistance_rows,
+    })
+
+
+@app.get("/evidence_graph/{master_id}", response_class=HTMLResponse, tags=["Pages"])
+def serve_evidence_graph(request: Request, master_id: int):
+    """Render the aggregated evidence graph page for a virus."""
+    virus_name = None
+    with get_db() as conn:
+        c = conn.cursor()
+        c.execute("SELECT canonical_name FROM virus_master WHERE master_id = ?", (master_id,))
+        row = c.fetchone()
+        if row:
+            virus_name = row["canonical_name"]
+    return templates.TemplateResponse(request, "evidence_graph.html", {
+        "active_page": "viruses",
+        "master_id": master_id,
+        "virus_name": virus_name,
+    })
+
+
 @app.get("/host/{host_id}", response_class=HTMLResponse, tags=["Pages"])
 def serve_host_detail(request: Request, host_id: int):
     """Render host detail page."""
@@ -3881,7 +4959,7 @@ def serve_host_detail(request: Request, host_id: int):
             FROM viral_isolates v
             JOIN virus_master vm ON v.master_id = vm.master_id
             JOIN infection_records ir ON v.isolate_id = ir.isolate_id
-            WHERE ir.host_id = ? AND vm.host_phylum IN ('Arthropoda','Mollusca','Cnidaria','Echinodermata','Porifera')
+            WHERE ir.host_id = ? AND vm.host_phylum IN ('Arthropoda','Mollusca','Cnidaria','Echinodermata','Porifera','Annelida','Platyhelminthes','Rotifera')
             GROUP BY vm.master_id
             ORDER BY isolate_count DESC
         """, (host_id,))
@@ -3895,14 +4973,14 @@ def serve_host_detail(request: Request, host_id: int):
         """, (host_id,))
         inf_stats = dict(c.fetchone())
         c.execute("""
-            SELECT s.country, COUNT(DISTINCT v.isolate_id) as count
+            SELECT {country} AS country, COUNT(DISTINCT v.isolate_id) as count
             FROM sample_collections s
             JOIN infection_records ir ON s.collection_id = ir.collection_id
             JOIN analysis_strict_target_isolates v ON ir.isolate_id = v.isolate_id
             WHERE ir.host_id = ? AND s.country IS NOT NULL AND s.country != ''
-            GROUP BY s.country
+            GROUP BY {country}
             ORDER BY count DESC
-        """, (host_id,))
+        """.format(country=_norm_country("s.country")), (host_id,))
         geo_dist = [dict(r) for r in c.fetchall()]
         try:
             c.execute("SELECT COUNT(*) FROM gbif_occurrences WHERE host_id = ?", (host_id,))
@@ -3946,11 +5024,9 @@ def serve_host_detail(request: Request, host_id: int):
 # ============================================================
 
 def _get_db():
-    """Return a raw DB connection (SQLite or PostgreSQL, auto-detected).
-
-    Callers MUST close the connection (try/finally pattern).
-    """
-    return get_raw_db_connection(read_only=True)
+    conn = get_db_connection(DB_PATH, read_only=True, busy_timeout=5000)
+    _install_display_views(conn)
+    return conn
 
 
 def _mark_source_index(row: sqlite3.Row | dict, scope: str = "source_index_not_manual_reviewed") -> dict:
@@ -4951,40 +6027,27 @@ def serve_preprints_page(request: Request):
     return templates.TemplateResponse(request, "literature.html", {"active_page": "enrichment"})
 
 
-@app.get("/enrichment/kegg", response_class=HTMLResponse, tags=["Pages"])
-def serve_kegg_page(request: Request):
-    """Render KEGG pathway enrichment page."""
-    return templates.TemplateResponse(request, "kegg.html", {"active_page": "enrichment"})
-
-
-@app.get("/enrichment/geo-sra", response_class=HTMLResponse, tags=["Pages"])
-def serve_geo_sra_page(request: Request):
-    """Render GEO/SRA datasets enrichment page."""
-    return templates.TemplateResponse(request, "geo_sra.html", {"active_page": "enrichment"})
-
-
-@app.get("/enrichment/host-ecology", response_class=HTMLResponse, tags=["Pages"])
-def serve_host_ecology_page(request: Request):
-    """Render host ecology enrichment page."""
-    return templates.TemplateResponse(request, "host_ecology.html", {"active_page": "enrichment"})
-
-
-@app.get("/enrichment/viralzone", response_class=HTMLResponse, tags=["Pages"])
-def serve_viralzone_page(request: Request):
-    """Render ViralZone enrichment page."""
-    return templates.TemplateResponse(request, "viralzone.html", {"active_page": "enrichment"})
-
-
 @app.get("/about", response_class=HTMLResponse, tags=["Pages"])
 def serve_about(request: Request):
     """Render about page."""
-    return templates.TemplateResponse(request, "about.html", {"active_page": "about"})
-
+    stats = get_homepage_stats()
+    with get_db() as conn:
+        c = conn.cursor()
+        stats["proteins"] = c.execute("SELECT COUNT(*) FROM viral_proteins").fetchone()[0]
+        stats["schema_version"] = c.execute("SELECT MAX(version_id) FROM schema_version").fetchone()[0]
+        stats["complete_genomes"] = c.execute("SELECT COUNT(*) FROM virus_master WHERE entry_type = 'complete_genome'").fetchone()[0]
+    return templates.TemplateResponse(request, "about.html", {
+        "active_page": "about",
+        **stats,
+    })
 
 @app.get("/help", response_class=HTMLResponse, tags=["Pages"])
 def serve_help(request: Request):
-    """Render help/tutorial page."""
-    return templates.TemplateResponse(request, "help.html", {"active_page": "help"})
+    """Render help & tutorial page."""
+    return templates.TemplateResponse(request, "help.html", {
+        "active_page": "help",
+        **get_stats(),
+    })
 
 
 @app.get("/browse/taxonomy", response_class=HTMLResponse, tags=["Pages"])
@@ -4992,10 +6055,17 @@ def serve_taxonomy(request: Request):
     """Render taxonomy browser page."""
     with get_db() as conn:
         c = conn.cursor()
+        # Same two exclusions as every other public virus-species count (/viruses
+        # list + filter panels, /api/stats, the homepage), so the "N viruses"
+        # figure on a phylum card here equals the /viruses host-phylum filter for
+        # that phylum. Before 2026-09-29 this page applied neither, which left
+        # Arthropoda at 615 here vs 612 on /viruses.
         c.execute("""
             SELECT vm.host_phylum, vm.virus_family, COUNT(DISTINCT vm.master_id) as virus_count
             FROM virus_master vm
             WHERE vm.host_phylum IS NOT NULL
+              AND """ + _NON_VIRUS_SQL.replace("entry_type", "vm.entry_type") + """
+              AND """ + _PLACEHOLDER_NAME_SQL.replace("canonical_name", "vm.canonical_name") + """
             GROUP BY vm.host_phylum, vm.virus_family
             ORDER BY vm.host_phylum, virus_count DESC
         """)
@@ -5010,12 +6080,12 @@ def serve_taxonomy(request: Request):
             tree[phylum]["families"][family] = count
             tree[phylum]["total"] += count
     phylum_labels = {
-        'Arthropoda': '节肢动物 (Arthropoda)',
-        'Mollusca': '软体动物 (Mollusca)',
-        'Cnidaria': '刺胞动物 (Cnidaria)',
-        'Echinodermata': '棘皮动物 (Echinodermata)',
-        'Porifera': '海绵动物 (Porifera)',
-        'Annelida': '环节动物 (Annelida)',
+        'Arthropoda': 'Arthropods',
+        'Mollusca': 'Molluscs',
+        'Cnidaria': 'Cnidarians',
+        'Echinodermata': 'Echinoderms',
+        'Porifera': 'Sponges',
+        'Annelida': 'Annelids',
     }
     return templates.TemplateResponse(request, "taxonomy.html", {
         "active_page": "taxonomy",
@@ -5028,28 +6098,43 @@ def serve_taxonomy(request: Request):
 def serve_compare(request: Request, v: str = ""):
     """Render virus comparison page."""
     viruses_data = []
-    if v:
-        names = [n.strip() for n in v.split(",") if n.strip()][:4]
-        if names:
-            with get_db() as conn:
-                c = conn.cursor()
-                placeholders = ",".join("?" * len(names))
-                c.execute(f"""
-                    SELECT vm.canonical_name, vm.chinese_name, vm.virus_family, vm.virus_genus,
-                           vm.genome_type, vm.host_phylum, vm.discovery_context,
-                           COUNT(DISTINCT vi.isolate_id) as isolate_count,
-                           MAX(vi.genome_length) as genome_length
-                    FROM virus_master vm
-                    LEFT JOIN viral_isolates vi ON vm.master_id = vi.master_id
-                    WHERE vm.canonical_name IN ({placeholders})
-                       OR vm.abbreviations IN ({placeholders})
-                    GROUP BY vm.master_id
-                    LIMIT 4
-                """, names * 2)
-                viruses_data = [dict(r) for r in c.fetchall()]
+    requested_names = [n.strip() for n in v.split(",") if n.strip()][:4]
+    unmatched = []
+    if requested_names:
+        with get_db() as conn:
+            c = conn.cursor()
+            placeholders = ",".join("?" * len(requested_names))
+            c.execute(f"""
+                SELECT vm.canonical_name, vm.chinese_name, vm.virus_family, vm.virus_genus,
+                       vm.genome_type, vm.host_phylum, vm.discovery_context, vm.abbreviations,
+                       (SELECT GROUP_CONCAT(alias) FROM virus_aliases va
+                        WHERE va.master_id = vm.master_id) AS alias_names,
+                       COUNT(DISTINCT vi.isolate_id) as isolate_count,
+                       MAX(vi.genome_length) as genome_length
+                FROM virus_master vm
+                LEFT JOIN viral_isolates vi ON vm.master_id = vi.master_id
+                WHERE vm.canonical_name IN ({placeholders})
+                   OR vm.abbreviations IN ({placeholders})
+                   OR vm.master_id IN (SELECT master_id FROM virus_aliases WHERE alias IN ({placeholders}))
+                GROUP BY vm.master_id
+                LIMIT 4
+            """, requested_names * 3)
+            viruses_data = [dict(r) for r in c.fetchall()]
+        matched = set()
+        for vd in viruses_data:
+            if vd.get("canonical_name"):
+                matched.add(vd["canonical_name"])
+            if vd.get("abbreviations"):
+                matched.add(vd["abbreviations"])
+            for alias in (vd.get("alias_names") or "").split(","):
+                if alias:
+                    matched.add(alias)
+        unmatched = [n for n in requested_names if n not in matched]
     return templates.TemplateResponse(request, "virus_compare.html", {
         "active_page": "compare",
         "viruses": viruses_data,
+        "requested_names": requested_names,
+        "unmatched": unmatched,
     })
 
 

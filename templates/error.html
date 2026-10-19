@@ -16,15 +16,8 @@
         {% endif %}
     </p>
 
-    {% if detail and status_code != 404 %}
-    <div class="bg-red-50 border border-red-100 rounded-lg p-4 mb-8 text-left max-w-2xl mx-auto">
-        <h4 class="text-sm font-semibold text-red-800 mb-2">Error Details (debug)</h4>
-        <pre class="text-xs text-red-700 whitespace-pre-wrap break-all">{{ detail }}</pre>
-    </div>
-    {% endif %}
-
     <div class="flex justify-center gap-4">
-        <a href="/" class="bg-teal-600 hover:bg-teal-500 text-white px-6 py-2.5 rounded-lg font-medium transition">Back to Home</a>
+        <a href="/" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2.5 rounded-lg font-medium transition">Back to Home</a>
         <a href="/search" class="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-6 py-2.5 rounded-lg font-medium transition">Go to Search</a>
     </div>
 </div>

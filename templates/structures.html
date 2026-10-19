@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% block title %}3D Protein Structures — Aquatic Invertebrate Virus Knowledge Base{% endblock %}
+{% block title %}3D Protein Structures - Aquatic Invertebrate Virus Knowledge Base{% endblock %}
 {% block extra_head %}
 <script src="https://cdn.jsdelivr.net/npm/molstar@latest/build/viewer/molstar.min.js"></script>
 <style>
-    #molstar-viewer { width: 100%; height: 550px; border-radius: 12px; overflow: hidden; background: #f8fafc; }
+    #molstar-viewer { width: 100%; height: 550px; border-radius:6px; overflow: hidden; background: #f8fafc; }
     .structure-card { transition: all 0.2s; border-left: 4px solid transparent; }
     .structure-card:hover { border-left-color: #8b5cf6; box-shadow: 0 4px 12px -4px rgba(0,0,0,0.08); }
     .structure-card.selected { border-left-color: #8b5cf6; background: #f5f3ff; }
@@ -20,10 +20,10 @@
             #f5c842 70%, #f59e0b 80%, #ef4444 100%);
     }
     .plddt-scale { display: flex; justify-content: space-between; font-size: 10px; color: #6b7280; margin-top: 2px; }
-    .plddt-card { border-radius: 8px; padding: 12px; border: 1px solid #e5e7eb; }
+    .plddt-card { border-radius:6px; padding: 12px; border: 1px solid #e5e7eb; }
     .plddt-bar-container { margin-top: 8px; }
     .plddt-bar { height: 4px; border-radius: 2px; transition: background 0.3s; }
-    .plddt-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+    .plddt-badge { display: inline-block; padding: 2px 8px; border-radius:6px; font-size: 11px; font-weight: 600; }
     .badge-vhigh { background: #dbeafe; color: #0053d6; }
     .badge-high { background: #eff6ff; color: #3b82f6; }
     .badge-med { background: #fef3c7; color: #d97706; }

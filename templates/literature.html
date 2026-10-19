@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Literature & Preprints — Aquatic Invertebrate Virus Knowledge Base{% endblock %}
+{% block title %}Literature & Preprints - Aquatic Invertebrate Virus Knowledge Base{% endblock %}
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
     <div class="flex items-center gap-2 text-sm text-gray-400 mb-4">
@@ -8,8 +8,8 @@
 
     <div class="card p-6 mb-6 shadow-md">
         <div class="flex items-center gap-4 mb-2">
-            <span class="text-4xl">📚</span>
-            <div><h1 class="text-2xl font-extrabold text-slate-800">Literature & Preprints</h1><p class="text-sm text-slate-500 mt-1">Europe PMC extended literature + bioRxiv/medRxiv preprints — latest aquatic invertebrate virology research</p></div>
+            <span class="text-4xl"></span>
+            <div><h1 class="text-2xl font-extrabold text-slate-800">Literature & Preprints</h1><p class="text-sm text-slate-500 mt-1">Europe PMC extended literature + bioRxiv/medRxiv preprints - latest aquatic invertebrate virology research</p></div>
         </div>
         <div class="flex gap-4 mt-5">
             <div class="text-center p-4 bg-blue-50 rounded-xl flex-1 card-hover"><div class="text-2xl font-extrabold text-blue-700 font-mono" id="s-epmc">--</div><div class="text-xs text-slate-500 mt-1.5 font-medium">Europe PMC Literature</div></div>
@@ -48,7 +48,7 @@ Promise.all([
 
 function renderEPMC() {
     document.getElementById('tab-epmc').innerHTML = epmcData.length === 0
-        ? '<div class="bg-white rounded-b-xl border border-slate-200 shadow-sm p-6 text-center text-gray-400">No Europe PMC literature data available. Please run: python enrich_europe_pmc.py</div>'
+        ? '<div class="bg-white rounded-b-xl border border-slate-200 shadow-sm p-6 text-center text-gray-400">No Europe PMC literature data available yet. Please contact the administrator.</div>'
         : `<div class="bg-white rounded-b-xl border border-slate-200 shadow-sm divide-y">${epmcData.slice(0, 50).map(x => `
         <div class="p-4 table-row">
             <div class="flex justify-between items-start gap-3">
@@ -71,7 +71,7 @@ function renderEPMC() {
 
 function renderBiorxiv() {
     document.getElementById('tab-biorxiv').innerHTML = biorxivData.length === 0
-        ? '<div class="bg-white rounded-b-xl border border-slate-200 shadow-sm p-6 text-center text-gray-400">No preprint data available. Please run: python import_biorxiv.py</div>'
+        ? '<div class="bg-white rounded-b-xl border border-slate-200 shadow-sm p-6 text-center text-gray-400">No preprint data available yet. Please contact the administrator.</div>'
         : `<div class="bg-white rounded-b-xl border border-slate-200 shadow-sm divide-y">${biorxivData.slice(0, 50).map(x => `
         <div class="p-4 table-row">
             <div class="flex justify-between items-start gap-3">

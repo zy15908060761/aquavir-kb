@@ -39,6 +39,7 @@
         </div>
     </section>
 
+    <div id="ip-truncate-note" class="hidden text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 mb-3"></div>
     <div id="ip-list" class="space-y-2"><div class="text-center text-gray-400 py-10">Loading...</div></div>
     <div class="flex justify-center gap-2 mt-6 flex-wrap" id="ip-pagination"></div>
 </div>
@@ -49,7 +50,7 @@
 let ipData = [];
 let ipPage = 0;
 const IP_PAGE = 25;
-const domainColors = ['#0f766e','#0ea5e9','#8b5cf6','#f59e0b','#ef4444','#10b981','#ec4899','#6366f1'];
+const domainColors = ['#205493','#0ea5e9','#8b5cf6','#f59e0b','#ef4444','#10b981','#ec4899','#6366f1'];
 
 function statusOf(x) {
     return x.coordinate_status || (x.start_pos != null && x.end_pos != null ? 'positioned' : 'entry_level_only');
@@ -59,8 +60,18 @@ function loadInterPro() {
     fetch('/api/enrichment/interpro?limit=500')
         .then(r => r.json())
         .then(d => {
-            if (d.status !== 'success') return;
+            if (d.status !== 'success') {
+                document.getElementById('ip-list').innerHTML = '<div class="text-center text-red-500 py-10">Failed to load domain data. Please refresh and try again.</div>';
+                return;
+            }
             ipData = d.data || [];
+            const truncNote = document.getElementById('ip-truncate-note');
+            if (ipData.length >= 500) {
+                truncNote.textContent = 'Showing the first 500 records. Refine your search to narrow results.';
+                truncNote.classList.remove('hidden');
+            } else {
+                truncNote.classList.add('hidden');
+            }
             const summary = document.getElementById('ip-summary');
             const total = ipData.length;
             const positioned = ipData.filter(x => statusOf(x) === 'positioned').length;
@@ -70,6 +81,9 @@ function loadInterPro() {
             summary.children[2].querySelector('.text-xl').textContent = total - positioned;
             summary.children[3].querySelector('.text-xl').textContent = uniqueIP;
             applyIPFilter();
+        })
+        .catch(() => {
+            document.getElementById('ip-list').innerHTML = '<div class="text-center text-red-500 py-10">Failed to load domain data. Please refresh and try again.</div>';
         });
 }
 

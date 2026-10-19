@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# Programmatic endpoints: JSON payloads have no search value, and the bulk
+# data endpoints are large. The API stays fully open to users and to
+# /docs; it is only excluded from crawling.
+Disallow: /api/
+Disallow: /docs
+Disallow: /redoc
+Disallow: /openapi.json
+Disallow: /downloads/
+
+Sitemap: https://www.aquavirdb.com/sitemap.xml

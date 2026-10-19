@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}BLAST Search - AquaVir-KB{% endblock %}
+{% block content %}
+<div class="page-title">BLAST Search</div>
+<p style="margin-bottom:12px;color:var(--text-secondary);font-size:13px;">
+    Search your nucleotide or protein sequence against the AquaVir-KB databases
+    (<span id="db-info">loading</span>).
+</p>
+
+<div class="card">
+    <div class="card-h">Query</div>
+    <textarea id="blast-query" rows="6" placeholder=">query&#10;Paste FASTA or raw sequence"
+        style="width:100%;font-family:monospace;font-size:13px;padding:8px;border:1px solid var(--border);border-radius:4px;box-sizing:border-box;"></textarea>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-top:8px;">
+        <div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:2px;">Program</div>
+            <select id="blast-program" style="padding:5px;border:1px solid var(--border);border-radius:4px;">
+                <option value="blastp">blastp - protein -> protein</option>
+                <option value="blastx">blastx - nucleotide -> protein</option>
+                <option value="blastn">blastn - nucleotide -> nucleotide</option>
+                <option value="tblastn">tblastn - protein -> nucleotide</option>
+            </select>
+        </div>
+        <div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:2px;">E-value</div>
+            <input id="blast-evalue" type="text" value="1e-5" style="width:80px;padding:5px;border:1px solid var(--border);border-radius:4px;">
+        </div>
+        <div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:2px;">Max hits</div>
+            <input id="blast-limit" type="number" value="20" min="1" max="100" style="width:70px;padding:5px;border:1px solid var(--border);border-radius:4px;">
+        </div>
+        <button id="blast-btn" onclick="runBlast()" style="padding:7px 18px;background:var(--primary);color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:500;">Run BLAST</button>
+    </div>
+    <div id="blast-summary" style="margin-top:8px;font-size:12px;color:var(--text-secondary);"></div>
+</div>
+
+<div class="card" id="blast-results-card" style="display:none;">
+    <div class="card-h">Results</div>
+    <div style="overflow-x:auto;">
+        <table>
+            <thead><tr id="blast-results-header"></tr></thead>
+            <tbody id="blast-results-body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+async function loadStatus() {
+    try {
+        const r = await fetch('/api/blast/status');
+        const s = await r.json();
+        const info = [];
+        if (s.aa_database_ready) info.push('proteins: ' + (s.version.match(/proteins=\d+/) || [''])[0].replace('proteins=', ''));
+        if (s.nt_database_ready) info.push('nucleotides: ' + (s.version.match(/nucleotides=\d+/) || [''])[0].replace('nucleotides=', ''));
+        document.getElementById('db-info').textContent = info.join(' - ') || 'database not ready';
+    } catch (e) {
+        document.getElementById('db-info').textContent = 'status unavailable';
+    }
+}
+
+async function runBlast() {
+    const query = document.getElementById('blast-query').value.trim();
+    const program = document.getElementById('blast-program').value;
+    const evalue = document.getElementById('blast-evalue').value;
+    const limit = document.getElementById('blast-limit').value;
+    const btn = document.getElementById('blast-btn');
+    const card = document.getElementById('blast-results-card');
+    const summary = document.getElementById('blast-summary');
+    const body = document.getElementById('blast-results-body');
+
+    if (!query) { alert('Please enter a sequence.'); return; }
+    btn.disabled = true; btn.textContent = 'Running';
+    card.style.display = 'block';
+    summary.textContent = '';
+    body.innerHTML = '<tr><td colspan="8" style="padding:16px;text-align:center;color:var(--text-muted)">Running BLAST</td></tr>';
+
+    try {
+        const url = '/api/blast?program=' + program + '&limit=' + limit + '&evalue=' + encodeURIComponent(evalue);
+        const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sequence: query }) });
+        if (res.status === 429) {
+            const d = await res.json().catch(() => null);
+            body.innerHTML = '<tr><td colspan="8" style="padding:16px;text-align:center;color:var(--accent)">' + ((d && d.detail) || 'Rate limited - please wait a moment and retry.') + '</td></tr>';
+            return;
+        }
+        const data = await res.json();
+        if (data.error) {
+            body.innerHTML = '<tr><td colspan="8" style="padding:16px;text-align:center;color:#c00">' + data.error + '</td></tr>';
+            return;
+        }
+        summary.textContent = 'Query length: ' + data.query_length + ' - ' + data.returned + ' hits - engine: ' + data.engine;
+        renderResults(data);
+    } catch (e) {
+        body.innerHTML = '<tr><td colspan="8" style="padding:16px;text-align:center;color:#c00">Search failed: ' + e + '</td></tr>';
+    } finally {
+        btn.disabled = false; btn.textContent = 'Run BLAST';
+    }
+}
+
+function renderResults(data) {
+    const header = document.getElementById('blast-results-header');
+    const body = document.getElementById('blast-results-body');
+    const hits = data.results || [];
+    header.innerHTML = '<th style="text-align:right">%ID</th><th style="text-align:right">E-value</th><th style="text-align:right">Bits</th><th style="text-align:right">Qcov%</th><th>Virus</th><th>Family</th><th>Accession</th><th>Protein</th>';
+    body.innerHTML = hits.map(h => {
+        const acc = h.accession || h.nucleotide_accession || '-';
+        const protein = h.protein_name || h.protein_accession || '-';
+        return '<tr style="cursor:pointer" onclick="window.location.href=\'/virus/' + encodeURIComponent(acc) + '\'">' +
+            '<td style="text-align:right;font-weight:600">' + (h.pident ?? '-') + '</td>' +
+            '<td style="text-align:right;font-family:monospace">' + (h.evalue ?? '-') + '</td>' +
+            '<td style="text-align:right">' + (h.bitscore ?? '-') + '</td>' +
+            '<td style="text-align:right">' + (h.query_coverage ?? '-') + '</td>' +
+            '<td>' + (h.virus_species || '-') + '</td>' +
+            '<td style="color:var(--text-secondary)">' + (h.virus_family || '-') + '</td>' +
+            '<td style="font-family:monospace;font-size:12px">' + acc + '</td>' +
+            '<td style="color:var(--text-secondary)">' + protein + '</td>' +
+            '</tr>';
+    }).join('') || '<tr><td colspan="8" style="padding:16px;text-align:center;color:var(--text-muted)">No hits found.</td></tr>';
+}
+
+loadStatus();
+</script>
+{% endblock %}

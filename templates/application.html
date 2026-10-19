@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block title %}Application Knowledge Base - AquaVir-KB{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+
+    <!-- Header -->
+    <div style="margin-bottom:18px">
+        <h1 style="font-size:26px;font-weight:600;color:var(--primary-dark);letter-spacing:0">Application Knowledge Base</h1>
+        <p style="color:var(--text-secondary);font-size:14px;margin-top:4px">A molecular-to-management chain linking viruses to WOAH-listed diseases, diagnostic methods, vaccine targets and host disease-resistance genes.</p>
+    </div>
+
+    <!-- Chain overview -->
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:20px">
+        <div style="flex:1;min-width:130px;background:var(--blue-bg);border:1px solid #bfdbfe;border-radius:6px;padding:12px 14px;text-align:center">
+            <div style="font-weight:600;font-size:14px;color:var(--blue)">Virus</div>
+            <div style="font-size:11px;color:var(--text-muted)">taxonomy & genomes</div>
+        </div>
+        <span style="color:var(--text-muted);font-size:16px">&rarr;</span>
+        <div style="flex:1;min-width:130px;background:var(--red-bg);border:1px solid #fecaca;border-radius:6px;padding:12px 14px;text-align:center">
+            <div style="font-weight:600;font-size:14px;color:var(--red)">WOAH disease</div>
+            <div style="font-size:11px;color:var(--text-muted)">listed diseases</div>
+        </div>
+        <span style="color:var(--text-muted);font-size:16px">&rarr;</span>
+        <div style="flex:1;min-width:130px;background:var(--amber-bg);border:1px solid #fde68a;border-radius:6px;padding:12px 14px;text-align:center">
+            <div style="font-weight:600;font-size:14px;color:var(--amber)">Diagnostics</div>
+            <div style="font-size:11px;color:var(--text-muted)">detection methods</div>
+        </div>
+        <span style="color:var(--text-muted);font-size:16px">&rarr;</span>
+        <div style="flex:1;min-width:130px;background:var(--green-bg);border:1px solid #bbf7d0;border-radius:6px;padding:12px 14px;text-align:center">
+            <div style="font-weight:600;font-size:14px;color:var(--green)">Vaccine</div>
+            <div style="font-size:11px;color:var(--text-muted)">antigen targets</div>
+        </div>
+        <span style="color:var(--text-muted);font-size:16px">&rarr;</span>
+        <div style="flex:1;min-width:130px;background:var(--purple-bg);border:1px solid #ddd6fe;border-radius:6px;padding:12px 14px;text-align:center">
+            <div style="font-weight:600;font-size:14px;color:var(--purple)">Resistance</div>
+            <div style="font-size:11px;color:var(--text-muted)">host genes</div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+        <div class="stat" style="border-top:3px solid var(--red)">
+            <div class="num" style="color:var(--red)">{{ disease_rows | selectattr('agent_type', 'equalto', 'virus') | list | length }}</div>
+            <div class="lbl">WOAH viral pathogens</div>
+        </div>
+        <div class="stat" style="border-top:3px solid var(--amber)">
+            <div class="num" style="color:var(--amber)">{{ diagnostic_rows | length }}</div>
+            <div class="lbl">Curated diagnostics</div>
+        </div>
+        <div class="stat" style="border-top:3px solid var(--green)">
+            <div class="num" style="color:var(--green)">{{ vaccine_rows | length }}</div>
+            <div class="lbl">Vaccine targets</div>
+        </div>
+        <div class="stat" style="border-top:3px solid var(--purple)">
+            <div class="num" style="color:var(--purple)">{{ resistance_rows | length }}</div>
+            <div class="lbl">Resistance genes</div>
+        </div>
+    </div>
+
+    <div class="card p-4 mb-6">
+        <input type="search" id="application-search" placeholder="Search disease, virus, method, target protein, or gene..."
+               class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm bg-white text-slate-700 input-focus focus:outline-none focus:ring-4 focus:ring-blue-50 focus:border-blue-500">
+    </div>
+
+    <div id="application-results">
+    <!-- Section 1: WOAH disease mapping -->
+    <div class="card">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span style="width:4px;height:20px;border-radius:2px;background:var(--red)"></span>
+            <h2 style="font-size:17px;font-weight:600;color:var(--text)">Virus &harr; WOAH-listed disease mapping</h2>
+        </div>
+        <p style="color:var(--text-secondary);font-size:13px;margin-bottom:12px">Listed diseases of aquatic animals (WOAH Aquatic Animal Health Code, Chapter 1.3, 2024). Viral causative agents link to curated virus entries; non-viral reference rows (bacteria, protozoa, oomycete) are included for completeness.</p>
+        <div style="overflow-x:auto;border:1px solid var(--border);border-radius:6px">
+            <table>
+                <thead>
+                    <tr>
+                        <th>WOAH category</th>
+                        <th>Disease</th>
+                        <th>Causative agent</th>
+                        <th>Agent type</th>
+                        <th>Virus entry</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in disease_rows %}
+                    <tr>
+                        <td style="color:var(--text-secondary);text-transform:capitalize">{{ r.woah_category }}</td>
+                        <td style="font-weight:600">{{ r.disease_name }}</td>
+                        <td style="color:var(--text-secondary)">{{ r.causative_agent }}</td>
+                        <td>
+                            {% if r.agent_type == 'virus' %}
+                            <span class="tag tag-red">virus</span>
+                            {% else %}
+                            <span class="tag" style="background:var(--bg);color:var(--text-muted);border-color:var(--border)">{{ r.agent_type }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if r.rep_accession %}
+                            <a href="/virus/{{ r.rep_accession }}" style="font-weight:500">{{ r.virus_name }}</a>
+                            {% elif r.virus_name %}
+                            <span style="color:var(--text-secondary)">{{ r.virus_name }}</span>
+                            {% else %}
+                            <span style="color:var(--text-muted)">&mdash;</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Section 2: Diagnostic methods -->
+    <div class="card">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span style="width:4px;height:20px;border-radius:2px;background:var(--amber)"></span>
+            <h2 style="font-size:17px;font-weight:600;color:var(--text)">Diagnostic methods</h2>
+            <span style="margin-left:auto;font-size:12px;color:var(--text-muted)">{{ diagnostic_total }} manual-checked records; {{ diagnostic_rows | length }} curated shown</span>
+        </div>
+        {% for virus_name, group in diagnostic_rows | groupby('virus_name') %}
+        <div style="margin-bottom:16px">
+            <h3 style="font-size:14px;font-weight:600;color:var(--primary-dark);margin-bottom:6px">
+                {% set rep = group | map(attribute='rep_accession') | select | first %}
+                {% if rep %}<a href="/virus/{{ rep }}">{{ virus_name }}</a>
+                {% else %}{{ virus_name }}{% endif %}
+                <span style="color:var(--text-muted);font-weight:400;font-size:12px">({{ group | list | length }} methods)</span>
+            </h3>
+            <div style="overflow-x:auto;border:1px solid var(--border);border-radius:6px">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Category</th>
+                            <th>Target / region</th>
+                            <th style="text-align:center">Evidence</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for m in group %}
+                        <tr>
+                            <td style="font-weight:500">{{ m.method_name }}</td>
+                            <td style="color:var(--text-secondary)">{{ m.method_category }}</td>
+                            <td style="color:var(--text-secondary)">{{ m.target_gene_or_region or '&mdash;' }}</td>
+                            <td style="text-align:center">
+                                {% if m.evidence_strength == 'high' %}<span class="tag tag-green">high</span>
+                                {% elif m.evidence_strength == 'medium' %}<span class="tag tag-amber">medium</span>
+                                {% else %}<span class="tag" style="background:var(--bg);color:var(--text-muted);border-color:var(--border)">{{ m.evidence_strength or 'low' }}</span>{% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Section 3: Vaccine antigen targets -->
+    <div class="card">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span style="width:4px;height:20px;border-radius:2px;background:var(--green)"></span>
+            <h2 style="font-size:17px;font-weight:600;color:var(--text)">Vaccine antigen targets</h2>
+        </div>
+        <div style="overflow-x:auto;border:1px solid var(--border);border-radius:6px">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Virus</th>
+                        <th>Target protein</th>
+                        <th>Vaccine type</th>
+                        <th>Antigen type</th>
+                        <th>Efficacy summary</th>
+                        <th style="text-align:center">Evidence</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for v in vaccine_rows %}
+                    <tr>
+                        <td>
+                            {% if v.rep_accession %}<a href="/virus/{{ v.rep_accession }}" style="font-weight:500">{{ v.virus_name }}</a>
+                            {% else %}<span style="color:var(--text-secondary)">{{ v.virus_name }}</span>{% endif %}
+                        </td>
+                        <td style="font-weight:500">{{ v.target_protein or '&mdash;' }}</td>
+                        <td style="color:var(--text-secondary)">{{ v.vaccine_type or '&mdash;' }}</td>
+                        <td style="color:var(--text-secondary)">{{ v.antigen_type or '&mdash;' }}</td>
+                        <td style="color:var(--text-secondary)">{{ v.efficacy_summary or '&mdash;' }}</td>
+                        <td style="text-align:center">
+                            {% if v.evidence_strength == 'high' %}<span class="tag tag-green">high</span>
+                            {% elif v.evidence_strength == 'medium' %}<span class="tag tag-amber">medium</span>
+                            {% else %}<span class="tag" style="background:var(--bg);color:var(--text-muted);border-color:var(--border)">{{ v.evidence_strength or 'low' }}</span>{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Section 4: Disease resistance genes -->
+    <div class="card">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span style="width:4px;height:20px;border-radius:2px;background:var(--purple)"></span>
+            <h2 style="font-size:17px;font-weight:600;color:var(--text)">Host disease-resistance genes</h2>
+            <span style="margin-left:auto;font-size:12px;color:var(--text-muted)">{{ resistance_rows | length }} genes</span>
+        </div>
+        {% set cat_labels = {'immune_signaling': 'Immune signaling', 'antimicrobial_peptide': 'Antimicrobial peptide', 'RNAi_pathway': 'RNAi pathway', 'genetic_marker': 'Genetic marker', 'other': 'Other'} %}
+        {% for category, group in resistance_rows | groupby('gene_category') %}
+        <div style="margin-bottom:16px">
+            <h3 style="font-size:14px;font-weight:600;color:var(--primary-dark);margin-bottom:6px">
+                {{ cat_labels.get(category, category) }}
+                <span style="color:var(--text-muted);font-weight:400;font-size:12px">({{ group | list | length }})</span>
+            </h3>
+            <div style="overflow-x:auto;border:1px solid var(--border);border-radius:6px">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Gene</th>
+                            <th>Evidence type</th>
+                            <th>Mechanism</th>
+                            <th style="text-align:center">Evidence</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for g in group %}
+                        <tr>
+                            <td style="font-weight:500">{{ g.gene_name or '&mdash;' }}</td>
+                            <td style="color:var(--text-secondary)">{{ g.evidence_type or '&mdash;' }}</td>
+                            <td style="color:var(--text-secondary)">{{ g.mechanism or '&mdash;' }}</td>
+                            <td style="text-align:center">
+                                {% if g.evidence_strength == 'high' %}<span class="tag tag-green">high</span>
+                                {% elif g.evidence_strength == 'medium' %}<span class="tag tag-amber">medium</span>
+                                {% else %}<span class="tag" style="background:var(--bg);color:var(--text-muted);border-color:var(--border)">{{ g.evidence_strength or 'low' }}</span>{% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.getElementById('application-search').addEventListener('input', function () {
+    const q = this.value.toLowerCase().trim();
+    const container = document.getElementById('application-results');
+    container.querySelectorAll('tbody tr').forEach(tr => {
+        tr.style.display = (!q || tr.textContent.toLowerCase().includes(q)) ? '' : 'none';
+    });
+});
+</script>
+{% endblock %}

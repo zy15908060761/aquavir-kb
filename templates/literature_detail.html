@@ -8,7 +8,7 @@
     <div class="text-center py-12 text-gray-400">
         <div class="text-4xl mb-3">&#x1F4C4;</div>
         <p>Literature not found</p>
-        <a href="/search" class="text-teal-600 hover:text-teal-500 mt-2 inline-block">Back to Search</a>
+        <a href="/search" class="text-blue-600 hover:text-blue-500 mt-2 inline-block">Back to Search</a>
     </div>
     {% else %}
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
@@ -55,7 +55,7 @@
                         {{ e.evidence_strength or 'unknown' }}
                     </span>
                     {% if e.virus_name %}
-                    <a href="/search?q={{ e.virus_name|urlencode }}" class="text-xs text-teal-600 hover:text-teal-500 ml-auto">{{ e.virus_name }}</a>
+                    <a href="/search?q={{ e.virus_name|urlencode }}" class="text-xs text-blue-600 hover:text-blue-500 ml-auto">{{ e.virus_name }}</a>
                     {% endif %}
                 </div>
                 <p class="text-sm text-gray-700">{{ e.claim }}</p>

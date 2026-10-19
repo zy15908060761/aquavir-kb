@@ -1,12 +1,12 @@
 {% extends "base.html" %}
-{% block title %}PRIDE Proteomics — AquaVir-KB{% endblock %}
+{% block title %}PRIDE Proteomics - AquaVir-KB{% endblock %}
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
     <div class="flex items-center gap-2 text-sm text-gray-400 mb-4">
         <a href="/enrichment" class="hover:text-primary">Enrichment Hub</a><span>/</span><span class="text-gray-700 font-medium">PRIDE Proteomics</span>
     </div>
     <div class="bg-white rounded-xl p-5 mb-6 border border-gray-100">
-        <div class="flex items-center gap-3 mb-2"><span class="text-3xl">💾</span><div><h1 class="text-2xl font-bold text-gray-800">PRIDE Proteomics Datasets</h1><p class="text-sm text-gray-500">ProteomeXchange — Mass spectrometry proteomics data covering virus-host interaction proteomes</p></div></div>
+        <div class="flex items-center gap-3 mb-2"><span class="text-3xl"></span><div><h1 class="text-2xl font-bold text-gray-800">PRIDE Proteomics Datasets</h1><p class="text-sm text-gray-500">ProteomeXchange - Mass spectrometry proteomics data covering virus-host interaction proteomes</p></div></div>
         <div class="grid grid-cols-3 gap-4 mt-4">
             <div class="text-center p-3 bg-pink-50 rounded-lg"><div class="text-xl font-bold text-pink-700" id="s-pride">--</div><div class="text-xs text-gray-500">PRIDE Datasets</div></div>
             <div class="text-center p-3 bg-pink-50 rounded-lg"><div class="text-xl font-bold text-pink-700" id="s-matched">--</div><div class="text-xs text-gray-500">Virus-Linked</div></div>
@@ -28,7 +28,7 @@ function loadPRIDE() {
             document.getElementById('s-matched').textContent = data.filter(x => x.virus_species_matched).length;
             document.getElementById('s-total-proteins').textContent = data.reduce((s,x) => s + (x.num_proteins||0), 0);
             document.getElementById('pride-list').innerHTML = data.length === 0
-                ? '<div class="text-center text-gray-400 py-10">No PRIDE data available. Please run: python import_pride.py</div>'
+                ? '<div class="text-center text-gray-400 py-10">No PRIDE data available yet. Please contact the administrator.</div>'
                 : data.map(x => `
                 <div class="bg-white rounded-lg p-4 border border-gray-100 hover:shadow-sm">
                     <div class="flex justify-between items-start gap-3">

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Host Ecology — Aquatic Invertebrate Virus Knowledge Base{% endblock %}
+{% block title %}Host Ecology - Aquatic Invertebrate Virus Knowledge Base{% endblock %}
 {% block extra_head %}<style>.eco-card { border-left: 4px solid transparent; transition: all 0.2s; } .eco-card:hover { border-left-color: #10b981; }</style>{% endblock %}
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
@@ -10,7 +10,7 @@
     <div class="bg-white rounded-xl p-5 mb-6 border border-gray-100">
         <div class="flex items-center gap-3 mb-2">
             <span class="text-3xl">&#x1F30D;</span>
-            <div><h1 class="text-2xl font-bold text-gray-800">Host Ecology &amp; Geographic Distribution</h1><p class="text-sm text-gray-500">GBIF + OBIS + EOL — Global host species distribution, ecological traits, and biological profiles</p></div>
+            <div><h1 class="text-2xl font-bold text-gray-800">Host Ecology &amp; Geographic Distribution</h1><p class="text-sm text-gray-500">GBIF + OBIS + EOL - Global host species distribution, ecological traits, and biological profiles</p></div>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mt-4">
             <div class="text-center p-3 bg-green-50 rounded-lg"><div class="text-xl font-bold text-green-700" id="s-gbif">--</div><div class="text-xs text-gray-500">GBIF Occurrence Records</div></div>
@@ -77,10 +77,8 @@ function renderHostList(filter = '') {
     });
     document.getElementById('host-list').innerHTML = f.slice(0, 50).map(h => {
         const name = h.scientific_name || h.name || '--';
-        const cn = h.common_name_cn || '';
         return `<div class="eco-card bg-gray-50 rounded p-2 cursor-pointer hover:bg-green-50 text-sm" onclick="selectHost('${name.replace(/'/g, "\\'")}')">
             <span class="font-medium text-gray-800">${name}</span>
-            ${cn ? `<span class="text-gray-400 ml-1">${cn}</span>` : ''}
         </div>`;
     }).join('');
 }

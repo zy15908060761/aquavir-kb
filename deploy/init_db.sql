@@ -2316,36 +2316,19 @@ CREATE TABLE virus_scope_assessment (
             assessed_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
         );
 
--- PostgreSQL full-text search (replaces SQLite FTS5 virtual table)
--- Adds a tsvector column to virus_master and a GIN index for fast text search.
+CREATE VIRTUAL TABLE virus_search_fts USING fts5(
+    accession, virus_name, canonical_name, abbreviations, chinese_name,
+    taxon_family, taxon_genus, host_name, host_cn, country,
+    content='', contentless_delete=1
+);
 
-ALTER TABLE virus_master ADD COLUMN IF NOT EXISTS search_vector tsvector;
+CREATE TABLE 'virus_search_fts_config'(k PRIMARY KEY, v) WITHOUT ROWID;
 
-CREATE INDEX IF NOT EXISTS idx_virus_master_search
-    ON virus_master USING GIN (search_vector);
+CREATE TABLE 'virus_search_fts_data'(id INTEGER PRIMARY KEY, block BYTEA);
 
--- Trigger to keep search_vector in sync on INSERT or UPDATE
-CREATE OR REPLACE FUNCTION virus_master_search_update() RETURNS trigger AS $$
-BEGIN
-    NEW.search_vector :=
-        to_tsvector('english', COALESCE(NEW.canonical_name, '')) ||
-        to_tsvector('english', COALESCE(NEW.abbreviations, '')) ||
-        to_tsvector('english', COALESCE(NEW.chinese_name, ''));
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+CREATE TABLE 'virus_search_fts_docsize'(id INTEGER PRIMARY KEY, sz BYTEA, origin INTEGER);
 
-DROP TRIGGER IF EXISTS trg_virus_master_search ON virus_master;
-CREATE TRIGGER trg_virus_master_search
-    BEFORE INSERT OR UPDATE ON virus_master
-    FOR EACH ROW EXECUTE FUNCTION virus_master_search_update();
-
--- Backfill search_vector for existing rows (run AFTER data migration):
--- UPDATE virus_master SET search_vector =
---     to_tsvector('english', COALESCE(canonical_name, '')) ||
---     to_tsvector('english', COALESCE(abbreviations, '')) ||
---     to_tsvector('english', COALESCE(chinese_name, ''));
--- ;
+CREATE TABLE 'virus_search_fts_idx'(segid, term, pgno, PRIMARY KEY(segid, term)) WITHOUT ROWID;
 
 CREATE TABLE virus_vmr_mappings (
             mapping_id SERIAL PRIMARY KEY,

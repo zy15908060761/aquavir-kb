@@ -7,6 +7,25 @@
     <h1 class="text-2xl font-bold text-gray-800 mb-2">Virus Comparison</h1>
     <p class="text-gray-500 mb-6">Select 2-4 viruses for side-by-side comparison</p>
 
+    <!-- Selection control -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6">
+        <div class="flex flex-wrap gap-2 mb-3" id="compare-chips"></div>
+        <div class="relative">
+            <input type="text" id="compare-search" placeholder="Search virus name or abbreviation..." class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500">
+            <div id="compare-suggestions" class="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 hidden max-h-60 overflow-y-auto"></div>
+        </div>
+        <div class="flex items-center gap-3 mt-4">
+            <button onclick="doCompare()" class="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-500">Compare</button>
+            <span class="text-xs text-gray-400" id="compare-hint">Add 2-4 viruses to compare</span>
+        </div>
+    </div>
+
+    {% if unmatched %}
+    <div class="bg-amber-50 border border-amber-200 text-amber-800 rounded-lg px-4 py-3 mb-6 text-sm">
+        <strong>Some viruses were not found:</strong> {{ unmatched|join(', ') }}
+    </div>
+    {% endif %}
+
     {% if viruses %}
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
         <div class="overflow-x-auto">
@@ -20,12 +39,6 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
-                    <tr>
-                        <td class="px-4 py-2.5 text-gray-500 font-medium">Common Name</td>
-                        {% for v in viruses %}
-                        <td class="px-4 py-2.5 text-center text-gray-800">{{ v.chinese_name or '-' }}</td>
-                        {% endfor %}
-                    </tr>
                     <tr>
                         <td class="px-4 py-2.5 text-gray-500 font-medium">Family</td>
                         {% for v in viruses %}
@@ -70,10 +83,79 @@
     </div>
     {% else %}
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center text-gray-400">
-        <div class="text-4xl mb-3">🔬</div>
-        <p>Specify viruses to compare in the URL</p>
-        <p class="text-sm mt-2">Example: <code class="bg-gray-100 px-2 py-0.5 rounded">/compare?v=White+spot+syndrome+virus,Yellow+head+virus</code></p>
+        <div class="text-4xl mb-3"></div>
+        <p>No viruses selected</p>
+        <p class="text-sm mt-2">Use the search box above to add 2-4 viruses for comparison.</p>
     </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let selected = {{ requested_names|tojson }};
+
+function escapeHtml(text) {
+    return String(text).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+
+function renderChips() {
+    const box = document.getElementById('compare-chips');
+    box.innerHTML = selected.map((name, i) =>
+        `<span class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm">${escapeHtml(name)}<button onclick="removeVirus(${i})" class="text-blue-400 hover:text-blue-700">&times;</button></span>`
+    ).join('');
+    document.getElementById('compare-hint').textContent = selected.length >= 2
+        ? `${selected.length} viruses selected — click Compare`
+        : `Add ${2 - selected.length} more virus(es) to compare`;
+}
+
+function removeVirus(i) { selected.splice(i, 1); renderChips(); }
+
+function addVirus(name) {
+    if (selected.length >= 4) { alert('Maximum 4 viruses'); return; }
+    if (selected.includes(name)) return;
+    selected.push(name);
+    renderChips();
+    document.getElementById('compare-search').value = '';
+    document.getElementById('compare-suggestions').classList.add('hidden');
+}
+
+function doCompare() {
+    if (selected.length < 2) { alert('Select at least 2 viruses'); return; }
+    window.location.href = '/compare?v=' + encodeURIComponent(selected.join(','));
+}
+
+let searchTimer = null;
+document.getElementById('compare-search').addEventListener('input', function() {
+    clearTimeout(searchTimer);
+    const q = this.value.trim();
+    if (!q) { document.getElementById('compare-suggestions').classList.add('hidden'); return; }
+    searchTimer = setTimeout(() => {
+        fetch('/api/search?q=' + encodeURIComponent(q) + '&page_size=10')
+            .then(r => r.json())
+            .then(d => {
+                const results = d.results || [];
+                const box = document.getElementById('compare-suggestions');
+                if (!results.length) {
+                    box.innerHTML = '<div class="px-3 py-2 text-sm text-gray-400">No matches</div>';
+                } else {
+                    box.innerHTML = results.map(r => {
+                        const name = r.canonical_name || r.virus_name || r.accession;
+                        return `<div class="px-3 py-2 text-sm hover:bg-blue-50 cursor-pointer" onclick="addVirus(this.dataset.name)" data-name="${escapeHtml(name)}">${escapeHtml(name)}</div>`;
+                    }).join('');
+                }
+                box.classList.remove('hidden');
+            })
+            .catch(() => {});
+    }, 250);
+});
+
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('#compare-search') && !e.target.closest('#compare-suggestions')) {
+        document.getElementById('compare-suggestions').classList.add('hidden');
+    }
+});
+
+renderChips();
+</script>
 {% endblock %}

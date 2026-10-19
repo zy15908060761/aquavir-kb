@@ -7,23 +7,31 @@
     <!-- Header -->
     <div class="mb-8">
         <h1 class="text-3xl font-extrabold text-slate-800">Virus Browser</h1>
-        <p class="text-slate-500 mt-2 text-sm">Browse by taxonomic hierarchy or attributes; click a virus name for details</p>
+        <p class="text-slate-500 mt-2 text-sm">Search by virus name, family, or host phylum; results load only after you submit a query or filter.</p>
     </div>
 
     <div class="flex flex-col lg:flex-row gap-6">
         <!-- Left: Filter Panel -->
         <div class="lg:w-64 shrink-0">
             <div class="card p-6 sticky top-20 space-y-5 shadow-md">
+                <form action="/viruses" method="get" class="space-y-3">
+                    <div class="flex gap-2">
+                        <input type="search" id="virus-q" name="q" value="{{ query or '' }}" placeholder="Search virus, family, host..."
+                               class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm bg-white text-slate-700 input-focus focus:outline-none focus:ring-4 focus:ring-blue-50 focus:border-blue-500">
+                        <button type="submit" class="btn-primary px-4 py-2.5 text-sm">Search</button>
+                    </div>
+                </form>
+
                 <!-- Host Phylum -->
                 <div>
                     <div class="flex items-center gap-2.5 mb-3">
-                        <span class="w-1 h-4 bg-teal-500 rounded-full"></span>
+                        <span class="w-1 h-4 bg-blue-500 rounded-full"></span>
                         <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Host Phylum</h3>
                     </div>
                     <div class="space-y-1.5">
                         {% for ph in phyla %}
                         <label class="flex items-center gap-2 text-sm cursor-pointer hover:bg-slate-50 rounded-lg px-2 py-1 transition-colors">
-                            <input type="checkbox" name="phylum" value="{{ ph.name }}" class="filter-check rounded text-teal-600 focus:ring-teal-500"
+                            <input type="checkbox" name="phylum" value="{{ ph.name }}" class="filter-check rounded text-blue-600 focus:ring-blue-500"
                                    {% if ph.name in selected_phyla %}checked{% endif %}>
                             <span class="text-slate-700">{{ ph.name }}</span>
                             <span class="text-xs text-slate-400 ml-auto">{{ ph.count }}</span>
@@ -41,7 +49,7 @@
                     <div class="space-y-1.5">
                         {% for gt in genome_types %}
                         <label class="flex items-center gap-2 text-sm cursor-pointer hover:bg-slate-50 rounded-lg px-2 py-1 transition-colors">
-                            <input type="checkbox" name="genome_type" value="{{ gt.name }}" class="filter-check rounded text-teal-600 focus:ring-teal-500"
+                            <input type="checkbox" name="genome_type" value="{{ gt.name }}" class="filter-check rounded text-blue-600 focus:ring-blue-500"
                                    {% if gt.name in selected_genome_types %}checked{% endif %}>
                             <span class="text-slate-700">{{ gt.name }}</span>
                             <span class="text-xs text-slate-400 ml-auto">{{ gt.count }}</span>
@@ -59,7 +67,7 @@
                     <div class="space-y-1.5">
                         {% for dc in discovery_contexts %}
                         <label class="flex items-center gap-2 text-sm cursor-pointer hover:bg-slate-50 rounded-lg px-2 py-1 transition-colors">
-                            <input type="checkbox" name="discovery_context" value="{{ dc.name }}" class="filter-check rounded text-teal-600 focus:ring-teal-500"
+                            <input type="checkbox" name="discovery_context" value="{{ dc.name }}" class="filter-check rounded text-blue-600 focus:ring-blue-500"
                                    {% if dc.name in selected_contexts %}checked{% endif %}>
                             <span class="text-slate-700">{{ dc.name }}</span>
                             <span class="text-xs text-slate-400 ml-auto">{{ dc.count }}</span>
@@ -74,7 +82,7 @@
                         <span class="w-1 h-4 bg-amber-500 rounded-full"></span>
                         <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Virus Family</h3>
                     </div>
-                    <select name="family" id="family-select" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm bg-white text-slate-700 font-medium cursor-pointer focus:outline-none focus:ring-4 focus:ring-teal-50 focus:border-teal-500 transition-all" onchange="applyFilters()">
+                    <select name="family" id="family-select" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm bg-white text-slate-700 font-medium cursor-pointer focus:outline-none focus:ring-4 focus:ring-blue-50 focus:border-blue-500 transition-all" onchange="applyFilters()">
                         <option value="">All ({{ total_count }})</option>
                         {% for fam in families %}
                         <option value="{{ fam.name }}" {% if fam.name == selected_family %}selected{% endif %}>{{ fam.name }} ({{ fam.count }})</option>
@@ -91,15 +99,21 @@
 
         <!-- Right: Results Table -->
         <div class="flex-1 min-w-0">
+            {% if not has_filters %}
+            <div class="card p-10 text-center">
+                <div class="text-base font-semibold text-slate-700">Start searching</div>
+                <p class="text-sm text-slate-500 mt-1 max-w-md mx-auto">Enter a virus name or choose filters from the left panel. The result list is intentionally not loaded until you submit a search.</p>
+            </div>
+            {% else %}
             <div class="card p-0 shadow-md overflow-hidden">
                 <div class="px-5 py-3.5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                    <span class="text-sm text-slate-500">Total <strong class="text-slate-800 font-mono">{{ viruses|length }}</strong> viruses</span>
+                    <span class="text-sm text-slate-500">Total <strong class="text-slate-800 font-mono">{{ total_count }}</strong> entries</span>
                     <div class="flex items-center gap-2">
                         <span class="text-xs text-slate-400">Per page:</span>
-                        <select class="px-3 py-1.5 border border-slate-200 rounded-xl text-xs bg-white input-focus focus:outline-none focus:ring-4 focus:ring-teal-50 focus:border-teal-500" onchange="applyFilters()">
-                            <option value="20">20</option>
-                            <option value="50" selected>50</option>
-                            <option value="100">100</option>
+                        <select id="per-page-select" class="px-3 py-1.5 border border-slate-200 rounded-xl text-xs bg-white input-focus focus:outline-none focus:ring-4 focus:ring-blue-50 focus:border-blue-500" onchange="applyFilters()">
+                            <option value="20" {% if per_page == 20 %}selected{% endif %}>20</option>
+                            <option value="50" {% if per_page == 50 %}selected{% endif %}>50</option>
+                            <option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
                         </select>
                     </div>
                 </div>
@@ -125,10 +139,9 @@
                         </thead>
                         <tbody class="divide-y divide-slate-50">
                             {% for v in viruses %}
-                            <tr class="table-row cursor-pointer even:bg-slate-50/30 hover:bg-teal-50/30 transition-colors" onclick="window.location.href='/search?q={{ v.canonical_name|urlencode }}'">
+                            <tr class="table-row cursor-pointer even:bg-slate-50/30 hover:bg-blue-50/30 transition-colors" onclick="window.location.href='/search?q={{ v.canonical_name|urlencode }}'">
                                 <td class="px-4 py-3.5">
-                                    <div class="font-semibold text-teal-700">{{ v.canonical_name }}</div>
-                                    {% if v.chinese_name %}<div class="text-xs text-slate-400 mt-0.5">{{ v.chinese_name }}</div>{% endif %}
+                                    <div class="font-semibold text-blue-700">{{ v.canonical_name }}</div>
                                 </td>
                                 <td class="px-4 py-3.5 text-slate-700">{{ v.virus_family or '-' }}</td>
                                 <td class="px-4 py-3.5">
@@ -159,17 +172,18 @@
                 {% if total_pages > 1 %}
                 <div class="px-5 py-3.5 border-t border-slate-100 flex justify-center gap-1.5 bg-slate-50/30">
                     {% if page > 1 %}
-                    <a href="{{ url_for_page(page-1) }}" class="px-3.5 py-2 border border-slate-200 rounded-xl text-sm font-medium hover:bg-white hover:border-teal-500 transition-all duration-200 text-slate-600">&#8592; Prev</a>
+                    <a href="{{ url_for_page(page-1) }}" class="px-3.5 py-2 border border-slate-200 rounded-xl text-sm font-medium hover:bg-white hover:border-blue-500 transition-all duration-200 text-slate-600">&#8592; Prev</a>
                     {% endif %}
                     {% for p in page_range %}
-                    <a href="{{ url_for_page(p) }}" class="px-3.5 py-2 border rounded-xl text-sm font-medium transition-all duration-200 {% if p == page %}bg-teal-600 text-white border-teal-600 shadow-md shadow-teal-200{% else %}border-slate-200 text-slate-600 hover:bg-white hover:border-teal-500{% endif %}">{{ p }}</a>
+                    <a href="{{ url_for_page(p) }}" class="px-3.5 py-2 border rounded-xl text-sm font-medium transition-all duration-200 {% if p == page %}bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-200{% else %}border-slate-200 text-slate-600 hover:bg-white hover:border-blue-500{% endif %}">{{ p }}</a>
                     {% endfor %}
                     {% if page < total_pages %}
-                    <a href="{{ url_for_page(page+1) }}" class="px-3.5 py-2 border border-slate-200 rounded-xl text-sm font-medium hover:bg-white hover:border-teal-500 transition-all duration-200 text-slate-600">Next &#8594;</a>
+                    <a href="{{ url_for_page(page+1) }}" class="px-3.5 py-2 border border-slate-200 rounded-xl text-sm font-medium hover:bg-white hover:border-blue-500 transition-all duration-200 text-slate-600">Next &#8594;</a>
                     {% endif %}
                 </div>
                 {% endif %}
             </div>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -179,16 +193,24 @@
 <script>
     function applyFilters() {
         const params = new URLSearchParams();
+        const q = document.getElementById('virus-q')?.value.trim();
+        if (q) params.set('q', q);
         document.querySelectorAll('.filter-check:checked').forEach(cb => {
             params.append(cb.name, cb.value);
         });
         const family = document.getElementById('family-select').value;
         if (family) params.set('family', family);
+        const perPage = document.getElementById('per-page-select')?.value;
+        if (perPage) params.set('per_page', perPage);
         const url = new URL(window.location);
         params.set('sort_by', url.searchParams.get('sort_by') || 'canonical_name');
         params.set('sort_order', url.searchParams.get('sort_order') || 'asc');
         window.location.search = params.toString();
     }
+
+    document.querySelectorAll('.filter-check').forEach(cb => {
+        cb.addEventListener('change', applyFilters);
+    });
 
     function clearFilters() {
         window.location.href = '/viruses';

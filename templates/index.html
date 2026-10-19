@@ -1,126 +1,298 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="page-title">AquaVir-KB</div>
-<p style="color:var(--text-secondary);margin-bottom:12px;font-size:13px">A literature-mined evidence index for viruses infecting aquatic invertebrates</p>
 
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-  <form action="/search" method="get" class="search-box">
-    <input type="text" name="q" placeholder="Search by virus name, host, accession, family ..." style="font-size:13px">
-    <button type="submit">Search</button>
-  </form>
-  <div>
-    <select onchange="if(this.value)location=this.value" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;background:var(--surface)">
-      <option value="">Quick jump to virus ...</option>
-      <option value="/search?q=White+spot+syndrome+virus">WSSV (White spot syndrome virus)</option>
-      <option value="/search?q=Taura+syndrome+virus">TSV (Taura syndrome virus)</option>
-      <option value="/search?q=Infectious+hypodermal+and+hematopoietic+necrosis+virus">IHHNV (Infectious hypodermal & hematopoietic necrosis virus)</option>
-      <option value="/search?q=Yellow+head+virus">YHV (Yellow head virus)</option>
-      <option value="/search?q=Ostreid+herpesvirus+1">OsHV-1 (Ostreid herpesvirus 1)</option>
-      <option value="/search?q=Infectious+myonecrosis+virus">IMNV (Infectious myonecrosis virus)</option>
-      <option value="" disabled>---</option>
-      <option value="/hosts">Browse all host species</option>
-      <option value="/families">Browse taxonomy</option>
-      <option value="/stats">Statistics & charts</option>
-    </select>
-  </div>
-</div>
-
-<div class="stats">
-  <div class="stat"><div class="num">1,595</div><div class="lbl">Virus species</div></div>
-  <div class="stat"><div class="num">13,891</div><div class="lbl">Target isolates</div></div>
-  <div class="stat"><div class="num">353,160</div><div class="lbl">Evidence records</div></div>
-  <div class="stat"><div class="num">9,065</div><div class="lbl">References</div></div>
-  <div class="stat"><div class="num">29,004</div><div class="lbl">Viral proteins</div></div>
-  <div class="stat"><div class="num">8</div><div class="lbl">Host phyla</div></div>
-  <div class="stat"><div class="num">63</div><div class="lbl">Countries</div></div>
-  <div class="stat"><div class="num">389</div><div class="lbl">Complete genomes</div></div>
-</div>
-
-<div class="two-col">
-  <div class="card">
-    <div class="card-h">Viruses by Host Phylum</div>
-    <table>
-      <tr><td>Arthropoda</td><td style="text-align:right;font-weight:600">609</td><td style="width:40%"><div style="background:var(--primary);height:8px;border-radius:2px;width:100%"></div></td></tr>
-      <tr><td>Mollusca</td><td style="text-align:right;font-weight:600">396</td><td><div style="background:var(--primary);height:8px;border-radius:2px;width:65%"></div></td></tr>
-      <tr><td>Echinodermata</td><td style="text-align:right;font-weight:600">50</td><td><div style="background:var(--primary);height:8px;border-radius:2px;width:8%"></div></td></tr>
-      <tr><td>Porifera</td><td style="text-align:right;font-weight:600">42</td><td><div style="background:var(--primary);height:8px;border-radius:2px;width:7%"></div></td></tr>
-      <tr><td>Cnidaria</td><td style="text-align:right;font-weight:600">38</td><td><div style="background:var(--primary);height:8px;border-radius:2px;width:6%"></div></td></tr>
-      <tr><td>Platyhelminthes</td><td style="text-align:right;font-weight:600">30</td><td><div style="background:var(--primary);height:8px;border-radius:2px;width:5%"></div></td></tr>
-      <tr><td>Annelida</td><td style="text-align:right;font-weight:600">26</td><td><div style="background:var(--primary);height:8px;border-radius:2px;width:4%"></div></td></tr>
-      <tr><td>Rotifera</td><td style="text-align:right;font-weight:600">2</td><td><div style="background:var(--accent);height:8px;border-radius:2px;width:0.3%"></div></td></tr>
-    </table>
-  </div>
-  <div class="card">
-    <div class="card-h">Key Statistics</div>
-    <table>
-      <tr><td>ICTV mapped species</td><td style="text-align:right;font-weight:600">1,200</td></tr>
-      <tr><td>VMR mappings</td><td style="text-align:right;font-weight:600">476</td></tr>
-      <tr><td>Infection records</td><td style="text-align:right;font-weight:600">9,535</td></tr>
-      <tr><td>Data provenance records</td><td style="text-align:right;font-weight:600">100,599</td></tr>
-      <tr><td>Virus families covered</td><td style="text-align:right;font-weight:600">30+</td></tr>
-      <tr><td>Curated profiles</td><td style="text-align:right;font-weight:600">10,302</td></tr>
-      <tr><td>Manual-checked evidence</td><td style="text-align:right;font-weight:600">93,180</td></tr>
-      <tr><td>Protein annotation rate</td><td style="text-align:right;font-weight:600">82%</td></tr>
-    </table>
-  </div>
-</div>
-
-<div class="section">Evidence Stratification</div>
-<div class="three-col">
-  <div class="card">
-    <div class="card-h">By origin</div>
-    <div style="margin:8px 0 4px"><div style="background:var(--primary);height:50px;border-radius:2px;width:95.3%"></div></div>
-    <table>
-      <tr><td>Secondary (literature)</td><td style="text-align:right">336,512</td></tr>
-      <tr><td>Primary (lab/field)</td><td style="text-align:right">13,121</td></tr>
-      <tr><td>Database</td><td style="text-align:right">3,527</td></tr>
-    </table>
-  </div>
-  <div class="card">
-    <div class="card-h">By strength</div>
-    <div style="margin:8px 0 4px"><div style="background:var(--primary);height:50px;border-radius:2px;width:86.6%"></div></div>
-    <table>
-      <tr><td>Medium</td><td style="text-align:right">305,771</td></tr>
-      <tr><td>High</td><td style="text-align:right">46,033</td></tr>
-      <tr><td>Low</td><td style="text-align:right">1,356</td></tr>
-    </table>
-  </div>
-  <div class="card">
-    <div class="card-h">By curation</div>
-    <div style="display:flex;gap:2px;height:50px;margin:8px 0 4px">
-      <div style="background:var(--primary);flex:41.3%;border-radius:2px"></div>
-      <div style="background:var(--accent);flex:26.4%;border-radius:2px"></div>
-      <div style="background:var(--text-muted);flex:30.2%;border-radius:2px"></div>
-      <div style="background:#e8a838;flex:2.2%;border-radius:2px"></div>
+<section class="hero">
+  <div class="container hero-inner">
+    <div class="hero-copy">
+      <p class="eyebrow">Aquatic invertebrate virology database</p>
+      <h1>AquaVir-KB</h1>
+      <p class="hero-sub">Viruses infecting aquatic invertebrates, their hosts, genomes, proteins, and published evidence.</p>
+      <form class="search-box" action="/search" method="get">
+        <input type="search" name="q" placeholder="Search virus, host, isolate, accession, family, or country">
+        <button type="submit">Search</button>
+      </form>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="/viruses">Browse viruses</a>
+        <a class="btn" href="/hosts">Browse hosts</a>
+        <a class="btn" href="/blast">BLAST</a>
+        <a class="btn" href="/application">Application KB</a>
+      </div>
     </div>
-    <table>
-      <tr><td>Auto imported</td><td style="text-align:right">145,705</td></tr>
-      <tr><td>Manual checked</td><td style="text-align:right">93,180</td></tr>
-      <tr><td>Rejected</td><td style="text-align:right">106,594</td></tr>
-      <tr><td>Needs review</td><td style="text-align:right">7,681</td></tr>
-    </table>
+    <aside class="scope-panel">
+      <div class="scope-head">
+        <strong>Database scope</strong>
+        <span>Database figures</span>
+      </div>
+      <div class="scope-rows">
+        <div class="scope-row">
+          <div class="value">{{ "{:,}".format(strict_target_isolates) }}</div>
+          <div class="label">Analysis isolates</div>
+        </div>
+        <div class="scope-row">
+          <div class="value">{{ "{:,}".format(target_species) }}</div>
+          <div class="label">Target virus species</div>
+        </div>
+        <div class="scope-row">
+          <div class="value">{{ "{:,}".format(complete_genomes) }}</div>
+          <div class="label">Complete genomes</div>
+        </div>
+        <div class="scope-row">
+          <div class="value">{{ phyla_covered }}</div>
+          <div class="label">Host phyla covered</div>
+        </div>
+      </div>
+      <p class="scope-note">
+        All figures describe the curated analysis set. Reviewed evidence: {{ "{:,}".format(reviewed_evidence) }} records. Environmental sequence candidates: {{ "{:,}".format(metagenomic_candidates) }} (metagenomic, unverified &mdash; not part of the analysis set).
+      </p>
+    </aside>
   </div>
-</div>
+</section>
 
-<div class="section">Quick Links</div>
-<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">
-  <a href="/search?q=White+spot+syndrome+virus" class="tag">WSSV</a>
-  <a href="/search?q=Taura+syndrome+virus" class="tag">TSV</a>
-  <a href="/search?q=Infectious+hypodermal+and+hematopoietic+necrosis+virus" class="tag">IHHNV</a>
-  <a href="/search?q=Yellow+head+virus" class="tag">YHV</a>
-  <a href="/search?q=Ostreid+herpesvirus+1" class="tag">OsHV-1</a>
-  <a href="/search?q=Infectious+myonecrosis+virus" class="tag">IMNV</a>
-  <span style="flex:1"></span>
-  <select onchange="if(this.value)location=this.value" style="padding:2px 6px;border:1px solid var(--border);border-radius:2px;font-size:11px;background:var(--surface)">
-    <option value="">Jump to phylum ...</option>
-    <option value="/search?phylum=Arthropoda">Arthropoda</option>
-    <option value="/search?phylum=Mollusca">Mollusca</option>
-    <option value="/search?phylum=Echinodermata">Echinodermata</option>
-    <option value="/search?phylum=Porifera">Porifera</option>
-    <option value="/search?phylum=Cnidaria">Cnidaria</option>
-    <option value="/search?phylum=Platyhelminthes">Platyhelminthes</option>
-    <option value="/search?phylum=Annelida">Annelida</option>
-    <option value="/search?phylum=Rotifera">Rotifera</option>
-  </select>
-</div>
+<section class="container" style="padding:20px 0 6px">
+  <div class="metrics-grid">
+    <a class="metric" href="/viruses" style="--metric:#205493">
+      <div class="metric-top">
+        <span class="metric-label">Virus species</span>
+        <span class="metric-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </span>
+      </div>
+      <div class="metric-value">{{ "{:,}".format(virus_species_total) }}</div>
+      <div class="metric-sub">{{ "{:,}".format(target_species) }} target species</div>
+    </a>
+    <a class="metric" href="/search" style="--metric:#2563eb">
+      <div class="metric-top">
+        <span class="metric-label">Isolate records</span>
+        <span class="metric-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
+        </span>
+      </div>
+      <div class="metric-value">{{ "{:,}".format(strict_target_isolates) }}</div>
+      <div class="metric-sub">curated analysis set</div>
+    </a>
+    <a class="metric" href="/stats" style="--metric:#c33a40">
+      <div class="metric-top">
+        <span class="metric-label">Evidence records</span>
+        <span class="metric-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </span>
+      </div>
+      <div class="metric-value">{{ "{:,}".format(evidence_records) }}</div>
+      <div class="metric-sub">{{ "{:,}".format(reviewed_evidence) }} reviewed</div>
+    </a>
+    <a class="metric" href="/search?q=RDRP" style="--metric:#6d5bd0">
+      <div class="metric-top">
+        <span class="metric-label">Viral proteins</span>
+        <span class="metric-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </span>
+      </div>
+      <div class="metric-value">{{ "{:,}".format(viral_proteins) }}</div>
+      <div class="metric-sub">{{ "{:,}".format(core_genes) }} core genes</div>
+    </a>
+    <a class="metric" href="/hosts" style="--metric:#0f8a5f">
+      <div class="metric-top">
+        <span class="metric-label">Host species</span>
+        <span class="metric-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </span>
+      </div>
+      <div class="metric-value">{{ "{:,}".format(host_species_curated) }}</div>
+      <div class="metric-sub">{{ phyla_covered }} host phyla</div>
+    </a>
+    <a class="metric" href="/search?completeness=complete_genome" style="--metric:#c57b0b">
+      <div class="metric-top">
+        <span class="metric-label">Complete genomes</span>
+        <span class="metric-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        </span>
+      </div>
+      <div class="metric-value">{{ "{:,}".format(complete_genomes) }}</div>
+      <div class="metric-sub">in analysis set</div>
+    </a>
+    <a class="metric" href="/stats" style="--metric:#2563eb">
+      <div class="metric-top">
+        <span class="metric-label">Countries</span>
+        <span class="metric-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </span>
+      </div>
+      <div class="metric-value">{{ "{:,}".format(countries) }}</div>
+      <div class="metric-sub">collection records</div>
+    </a>
+    <a class="metric" href="/search?scope=sra" style="--metric:#0f8a5f">
+      <div class="metric-top">
+        <span class="metric-label">SRA runs</span>
+        <span class="metric-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </span>
+      </div>
+      <div class="metric-value">{{ "{:,}".format(sra_runs) }}</div>
+      <div class="metric-sub">linked sequence runs</div>
+    </a>
+  </div>
+</section>
+
+<section class="container" style="padding:22px 0 26px;border-bottom:1px solid var(--line)">
+  <div class="section-head">
+    <div>
+      <h2>Browse by host phylum</h2>
+      <p>Virus species assigned to each host phylum in the current database.</p>
+    </div>
+    <a class="section-link" href="/hosts">
+      All host phyla
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </a>
+  </div>
+  {% set max_phylum = viruses_by_phylum[0].count if viruses_by_phylum else 1 %}
+  <table>
+    <thead>
+      <tr>
+        <th>Phylum</th>
+        <th class="num">Virus species</th>
+        <th>Distribution</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in viruses_by_phylum %}
+      <tr>
+        <td>{{ row.phylum }}</td>
+        <td class="num">{{ "{:,}".format(row.count) }}</td>
+        <td><div class="bar-track"><span class="bar-fill" style="width:{{ (row.count / max_phylum * 100)|round(1) }}%"></span></div></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="note">
+    Nematoda is present as host records but has no target virus records (nematode viruses are classified as agricultural non-target).
+  </p>
+</section>
+
+<section class="container" style="padding:22px 0 26px;border-bottom:1px solid var(--line)">
+  <div class="section-head">
+    <div>
+      <h2>Evidence records</h2>
+      <p>Reviewed evidence records in the analysis set, grouped by type, strength, and curation status.</p>
+    </div>
+    <a class="section-link" href="/stats">
+      Evidence statistics
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </a>
+  </div>
+  <div class="evidence-grid">
+    <div class="evidence-box">
+      <h3>By type</h3>
+      {% set shown_evidence = evidence_by_type_rows[:5] %}
+      {% set shown_sum = shown_evidence | sum(attribute='count') %}
+      {% set other_evidence = reviewed_evidence - shown_sum %}
+      {% set evidence_colors = ["#205493","#2563eb","#c57b0b","#c33a40","#6d5bd0","#8b96a3"] %}
+      <div class="stacked-bar">
+        {% for row in shown_evidence %}
+        <span style="width:{{ row.pct }}%;background:{{ evidence_colors[loop.index0] }}"></span>
+        {% endfor %}
+        <span style="width:{{ (other_evidence / reviewed_evidence * 100)|round(1) if reviewed_evidence else 0 }}%;background:#8b96a3"></span>
+      </div>
+      <div class="legend">
+        {% for row in shown_evidence %}
+        <div class="legend-row"><i style="background:{{ evidence_colors[loop.index0] }}"></i><span>{{ row.key }}</span><b>{{ "{:,}".format(row.count) }}</b></div>
+        {% endfor %}
+        <div class="legend-row"><i style="background:#8b96a3"></i><span>Other reviewed</span><b>{{ "{:,}".format(other_evidence) }}</b></div>
+      </div>
+    </div>
+    <div class="evidence-box">
+      <h3>By strength</h3>
+      <div class="strength-num">
+        <div><b>{{ "{:,}".format(evidence_by_strength.get("high", 0)) }}</b><span>High</span></div>
+        <div><b>{{ "{:,}".format(evidence_by_strength.get("medium", 0)) }}</b><span>Medium</span></div>
+      </div>
+      {% set high_pct = (evidence_by_strength.get("high", 0) / reviewed_evidence * 100)|round(1) if reviewed_evidence else 0 %}
+      <div class="stacked-bar">
+        <span style="width:{{ high_pct }}%;background:#0f8a5f"></span>
+        <span style="width:{{ 100 - high_pct }}%;background:#c57b0b"></span>
+      </div>
+      <div class="legend">
+        <div class="legend-row"><i style="background:#0f8a5f"></i><span>High-confidence evidence</span><b>{{ high_pct }}%</b></div>
+        <div class="legend-row"><i style="background:#c57b0b"></i><span>Medium evidence</span><b>{{ 100 - high_pct }}%</b></div>
+      </div>
+      <p style="margin:12px 0 0;color:var(--muted);font-size:12px">Strength is reported only for reviewed evidence records.</p>
+    </div>
+    <div class="evidence-box">
+      <h3>By curation status</h3>
+      {% set curation_colors = {"manual_checked":"#0f8a5f","auto_imported":"#2563eb","needs_review":"#c57b0b","rejected":"#c33a40"} %}
+      <div class="provenance-list">
+        {% for row in evidence_by_curation_rows %}
+        <div class="provenance-row">
+          <span class="p-label">{{ row.label }}</span>
+          <span class="p-value" style="color:{{ curation_colors.get(row.key, '#64707c') }}">{{ "{:,}".format(row.count) }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% set manual_checked = evidence_by_curation.get("manual_checked", 0) %}
+      <div class="mini-track"><i style="width:{{ (manual_checked / evidence_records * 100)|round(1) if evidence_records else 0 }}%"></i></div>
+      <p style="margin:10px 0 0;color:var(--muted);font-size:11px">Manual checked records account for {{ (manual_checked / evidence_records * 100)|round(1) if evidence_records else 0 }}% of the raw evidence table.</p>
+    </div>
+  </div>
+</section>
+
+<section class="container" style="padding:22px 0 26px;border-bottom:1px solid var(--line)">
+  <div class="section-head">
+    <div>
+      <h2>Representative entries</h2>
+      <p>Common search terms for viruses with substantial records in the database.</p>
+    </div>
+    <a class="section-link" href="/viruses">
+      Browse all viruses
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </a>
+  </div>
+  <ul class="entry-list">
+    <li><a href="/search?q=White+spot+syndrome+virus">WSSV <span>White spot syndrome virus</span></a></li>
+    <li><a href="/search?q=Taura+syndrome+virus">TSV <span>Taura syndrome virus</span></a></li>
+    <li><a href="/search?q=Infectious+hypodermal+and+hematopoietic+necrosis+virus">IHHNV <span>Infectious hypodermal and hematopoietic necrosis virus</span></a></li>
+    <li><a href="/search?q=Yellow+head+virus">YHV <span>Yellow head virus</span></a></li>
+    <li><a href="/search?q=Ostreid+herpesvirus+1">OsHV-1 <span>Ostreid herpesvirus 1</span></a></li>
+    <li><a href="/search?q=Infectious+myonecrosis+virus">IMNV <span>Infectious myonecrosis virus</span></a></li>
+  </ul>
+</section>
+
+<section class="container" style="padding:22px 0 26px">
+  <div class="section-head">
+    <div>
+      <h2>Application modules</h2>
+      <p>Diagnostics and disease-related records are kept as clearly bounded curated sets.</p>
+    </div>
+    <a class="section-link" href="/application">
+      Open application knowledge base
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </a>
+  </div>
+  <div class="app-grid">
+    <div class="app-item" style="--app-color:#2563eb">
+      <h3>Diagnostics</h3>
+      <div class="count">{{ diagnostic_curated_count }} curated</div>
+      <p>{{ diagnostic_placeholder_count }} placeholder methods are not presented as validated.</p>
+    </div>
+    <div class="app-item" style="--app-color:#c33a40">
+      <h3>WOAH disease mappings</h3>
+      <div class="count">{{ virus_disease_mapping }} mapped</div>
+      <p>Mappings cover listed virus-related diseases.</p>
+    </div>
+    <div class="app-item" style="--app-color:#0f8a5f">
+      <h3>Control and management</h3>
+      <div class="count">{{ control_methods_count }} manual checked</div>
+      <p>Methods grouped by type, with checked records first.</p>
+    </div>
+    <div class="app-item" style="--app-color:#c57b0b">
+      <h3>Vaccine targets</h3>
+      <div class="count">{{ vaccine_targets }} targets</div>
+      <span class="app-pilot">Curated set</span>
+    </div>
+    <div class="app-item" style="--app-color:#6d5bd0">
+      <h3>Resistance genes</h3>
+      <div class="count">{{ resistance_genes }} candidates</div>
+      <span class="app-pilot">Candidate set</span>
+    </div>
+  </div>
+</section>
+
 {% endblock %}

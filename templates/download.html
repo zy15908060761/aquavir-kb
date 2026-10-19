@@ -15,18 +15,22 @@
     </div>
 
     <div class="card p-6 mb-8 shadow-md border-l-4 border-l-amber-400">
-        <p class="text-sm text-amber-700">Permanent archive: <a href="https://doi.org/10.5281/zenodo.[RECORD_ID]" class="text-amber-700 underline font-medium">DOI: 10.5281/zenodo.[RECORD_ID]</a></p>
+        <p class="text-sm text-amber-700">Permanent archive: Zenodo DOI will be assigned upon publication.</p>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        <div class="card-hover p-6 relative overflow-hidden border-l-[5px] border-l-teal-500 rounded-l-none shadow-md">
-            <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-teal-50 to-transparent rounded-bl-3xl -mr-2 -mt-2"></div>
-            <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-teal-400 to-teal-600 text-white flex items-center justify-center text-xl mb-4 shadow-md shadow-teal-200">
+        <div class="card-hover p-6 relative overflow-hidden border-l-[5px] border-l-blue-500 rounded-l-none shadow-md">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-blue-50 to-transparent rounded-bl-3xl -mr-2 -mt-2"></div>
+            <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 text-white flex items-center justify-center text-xl mb-4 shadow-md shadow-blue-200">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             </div>
             <h3 class="text-lg font-bold text-slate-800 mb-1.5">Standardized Metadata</h3>
             <p class="text-sm text-slate-500 mb-5 leading-relaxed">Filtered, publication-quality isolate metadata with source reference information. (540 KB)</p>
-            <a href="/api/download/crustacean_virus_metadata_standardized.xlsx" download class="btn-primary rounded-2xl px-5 py-2.5 font-semibold text-sm inline-flex items-center gap-2 shadow-lg shadow-teal-200 hover:shadow-xl transition-all duration-200">
+            <details class="text-xs text-slate-500 mb-4">
+                <summary class="cursor-pointer hover:text-blue-600 font-medium">View schema</summary>
+                <div class="mt-2 bg-slate-50 rounded p-2 leading-relaxed">Columns: accession, canonical_name, abbreviations, entry_type, completeness, molecule_type, sequence_length, genome_length, taxon_family, taxon_genus, taxon_species, host_name, country, collection_year, collection_date, ref_title, pmid, doi, dataset_tier, curation_status, confidence</div>
+            </details>
+            <a href="/api/download/crustacean_virus_metadata_standardized.xlsx" download class="btn-primary rounded-2xl px-5 py-2.5 font-semibold text-sm inline-flex items-center gap-2 shadow-lg shadow-blue-200 hover:shadow-xl transition-all duration-200">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                 Download Excel
             </a>
@@ -39,6 +43,10 @@
             </div>
             <h3 class="text-lg font-bold text-slate-800 mb-1.5">All Curated Sequences</h3>
             <p class="text-sm text-slate-500 mb-5 leading-relaxed">FASTA sequences for strictly filtered, publication-quality isolates only. (32 MB)</p>
+            <details class="text-xs text-slate-500 mb-4">
+                <summary class="cursor-pointer hover:text-blue-600 font-medium">View format</summary>
+                <div class="mt-2 bg-slate-50 rounded p-2 leading-relaxed">FASTA format: each record has a '&gt;' header line (accession, virus name) followed by one or more nucleotide sequence lines.</div>
+            </details>
             <a href="/api/download/all_sequences.fasta" download class="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white rounded-2xl px-5 py-2.5 font-semibold text-sm shadow-lg shadow-blue-200 hover:shadow-xl transition-all duration-200">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                 Download FASTA
@@ -52,6 +60,10 @@
             </div>
             <h3 class="text-lg font-bold text-slate-800 mb-1.5">Complete Genomes</h3>
             <p class="text-sm text-slate-500 mb-5 leading-relaxed">Publication-quality sequences of reasonable length, annotated as complete genomes. (19 MB)</p>
+            <details class="text-xs text-slate-500 mb-4">
+                <summary class="cursor-pointer hover:text-blue-600 font-medium">View format</summary>
+                <div class="mt-2 bg-slate-50 rounded p-2 leading-relaxed">FASTA format: each record has a '&gt;' header line (accession, virus name) followed by one or more nucleotide sequence lines.</div>
+            </details>
             <a href="/api/download/complete_genomes.fasta" download class="inline-flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white rounded-2xl px-5 py-2.5 font-semibold text-sm shadow-lg shadow-green-200 hover:shadow-xl transition-all duration-200">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                 Download FASTA
@@ -65,7 +77,11 @@
             </div>
             <h3 class="text-lg font-bold text-slate-800 mb-1.5">Reviewed Evidence</h3>
             <p class="text-sm text-slate-500 mb-5 leading-relaxed">93,180 manually checked evidence records with PMID/DOI citations. (935 KB Excel)</p>
-            <a href="/api/download/reviewed_evidence_records.xlsx" download class="inline-flex items-center gap-2 bg-white text-slate-700 border-2 border-slate-200 hover:bg-slate-50 hover:border-teal-500 rounded-2xl px-5 py-2.5 font-semibold text-sm shadow-md hover:shadow-lg transition-all duration-200">
+            <details class="text-xs text-slate-500 mb-4">
+                <summary class="cursor-pointer hover:text-blue-600 font-medium">View schema</summary>
+                <div class="mt-2 bg-slate-50 rounded p-2 leading-relaxed">Columns: evidence_id, evidence_type, claim, value_text, value_numeric_min/max, unit, context, evidence_strength, source_pmid, source_doi, extraction_method, curation_status, source_url, evidence_origin</div>
+            </details>
+            <a href="/api/download/reviewed_evidence_records.xlsx" download class="inline-flex items-center gap-2 bg-white text-slate-700 border-2 border-slate-200 hover:bg-slate-50 hover:border-blue-500 rounded-2xl px-5 py-2.5 font-semibold text-sm shadow-md hover:shadow-lg transition-all duration-200">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                 Download Excel
             </a>
@@ -78,6 +94,10 @@
             </div>
             <h3 class="text-lg font-bold text-slate-800 mb-1.5">Host-Virus Network</h3>
             <p class="text-sm text-slate-500 mb-5 leading-relaxed">Publication-quality host-virus association edge table, importable by network analysis tools. (79 KB)</p>
+            <details class="text-xs text-slate-500 mb-4">
+                <summary class="cursor-pointer hover:text-blue-600 font-medium">View schema</summary>
+                <div class="mt-2 bg-slate-50 rounded p-2 leading-relaxed">Columns: virus_name, host_name, record_count</div>
+            </details>
             <a href="/api/download/host_virus_network.csv" download class="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white rounded-2xl px-5 py-2.5 font-semibold text-sm shadow-lg shadow-purple-200 hover:shadow-xl transition-all duration-200">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                 Download CSV

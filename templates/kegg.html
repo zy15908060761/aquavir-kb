@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-{% block title %}KEGG Pathways — Aquatic Invertebrate Virus Knowledge Base{% endblock %}
+{% block title %}KEGG Pathways - Aquatic Invertebrate Virus Knowledge Base{% endblock %}
 {% block extra_head %}
 <style>
-    .ko-card { border-left: 4px solid #0f766e; transition: all 0.2s; }
+    .ko-card { border-left: 4px solid #205493; transition: all 0.2s; }
     .ko-card:hover { box-shadow: 0 4px 16px -4px rgba(0,0,0,0.1); }
     .pathway-tag { font-size: 0.7rem; }
     .search-highlight { background: #fef3c7; }
@@ -24,14 +24,14 @@
             <span class="text-3xl">&#x1F5FA;&#xFE0F;</span>
             <div>
                 <h1 class="text-2xl font-bold text-gray-800">KEGG Pathways &amp; Enzyme Annotations</h1>
-                <p class="text-sm text-gray-500">Kyoto Encyclopedia of Genes and Genomes — Viral protein KO classification and pathway mapping</p>
+                <p class="text-sm text-gray-500">Kyoto Encyclopedia of Genes and Genomes - Viral protein KO classification and pathway mapping</p>
             </div>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4" id="kegg-summary">
-            <div class="text-center p-3 bg-teal-50 rounded-lg"><div class="text-xl font-bold text-primary">--</div><div class="text-xs text-gray-500">Total KO Annotations</div></div>
-            <div class="text-center p-3 bg-teal-50 rounded-lg"><div class="text-xl font-bold text-primary">--</div><div class="text-xs text-gray-500">Unique KO IDs</div></div>
-            <div class="text-center p-3 bg-teal-50 rounded-lg"><div class="text-xl font-bold text-primary">--</div><div class="text-xs text-gray-500">KEGG Pathways</div></div>
-            <div class="text-center p-3 bg-teal-50 rounded-lg"><div class="text-xl font-bold text-primary">--</div><div class="text-xs text-gray-500">Protein-Pathway Links</div></div>
+            <div class="text-center p-3 bg-blue-50 rounded-lg"><div class="text-xl font-bold text-primary">--</div><div class="text-xs text-gray-500">Total KO Annotations</div></div>
+            <div class="text-center p-3 bg-blue-50 rounded-lg"><div class="text-xl font-bold text-primary">--</div><div class="text-xs text-gray-500">Unique KO IDs</div></div>
+            <div class="text-center p-3 bg-blue-50 rounded-lg"><div class="text-xl font-bold text-primary">--</div><div class="text-xs text-gray-500">KEGG Pathways</div></div>
+            <div class="text-center p-3 bg-blue-50 rounded-lg"><div class="text-xl font-bold text-primary">--</div><div class="text-xs text-gray-500">Protein-Pathway Links</div></div>
         </div>
     </div>
 
@@ -43,7 +43,6 @@
                 <option value="all">All Annotations</option>
                 <option value="has_ko">Has KO Number</option>
                 <option value="has_ec">Has EC Number</option>
-                <option value="pathway_linked">Pathway Linked</option>
             </select>
             <button onclick="loadKEGGData()" class="px-4 py-2 bg-primary text-white text-sm rounded-lg hover:bg-primary-dark transition">Refresh</button>
         </div>
@@ -93,7 +92,7 @@ function updateSummary(pathways) {
     summary.children[0].querySelector('.text-xl').textContent = totalKO.toLocaleString();
     summary.children[1].querySelector('.text-xl').textContent = uniqueKO.toLocaleString();
     summary.children[2].querySelector('.text-xl').textContent = pathCount.toLocaleString();
-    summary.children[3].querySelector('.text-xl').textContent = '--'; // links from server
+    summary.children[3].querySelector('.text-xl').textContent = linkCount.toLocaleString();
 }
 
 function applyFilter() {
@@ -109,7 +108,6 @@ function applyFilter() {
     }
     if (filter === 'has_ko') filtered = filtered.filter(x => x.ko_id);
     if (filter === 'has_ec') filtered = filtered.filter(x => x.ec_number);
-    if (filter === 'pathway_linked') filtered = filtered.filter(x => x.ko_id);
     renderPage(filtered);
 }
 
@@ -131,7 +129,7 @@ function renderPage(filtered) {
                         <p class="text-sm text-gray-600 mt-1">${x.ko_name || x.ec_number || '--'}</p>
                         ${x.ko_definition ? `<p class="text-xs text-gray-400 mt-1 line-clamp-2">${x.ko_definition}</p>` : ''}
                     </div>
-                    ${x.ncbi_protein_acc ? `<div class="text-xs text-gray-400 text-right"><a href="/api/virus/${x.ncbi_protein_acc}" class="hover:text-primary">${x.ncbi_protein_acc}</a></div>` : ''}
+                    ${x.ncbi_protein_acc ? `<div class="text-xs text-gray-400 text-right"><a href="https://www.ncbi.nlm.nih.gov/protein/${x.ncbi_protein_acc}" target="_blank" class="hover:text-primary">${x.ncbi_protein_acc}</a></div>` : ''}
                 </div>
             </div>
         `).join('');

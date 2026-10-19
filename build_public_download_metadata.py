@@ -2,12 +2,21 @@ from __future__ import annotations
 
 import csv
 import hashlib
+import os
 from datetime import datetime
 from pathlib import Path
 
 
+# Fixed release timestamp for deterministic (reproducible) artifacts.
+# Freeze date; overridable via SOURCE_DATE_EPOCH for reproducible builds.
+_EPOCH = os.environ.get("SOURCE_DATE_EPOCH")
+_DT = datetime.fromtimestamp(int(_EPOCH)) if _EPOCH else datetime(2026, 10, 5, 0, 0, 0)
+FIXED_ISO = _DT.isoformat(timespec="seconds")
+FIXED_DATE = _DT.date().isoformat()
+
+
 BASE_DIR = Path(__file__).resolve().parent
-PUBLIC_DIR = BASE_DIR / "public_downloads"
+PUBLIC_DIR = BASE_DIR / "deploy" / "data" / "public_downloads"
 MAIN_PUBLIC_FILES = {
     "all_sequences.fasta",
     "complete_genomes.fasta",
@@ -49,7 +58,7 @@ def main() -> None:
 
     (PUBLIC_DIR / "README.md").write_text(
         "# CrustaVirus DB Public Downloads\n\n"
-        f"Generated: {datetime.now().isoformat(timespec='seconds')}\n\n"
+        f"Generated: {FIXED_ISO}\n\n"
         "Files in this directory are release-filtered public artifacts. Candidate, inferred, and unreviewed evidence is not promoted as validated knowledge here.\n\n"
         "- `crustacean_virus_metadata_standardized.xlsx`: strict target isolate metadata.\n"
         "- `all_sequences.fasta`: FASTA sequences for strict target isolates with local sequence files.\n"
@@ -72,7 +81,7 @@ def main() -> None:
         "message: \"If you use CrustaVirus DB, please cite the database paper or release.\"\n"
         "title: \"CrustaVirus DB\"\n"
         "version: \"v1.0-rc\"\n"
-        "date-released: \"" + datetime.now().date().isoformat() + "\"\n"
+        "date-released: \"" + FIXED_DATE + "\"\n"
         "authors:\n"
         "  - family-names: \"CrustaVirus DB Team\"\n",
         encoding="utf-8",

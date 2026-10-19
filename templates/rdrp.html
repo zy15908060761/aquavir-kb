@@ -7,36 +7,37 @@
     <!-- Header -->
     <div class="mb-8">
         <h1 class="text-3xl font-extrabold text-slate-800">RDRP Sequence Browser</h1>
-        <p class="text-slate-500 mt-2 text-sm">RNA-dependent RNA polymerase — the most conserved protein in RNA viruses, used for phylogenetic analysis and detection primer design</p>
+        <p class="text-slate-500 mt-2 text-sm">RNA-dependent RNA polymerase - the most conserved protein in RNA viruses, used for phylogenetic analysis and detection primer design</p>
     </div>
 
     <!-- BLAST Panel -->
     <div class="card p-6 mb-6 shadow-md">
         <div class="flex items-center gap-2.5 mb-5">
-            <span class="w-1.5 h-5 bg-gradient-to-b from-teal-400 to-teal-600 rounded-full"></span>
+            <span class="w-1.5 h-5 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full"></span>
             <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">RDRP Local BLAST Search</h3>
             <span id="blast-status" class="ml-auto text-xs text-slate-400">Checking BLAST+ status...</span>
         </div>
         <textarea id="blast-query" rows="4" placeholder=">query_rdrp&#10;MNN..."
-                  class="w-full px-4 py-3.5 border-2 border-slate-200 rounded-2xl font-mono text-sm focus:outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-50 transition-all duration-200 resize-vertical bg-slate-50/50 focus:bg-white text-slate-800"></textarea>
+                  class="w-full px-4 py-3.5 border-2 border-slate-200 rounded-2xl font-mono text-sm focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all duration-200 resize-vertical bg-slate-50/50 focus:bg-white text-slate-800"></textarea>
         <div class="flex flex-wrap gap-3 items-center mt-4">
-            <select id="blast-engine" class="input-focus px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm bg-white text-slate-700 font-medium cursor-pointer focus:outline-none focus:ring-4 focus:ring-teal-50 focus:border-teal-500">
+            <select id="blast-engine" class="input-focus px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm bg-white text-slate-700 font-medium cursor-pointer focus:outline-none focus:ring-4 focus:ring-blue-50 focus:border-blue-500">
                 <option value="blastp">BLASTP (protein)</option>
                 <option value="blastx">BLASTX (translated nucleotide)</option>
                 <option value="kmer">k-mer (fast fallback)</option>
             </select>
-            <button id="blast-btn" onclick="runBlast()" class="btn-primary rounded-2xl px-5 py-2.5 font-semibold text-sm shadow-lg shadow-teal-200 hover:shadow-xl transition-all duration-200">Run BLAST</button>
-            <button id="build-db-btn" onclick="buildBlastDb()" class="px-5 py-2.5 bg-white text-slate-700 border-2 border-slate-200 hover:bg-slate-50 hover:border-teal-500 rounded-2xl font-semibold text-sm shadow-md hover:shadow-lg transition-all duration-200">Rebuild BLAST DB</button>
+            <button id="blast-btn" onclick="runBlast()" class="btn-primary rounded-2xl px-5 py-2.5 font-semibold text-sm shadow-lg shadow-blue-200 hover:shadow-xl transition-all duration-200">Run BLAST</button>
+            <button id="build-db-btn" onclick="buildBlastDb()" class="px-5 py-2.5 bg-white text-slate-700 border-2 border-slate-200 hover:bg-slate-50 hover:border-blue-500 rounded-2xl font-semibold text-sm shadow-md hover:shadow-lg transition-all duration-200">Rebuild BLAST DB</button>
             <label class="text-sm text-slate-600 font-medium flex items-center gap-1.5">
                 E-value
-                <input id="blast-evalue" type="text" value="1e-5" class="w-20 px-2.5 py-1.5 border border-slate-200 rounded-xl text-sm input-focus focus:outline-none focus:ring-4 focus:ring-teal-50 focus:border-teal-500">
+                <input id="blast-evalue" type="text" value="1e-5" class="w-20 px-2.5 py-1.5 border border-slate-200 rounded-xl text-sm input-focus focus:outline-none focus:ring-4 focus:ring-blue-50 focus:border-blue-500">
             </label>
             <label class="text-sm text-slate-600 font-medium flex items-center gap-1.5">
                 Limit
-                <input id="blast-limit" type="number" value="20" min="1" max="100" class="w-16 px-2.5 py-1.5 border border-slate-200 rounded-xl text-sm input-focus focus:outline-none focus:ring-4 focus:ring-teal-50 focus:border-teal-500">
+                <input id="blast-limit" type="number" value="20" min="1" max="100" class="w-16 px-2.5 py-1.5 border border-slate-200 rounded-xl text-sm input-focus focus:outline-none focus:ring-4 focus:ring-blue-50 focus:border-blue-500">
                 results
             </label>
         </div>
+        <p class="text-xs text-slate-400 mt-2">Note: result columns differ by engine &mdash; k-mer shows similarity score, BLAST shows alignment statistics (%ID, E-value, bits).</p>
         <div id="blast-results" class="mt-5 hidden">
             <div class="border border-slate-100 rounded-xl overflow-hidden">
                 <div class="overflow-x-auto max-h-96">
@@ -54,18 +55,18 @@
     <!-- Browser Panel -->
     <div class="card p-6 shadow-md">
         <div class="flex items-center gap-2.5 mb-5">
-            <span class="w-1.5 h-5 bg-gradient-to-b from-teal-400 to-teal-600 rounded-full"></span>
+            <span class="w-1.5 h-5 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full"></span>
             <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">RDRP Sequence Browser</h3>
         </div>
         <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
             <div class="flex items-center gap-3">
-                <select id="species-filter" class="input-focus px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm bg-white text-slate-700 font-medium cursor-pointer min-w-[200px] focus:outline-none focus:ring-4 focus:ring-teal-50 focus:border-teal-500"
+                <select id="species-filter" class="input-focus px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm bg-white text-slate-700 font-medium cursor-pointer min-w-[200px] focus:outline-none focus:ring-4 focus:ring-blue-50 focus:border-blue-500"
                         onchange="loadRdrpData(1)">
-                    <option value="">— All Species —</option>
+                    <option value="">- All Species -</option>
                 </select>
                 <span id="rdrp-count-label" class="text-sm text-slate-500 font-medium">Loading...</span>
             </div>
-            <a id="rdrp-download" href="/api/rdrp/export/all" download class="px-5 py-2 bg-white text-slate-700 border-2 border-slate-200 hover:bg-slate-50 hover:border-teal-500 rounded-2xl font-semibold text-sm shadow-md hover:shadow-lg transition-all duration-200 inline-flex items-center gap-2">
+            <a id="rdrp-download" href="/api/rdrp/export/all" download class="px-5 py-2 bg-white text-slate-700 border-2 border-slate-200 hover:bg-slate-50 hover:border-blue-500 rounded-2xl font-semibold text-sm shadow-md hover:shadow-lg transition-all duration-200 inline-flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                 Download FASTA
             </a>
@@ -86,9 +87,9 @@
                 <tbody id="rdrp-tbody" class="divide-y divide-slate-50">
                     <tr><td colspan="6" class="px-4 py-10 text-center text-slate-400">
                         <div class="flex justify-center gap-1">
-                            <span class="w-2 h-2 bg-teal-400 rounded-full animate-pulse"></span>
-                            <span class="w-2 h-2 bg-teal-500 rounded-full animate-pulse" style="animation-delay:0.2s"></span>
-                            <span class="w-2 h-2 bg-teal-600 rounded-full animate-pulse" style="animation-delay:0.4s"></span>
+                            <span class="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>
+                            <span class="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style="animation-delay:0.2s"></span>
+                            <span class="w-2 h-2 bg-blue-600 rounded-full animate-pulse" style="animation-delay:0.4s"></span>
                         </div>
                         <div class="text-sm mt-2">Loading sequence data...</div>
                     </td></tr>
@@ -97,9 +98,9 @@
         </div>
 
         <div class="flex justify-between items-center mt-4">
-            <button onclick="loadRdrpData(rdrpPage-1)" id="rdrp-prev" class="px-4 py-2.5 border-2 border-slate-200 rounded-xl hover:bg-slate-50 hover:border-teal-500 text-sm font-medium text-slate-600 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed">&#8592; Prev</button>
+            <button onclick="loadRdrpData(rdrpPage-1)" id="rdrp-prev" class="px-4 py-2.5 border-2 border-slate-200 rounded-xl hover:bg-slate-50 hover:border-blue-500 text-sm font-medium text-slate-600 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed">&#8592; Prev</button>
             <span id="rdrp-page-info" class="text-sm text-slate-500">Page 1</span>
-            <button onclick="loadRdrpData(rdrpPage+1)" id="rdrp-next" class="px-4 py-2.5 border-2 border-slate-200 rounded-xl hover:bg-slate-50 hover:border-teal-500 text-sm font-medium text-slate-600 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed">Next &#8594;</button>
+            <button onclick="loadRdrpData(rdrpPage+1)" id="rdrp-next" class="px-4 py-2.5 border-2 border-slate-200 rounded-xl hover:bg-slate-50 hover:border-blue-500 text-sm font-medium text-slate-600 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed">Next &#8594;</button>
         </div>
     </div>
 </div>
@@ -131,6 +132,7 @@
     }
 
     async function buildBlastDb() {
+        if (!confirm('Rebuilding the BLAST database may take several minutes. Continue?')) return;
         const btn = document.getElementById('build-db-btn');
         const status = document.getElementById('blast-status');
         btn.disabled = true;
@@ -178,8 +180,8 @@
         if (engine === 'kmer') {
             thead.innerHTML = '<th class="text-right px-3 py-2 font-bold text-slate-600 text-xs uppercase tracking-wider">Score</th><th class="text-right px-3 py-2 font-bold text-slate-600 text-xs uppercase tracking-wider">Query%</th><th class="text-left px-3 py-2 font-bold text-slate-600 text-xs uppercase tracking-wider">Virus</th><th class="text-left px-3 py-2 font-bold text-slate-600 text-xs uppercase tracking-wider">Accession</th><th class="text-left px-3 py-2 font-bold text-slate-600 text-xs uppercase tracking-wider">Protein</th><th class="text-right px-3 py-2 font-bold text-slate-600 text-xs uppercase tracking-wider">aa</th>';
             tbody.innerHTML = (data.results||[]).map(hit =>
-                '<tr class="hover:bg-teal-50/30 cursor-pointer transition-colors" onclick="window.location.href=\'/virus/' + hit.accession + '\'">' +
-                    '<td class="px-3 py-2 text-right font-semibold text-teal-700">' + hit.score + '</td>' +
+                '<tr class="hover:bg-blue-50/30 cursor-pointer transition-colors" onclick="window.location.href=\'/virus/' + hit.accession + '\'">' +
+                    '<td class="px-3 py-2 text-right font-semibold text-blue-700">' + hit.score + '</td>' +
                     '<td class="px-3 py-2 text-right text-slate-600">' + hit.query_coverage + '</td>' +
                     '<td class="px-3 py-2 text-slate-700">' + (hit.virus_species||'-') + '</td>' +
                     '<td class="px-3 py-2 font-mono text-xs text-slate-500">' + (hit.accession||'-') + '</td>' +
@@ -190,8 +192,8 @@
         } else {
             thead.innerHTML = '<th class="text-right px-3 py-2 font-bold text-slate-600 text-xs uppercase tracking-wider">%ID</th><th class="text-right px-3 py-2 font-bold text-slate-600 text-xs uppercase tracking-wider">E-value</th><th class="text-right px-3 py-2 font-bold text-slate-600 text-xs uppercase tracking-wider">Bits</th><th class="text-right px-3 py-2 font-bold text-slate-600 text-xs uppercase tracking-wider">Query%</th><th class="text-left px-3 py-2 font-bold text-slate-600 text-xs uppercase tracking-wider">Virus</th><th class="text-left px-3 py-2 font-bold text-slate-600 text-xs uppercase tracking-wider">Accession</th><th class="text-left px-3 py-2 font-bold text-slate-600 text-xs uppercase tracking-wider">Protein</th><th class="text-right px-3 py-2 font-bold text-slate-600 text-xs uppercase tracking-wider">Range</th>';
             tbody.innerHTML = (data.results||[]).map(hit =>
-                '<tr class="hover:bg-teal-50/30 cursor-pointer transition-colors" onclick="window.location.href=\'/virus/' + hit.accession + '\'">' +
-                    '<td class="px-3 py-2 text-right font-semibold text-teal-700">' + hit.pident + '</td>' +
+                '<tr class="hover:bg-blue-50/30 cursor-pointer transition-colors" onclick="window.location.href=\'/virus/' + hit.accession + '\'">' +
+                    '<td class="px-3 py-2 text-right font-semibold text-blue-700">' + hit.pident + '</td>' +
                     '<td class="px-3 py-2 text-right font-mono text-xs text-slate-500">' + (hit.evalue||'-') + '</td>' +
                     '<td class="px-3 py-2 text-right text-slate-600">' + hit.bitscore + '</td>' +
                     '<td class="px-3 py-2 text-right text-slate-600">' + hit.query_coverage + '</td>' +
@@ -209,7 +211,7 @@
             const res = await fetch('/api/rdrp/species');
             const data = await res.json();
             const sel = document.getElementById('species-filter');
-            sel.innerHTML = '<option value="">— All Species —</option>' +
+            sel.innerHTML = '<option value="">- All Species -</option>' +
                 data.map(s => '<option value="' + s.species + '">' + s.species.replace(/ virus| syndrome/g,'') + ' (' + s.rdrp_count + ')</option>').join('');
         } catch(e) {}
     }
@@ -236,7 +238,7 @@
                 const structBadge = p._has_structure
                     ? '<a href="/enrichment/structures" class="text-xs px-1.5 py-0.5 rounded-lg bg-purple-50 text-purple-700 hover:bg-purple-100 font-medium" title="Has 3D structure" onclick="event.stopPropagation()">3D Structure</a>'
                     : '<span class="text-xs text-slate-300">-</span>';
-                return '<tr class="hover:bg-teal-50/30 cursor-pointer transition-colors" onclick="window.location.href=\'/virus/' + p.accession + '\'">' +
+                return '<tr class="hover:bg-blue-50/30 cursor-pointer transition-colors" onclick="window.location.href=\'/virus/' + p.accession + '\'">' +
                     '<td class="px-4 py-2 text-slate-700">' + (p.virus_species||'').replace(/ virus| syndrome/g,'') + '</td>' +
                     '<td class="px-4 py-2 font-mono text-xs text-slate-500">' + p.accession + '</td>' +
                     '<td class="px-4 py-2 text-slate-600">' + (p.protein_name||'-') + '</td>' +

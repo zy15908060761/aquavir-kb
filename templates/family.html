@@ -4,8 +4,8 @@
 {% block breadcrumbs %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
     <nav class="flex text-xs text-gray-400 space-x-1">
-        <a href="/" class="hover:text-teal-600 transition">Home</a>
-        <span>/</span><a href="/search" class="hover:text-teal-600 transition">Search</a>
+        <a href="/" class="hover:text-blue-600 transition">Home</a>
+        <span>/</span><a href="/search" class="hover:text-blue-600 transition">Search</a>
         <span>/</span><span class="text-gray-600">{{ family_name }}</span>
     </nav>
 </div>
@@ -20,7 +20,7 @@
 
     <!-- Stats Bar -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6" id="family-stats">
-        <div class="card-hover p-4 text-center border-l-[4px] border-l-teal-500 rounded-l-none"><div class="text-xl font-extrabold text-teal-600 font-mono" id="stat-isolates">--</div><div class="text-xs text-slate-500 mt-1 font-medium">Isolates</div></div>
+        <div class="card-hover p-4 text-center border-l-[4px] border-l-blue-500 rounded-l-none"><div class="text-xl font-extrabold text-blue-600 font-mono" id="stat-isolates">--</div><div class="text-xs text-slate-500 mt-1 font-medium">Isolates</div></div>
         <div class="card-hover p-4 text-center border-l-[4px] border-l-blue-500 rounded-l-none"><div class="text-xl font-extrabold text-blue-600 font-mono" id="stat-species">--</div><div class="text-xs text-slate-500 mt-1 font-medium">Virus Species</div></div>
         <div class="card-hover p-4 text-center border-l-[4px] border-l-green-500 rounded-l-none"><div class="text-xl font-extrabold text-green-600 font-mono" id="stat-hosts">--</div><div class="text-xs text-slate-500 mt-1 font-medium">Host Species</div></div>
         <div class="card-hover p-4 text-center border-l-[4px] border-l-purple-500 rounded-l-none"><div class="text-xl font-extrabold text-purple-600 font-mono" id="stat-countries">--</div><div class="text-xs text-slate-500 mt-1 font-medium">Countries</div></div>
@@ -78,7 +78,7 @@
 
     <!-- Quick Links -->
     <div class="flex flex-wrap gap-3 text-sm">
-        <a href="/search?family={{ family_name|urlencode }}" class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-500 transition">Search all records in this family</a>
+        <a href="/search?family={{ family_name|urlencode }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition">Search all records in this family</a>
         <a href="/phylogeny" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">Phylogeny</a>
         <a href="/stats" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">Global Stats</a>
     </div>
@@ -93,7 +93,7 @@ function reg(c) { if(c) charts.push(c); return c; }
 fetch('/api/family/{{ family_name }}')
     .then(r => r.json())
     .then(d => {
-        if (d.error) { document.body.innerHTML = '<div class="empty-state" style="padding:5rem"><div class="empty-icon">🔬</div><div class="empty-title">' + d.error + '</div></div>'; return; }
+        if (d.error) { document.body.innerHTML = '<div class="empty-state" style="padding:5rem"><div class="empty-icon"></div><div class="empty-title">' + d.error + '</div></div>'; return; }
 
         const s = d.stats;
         document.getElementById('stat-isolates').textContent = s.isolate_count?.toLocaleString() || '0';
@@ -114,7 +114,7 @@ fetch('/api/family/{{ family_name }}')
             grid: { left: '3%', right: '8%', bottom: '3%', top: '3%', containLabel: true },
             xAxis: { type: 'value' },
             yAxis: { type: 'category', data: vNames, axisLabel: { fontSize: 11 } },
-            series: [{ type: 'bar', data: vCounts, itemStyle: { color: '#0f766e', borderRadius: [0,4,4,0] }, label: { show: true, position: 'right', fontSize: 11 } }]
+            series: [{ type: 'bar', data: vCounts, itemStyle: { color: '#205493', borderRadius: [0,4,4,0] }, label: { show: true, position: 'right', fontSize: 11 } }]
         });
 
         // Hosts bar chart
@@ -208,7 +208,7 @@ fetch('/api/family/{{ family_name }}')
             }).catch(() => {});
     })
     .catch(() => {
-        document.getElementById('family-stats').innerHTML = '<div class="col-span-full empty-state"><div class="empty-icon">⚠️</div><div class="empty-title text-red-600">Loading failed</div></div>';
+        document.getElementById('family-stats').innerHTML = '<div class="col-span-full empty-state"><div class="empty-icon"></div><div class="empty-title text-red-600">Loading failed</div></div>';
     });
 </script>
 {% endblock %}

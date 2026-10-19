@@ -6,7 +6,7 @@
 <div class="max-w-7xl mx-auto px-4 py-8">
     <!-- Header -->
     <div class="mb-8">
-        <h1 class="text-3xl font-extrabold text-slate-800">📊 Statistical Insights</h1>
+        <h1 class="text-3xl font-extrabold text-slate-800"> Statistical Insights</h1>
         <p class="text-slate-500 mt-2 text-sm">Multi-dimensional exploration of distribution patterns in the aquatic invertebrate virus knowledge base</p>
     </div>
 
@@ -17,67 +17,70 @@
             <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Data Quality Overview</h3>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-5 mb-6">
-            <div class="text-center p-4 rounded-xl bg-primary-light/60 border border-teal-100/50 card-hover">
-                <div class="text-2xl font-extrabold text-teal-700 font-mono" id="qc-core">--</div>
+            <div class="text-center p-4 rounded-xl bg-primary-light/60 border border-blue-100/50 card-hover">
+                <div class="text-2xl font-extrabold text-blue-700 font-mono" id="qc-core">{{ stats.core_dataset_count }}</div>
                 <div class="text-xs text-slate-500 mt-1.5 font-medium">Core Dataset</div>
-                <div class="text-[10px] text-teal-500 mt-0.5">Fully validated</div>
+                <div class="text-[10px] text-blue-500 mt-0.5">Fully validated</div>
             </div>
             <div class="text-center p-4 rounded-xl bg-blue-50/60 border border-blue-100/50 card-hover">
-                <div class="text-2xl font-extrabold text-blue-700 font-mono" id="qc-ext-hq">--</div>
+                <div class="text-2xl font-extrabold text-blue-700 font-mono" id="qc-ext-hq">{{ stats.extended_hq_count }}</div>
                 <div class="text-xs text-slate-500 mt-1.5 font-medium">High-Quality Extended</div>
                 <div class="text-[10px] text-blue-500 mt-0.5">Complete metadata</div>
             </div>
             <div class="text-center p-4 rounded-xl bg-slate-50/60 border border-slate-100/50 card-hover">
-                <div class="text-2xl font-extrabold text-slate-600 font-mono" id="qc-ext">--</div>
+                <div class="text-2xl font-extrabold text-slate-600 font-mono" id="qc-ext">{{ stats.extended_count }}</div>
                 <div class="text-xs text-slate-500 mt-1.5 font-medium">Basic Extended</div>
                 <div class="text-[10px] text-slate-400 mt-0.5">Partial metadata missing</div>
             </div>
             <div class="text-center p-4 rounded-xl bg-red-50/60 border border-red-100/50 card-hover">
-                <div class="text-2xl font-extrabold text-red-600 font-mono" id="qc-unv">--</div>
+                <div class="text-2xl font-extrabold text-red-600 font-mono" id="qc-unv">{{ stats.unverified_count }}</div>
                 <div class="text-xs text-slate-500 mt-1.5 font-medium">Unverified</div>
                 <div class="text-[10px] text-red-500 mt-0.5">Conflicts pending resolution</div>
             </div>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-5">
             <div class="text-center p-3">
-                <div class="text-2xl font-extrabold text-slate-800 font-mono" id="qc-ictv">--%</div>
-                <div class="text-xs text-slate-500 mt-1 font-medium">ICTV Mapping Rate</div>
+                <div class="text-2xl font-extrabold text-slate-800 font-mono" id="qc-ictv">{{ stats.ictv_mapping_rate }}%</div>
+                <div class="text-xs text-slate-500 mt-1 font-medium" title="Percentage of target virus species mapped to ICTV taxonomy">ICTV Mapping Rate</div>
+                <div class="text-[10px] text-slate-400">{{ stats.ictv_mapped_species }} / {{ stats.ictv_target_species }}</div>
                 <div class="w-full bg-slate-100 rounded-full h-2 mt-2.5 overflow-hidden">
-                    <div class="bg-gradient-to-r from-teal-400 to-teal-600 h-2 rounded-full progress-shimmer transition-all duration-700" id="qc-ictv-bar" style="width: 0%"></div>
+                    <div class="bg-gradient-to-r from-blue-400 to-blue-600 h-2 rounded-full progress-shimmer transition-all duration-700" id="qc-ictv-bar" style="width: {{ stats.ictv_mapping_rate }}%"></div>
                 </div>
             </div>
             <div class="text-center p-3">
-                <div class="text-2xl font-extrabold text-slate-800 font-mono" id="qc-geo">--%</div>
-                <div class="text-xs text-slate-500 mt-1 font-medium">Geographic Coverage</div>
+                <div class="text-2xl font-extrabold text-slate-800 font-mono" id="qc-geo">{{ stats._geo_rate }}%</div>
+                <div class="text-xs text-slate-500 mt-1 font-medium" title="Percentage of target isolates with geographic location data">Geographic Coverage</div>
+                <div class="text-[10px] text-slate-400">{{ stats.geo_covered_isolates }} / {{ stats.target_isolates }}</div>
                 <div class="w-full bg-slate-100 rounded-full h-2 mt-2.5 overflow-hidden">
-                    <div class="bg-gradient-to-r from-blue-400 to-blue-600 h-2 rounded-full progress-shimmer transition-all duration-700" id="qc-geo-bar" style="width: 0%"></div>
+                    <div class="bg-gradient-to-r from-blue-400 to-blue-600 h-2 rounded-full progress-shimmer transition-all duration-700" id="qc-geo-bar" style="width: {{ stats._geo_rate }}%"></div>
                 </div>
             </div>
             <div class="text-center p-3">
-                <div class="text-2xl font-extrabold text-slate-800 font-mono" id="qc-host">--%</div>
-                <div class="text-xs text-slate-500 mt-1 font-medium">Host Info Coverage</div>
+                <div class="text-2xl font-extrabold text-slate-800 font-mono" id="qc-host">{{ stats._host_rate }}%</div>
+                <div class="text-xs text-slate-500 mt-1 font-medium" title="Percentage of target isolates with host species information">Host Info Coverage</div>
+                <div class="text-[10px] text-slate-400">{{ stats.host_covered_isolates }} / {{ stats.target_isolates }}</div>
                 <div class="w-full bg-slate-100 rounded-full h-2 mt-2.5 overflow-hidden">
-                    <div class="bg-gradient-to-r from-emerald-400 to-emerald-600 h-2 rounded-full progress-shimmer transition-all duration-700" id="qc-host-bar" style="width: 0%"></div>
+                    <div class="bg-gradient-to-r from-emerald-400 to-emerald-600 h-2 rounded-full progress-shimmer transition-all duration-700" id="qc-host-bar" style="width: {{ stats._host_rate }}%"></div>
                 </div>
             </div>
             <div class="text-center p-3">
-                <div class="text-2xl font-extrabold text-slate-800 font-mono" id="qc-diff">--%</div>
-                <div class="text-xs text-slate-500 mt-1 font-medium">Differential Data Coverage</div>
+                <div class="text-2xl font-extrabold text-slate-800 font-mono" id="qc-diff">{{ stats._diff_rate }}%</div>
+                <div class="text-xs text-slate-500 mt-1 font-medium" title="Average coverage of virulence + temperature evidence across virus species">Differential Data Coverage</div>
                 <div class="w-full bg-slate-100 rounded-full h-2 mt-2.5 overflow-hidden">
-                    <div class="bg-gradient-to-r from-purple-400 to-purple-600 h-2 rounded-full progress-shimmer transition-all duration-700" id="qc-diff-bar" style="width: 0%"></div>
+                    <div class="bg-gradient-to-r from-purple-400 to-purple-600 h-2 rounded-full progress-shimmer transition-all duration-700" id="qc-diff-bar" style="width: {{ stats._diff_rate }}%"></div>
                 </div>
             </div>
         </div>
         <div class="mt-5 pt-4 border-t border-slate-100 text-xs text-slate-400 flex flex-wrap gap-x-5 gap-y-1">
-            <span id="feat-ext-lit" class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-slate-300"></span>External Literature Match: Reserved</span>
-            <span id="feat-media" class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-slate-300"></span>Media Resources: Reserved</span>
+            <span id="feat-ext-lit" class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-slate-300"></span>External Literature Match: {% if stats.feature_ext_lit %}Enabled ({{ stats.feature_ext_lit }}){% else %}Not available{% endif %}</span>
+            <span id="feat-media" class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-slate-300"></span>Media Resources: {% if stats.feature_media %}Enabled ({{ stats.feature_media }}){% else %}Not available{% endif %}</span>
         </div>
     </div>
 
     <!-- Data Completeness Heatmap -->
     <div class="card p-6 mb-6">
         <div class="flex items-center gap-2.5 mb-1">
-            <span class="w-1.5 h-5 bg-gradient-to-b from-teal-400 to-teal-600 rounded-full"></span>
+            <span class="w-1.5 h-5 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full"></span>
             <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Metadata Completeness Heatmap (by Family)</h3>
         </div>
         <p class="text-xs text-slate-400 mb-4 ml-4">Completeness percentage across 7 metadata dimensions per virus family (darker = more complete)</p>
@@ -87,23 +90,23 @@
     <!-- Summary Cards -->
     <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8" id="summary-cards">
         <div class="card-hover p-5 text-center card-accent border-l-primary">
-            <div class="text-2xl font-extrabold text-teal-600 font-mono" id="sum-viruses">--</div>
+            <div class="text-2xl font-extrabold text-blue-600 font-mono" id="sum-viruses">{{ stats.strict_target_isolates }}</div>
             <div class="text-xs text-slate-500 mt-1.5 font-medium">Viral Isolates</div>
         </div>
         <div class="card-hover p-5 text-center card-accent border-l-blue-500">
-            <div class="text-2xl font-extrabold text-blue-600 font-mono" id="sum-hosts">--</div>
+            <div class="text-2xl font-extrabold text-blue-600 font-mono" id="sum-hosts">{{ stats.strict_target_hosts }}</div>
             <div class="text-xs text-slate-500 mt-1.5 font-medium">Host Species</div>
         </div>
         <div class="card-hover p-5 text-center card-accent border-l-purple-500">
-            <div class="text-2xl font-extrabold text-purple-600 font-mono" id="sum-proteins">--</div>
+            <div class="text-2xl font-extrabold text-purple-600 font-mono" id="sum-proteins">{{ stats.viral_proteins }}</div>
             <div class="text-xs text-slate-500 mt-1.5 font-medium">Protein Annotations</div>
         </div>
         <div class="card-hover p-5 text-center card-accent border-l-violet-500">
-            <div class="text-2xl font-extrabold text-violet-600 font-mono" id="sum-structures">--</div>
+            <div class="text-2xl font-extrabold text-violet-600 font-mono" id="sum-structures">{{ stats.proteins_with_structure }}</div>
             <div class="text-xs text-slate-500 mt-1.5 font-medium">3D Protein Structures</div>
         </div>
         <div class="card-hover p-5 text-center card-accent border-l-orange-500">
-            <div class="text-2xl font-extrabold text-orange-600 font-mono" id="sum-rdrp">--</div>
+            <div class="text-2xl font-extrabold text-orange-600 font-mono" id="sum-rdrp">{{ stats.rdrp_count }}</div>
             <div class="text-xs text-slate-500 mt-1.5 font-medium">RDRP Sequences</div>
         </div>
     </div>
@@ -128,22 +131,22 @@
                 <div>
                     <div class="flex justify-between text-sm mb-1.5">
                         <span class="text-slate-600 font-medium">Phyla Covered</span>
-                        <span class="font-extrabold text-slate-800 font-mono" id="xp-phyla">--</span>
+                        <span class="font-extrabold text-slate-800 font-mono" id="xp-phyla">{{ stats.phyla_covered }}</span>
                     </div>
                 </div>
                 <div>
                     <div class="flex justify-between text-sm mb-1.5">
                         <span class="text-slate-600 font-medium">Evidence Coverage Rate</span>
-                        <span class="font-extrabold text-slate-800 font-mono" id="xp-evidence">--%</span>
+                        <span class="font-extrabold text-slate-800 font-mono" id="xp-evidence">{{ stats.evidence_coverage_pct }}%</span>
                     </div>
                     <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-                        <div class="bg-gradient-to-r from-indigo-400 to-indigo-600 h-2.5 rounded-full progress-shimmer transition-all duration-700" id="xp-evidence-bar" style="width: 0%"></div>
+                        <div class="bg-gradient-to-r from-indigo-400 to-indigo-600 h-2.5 rounded-full progress-shimmer transition-all duration-700" id="xp-evidence-bar" style="width: {{ stats.evidence_coverage_pct }}%"></div>
                     </div>
                 </div>
                 <div>
                     <div class="flex justify-between text-sm mb-1.5">
                         <span class="text-slate-600 font-medium">Virus Species with 3D Structures</span>
-                        <span class="font-extrabold text-slate-800 font-mono" id="xp-structures">--</span>
+                        <span class="font-extrabold text-slate-800 font-mono" id="xp-structures">{{ stats.proteins_with_structure }}</span>
                     </div>
                 </div>
                 <div id="xp-host-detail" class="text-xs text-slate-500 mt-4 pt-4 border-t border-slate-100"></div>
@@ -177,7 +180,7 @@
             <span class="w-1.5 h-5 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full"></span>
             <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Diagnostic Methods Matrix</h3>
         </div>
-        <p class="text-xs text-slate-400 mb-4 ml-4">Curated diagnostic methods by technical category (n=<span id="diag-curated-count" class="font-semibold text-slate-600">--</span>), gray = placeholder pending refinement (n=<span id="diag-placeholder-count" class="font-semibold text-slate-600">--</span>)</p>
+        <p class="text-xs text-slate-400 mb-4 ml-4">Curated diagnostic methods by technical category (n=<span id="diag-curated-count" class="font-semibold text-slate-600">{{ stats.diagnostic_curated_count }}</span>), gray = placeholder pending refinement (n=<span id="diag-placeholder-count" class="font-semibold text-slate-600">{{ stats.diagnostic_placeholder_count }}</span>)</p>
         <div class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-4" id="diag-matrix">
             <!-- JS will populate -->
         </div>
@@ -191,31 +194,11 @@
     <!-- Timeline -->
     <div class="card p-6 mb-6">
         <div class="flex items-center gap-2.5 mb-1">
-            <span class="w-1.5 h-5 bg-gradient-to-b from-teal-400 to-teal-600 rounded-full"></span>
+            <span class="w-1.5 h-5 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full"></span>
             <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Research Activity Timeline</h3>
         </div>
         <p class="text-xs text-slate-400 mb-4 ml-4">Yearly distribution trends for major virus isolate records</p>
         <div id="chart-timeline" style="width:100%;height:380px"></div>
-    </div>
-
-    <!-- Virulence + Temperature -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <div class="card p-6">
-            <div class="flex items-center gap-2.5 mb-1">
-                <span class="w-1.5 h-5 bg-gradient-to-b from-red-400 to-red-600 rounded-full"></span>
-                <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Virulence Profile Comparison</h3>
-            </div>
-            <p class="text-xs text-slate-400 mb-4 ml-4">Maximum mortality rates and virulence levels for curated viruses</p>
-            <div id="chart-virulence" style="width:100%;height:340px"></div>
-        </div>
-        <div class="card p-6">
-            <div class="flex items-center gap-2.5 mb-1">
-                <span class="w-1.5 h-5 bg-gradient-to-b from-amber-400 to-amber-600 rounded-full"></span>
-                <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Temperature Tolerance Comparison</h3>
-            </div>
-            <p class="text-xs text-slate-400 mb-4 ml-4">Optimal temperature ranges for curated viruses</p>
-            <div id="chart-temperature" style="width:100%;height:340px"></div>
-        </div>
     </div>
 
     <!-- Proteomics -->
@@ -269,12 +252,15 @@
 
 {% block extra_scripts %}
 <script>
-    // ── Academic ECharts color palette ──
-    const ACADEMIC_COLORS = ['#0d9488','#3b82f6','#f59e0b','#8b5cf6','#ef4444','#10b981','#f97316','#6366f1','#ec4899','#14b8a6','#84cc16','#06b6d4'];
-    const ACADEMIC_COLORS_SOFT = ['#99f6e4','#bfdbfe','#fde68a','#ddd6fe','#fecaca','#a7f3d0','#fed7aa','#c7d2fe','#fbcfe8','#99f6e4','#d9f99d','#a5f3fc'];
+    // -- Academic ECharts color palette --
+    const ACADEMIC_COLORS = ['#205493','#3b82f6','#f59e0b','#8b5cf6','#ef4444','#10b981','#f97316','#6366f1','#ec4899','#3a7db5','#84cc16','#06b6d4'];
+    const ACADEMIC_COLORS_SOFT = ['#c8ddf0','#bfdbfe','#fde68a','#ddd6fe','#fecaca','#a7f3d0','#fed7aa','#c7d2fe','#fbcfe8','#c8ddf0','#d9f99d','#a5f3fc'];
 
     const charts = [];
     function reg(chart) { if(chart) charts.push(chart); return chart; }
+    function chartError(ids) {
+        ids.forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = '<div class="flex items-center justify-center h-full text-gray-400 text-sm" style="min-height:120px">Failed to load chart data</div>'; });
+    }
     let statsData = {};
 
     async function initStats() {
@@ -375,7 +361,7 @@
                 }]
             });
             c.on('click', p => { const r = rows[p.dataIndex]; if(r) window.location.href = '/search?q=' + encodeURIComponent(r.virus_name); });
-        } catch(e) {}
+        } catch(e) { chartError(['chart-viruses']); }
 
         // Top hosts
         try {
@@ -385,14 +371,14 @@
             c.setOption({
                 tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: p => {
                     const r = rows[p.dataIndex];
-                    return `${r.host_name}${r.common_name_cn?' ('+r.common_name_cn+')':''}<br/>Infection records: ${r.count}`;
+                    return `${r.host_name}<br/>Infection records: ${r.count}`;
                 }},
                 grid: { left: '3%', right: '8%', bottom: '3%', top: '3%', containLabel: true },
                 xAxis: { type: 'value', axisLabel: { fontSize: 11, color: '#94a3b8' } },
                 yAxis: {
                     type: 'category',
                     data: rows.map(d => {
-                        const n = d.host_name + (d.common_name_cn ? ' ('+d.common_name_cn+')' : '');
+                        const n = d.host_name;
                         return n.length > 30 ? n.slice(0, 28)+'...' : n;
                     }),
                     axisLabel: { fontSize: 11, color: '#64748b', width: 160, overflow: 'truncate' }
@@ -405,7 +391,7 @@
                 }]
             });
             c.on('click', p => { const r = rows[p.dataIndex]; if(r) window.location.href = '/search?host=' + encodeURIComponent(r.host_name); });
-        } catch(e) {}
+        } catch(e) { chartError(['chart-hosts']); }
 
         // Timeline
         try {
@@ -424,8 +410,8 @@
             series.push({
                 name: 'Total', type: 'line', smooth: true,
                 data: years.map(y => { const f = tData.find(d=>d.year===y); return f ? f.count : 0; }),
-                lineStyle: { color: '#0f766e', width: 3, type: 'dashed' },
-                itemStyle: { color: '#0f766e' }, symbol: 'diamond', symbolSize: 8
+                lineStyle: { color: '#205493', width: 3, type: 'dashed' },
+                itemStyle: { color: '#205493' }, symbol: 'diamond', symbolSize: 8
             });
             const c = reg(echarts.init(document.getElementById('chart-timeline')));
             c.setOption({
@@ -436,53 +422,7 @@
                 yAxis: { type: 'value', axisLabel: { fontSize: 11, color: '#94a3b8' }, splitLine: { lineStyle: { color: '#f1f5f9' } } },
                 series
             });
-        } catch(e) {}
-
-        // Virulence
-        try {
-            const vData = await (await fetch('/api/virulence')).json();
-            const c = reg(echarts.init(document.getElementById('chart-virulence')));
-            c.setOption({
-                tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: p => {
-                    const d = p[0]; return `${d.name}<br/>Mortality: ${d.data.mortality_min||0}-${d.data.mortality_max||0}%`;
-                }},
-                grid: { left: '3%', right: '10%', bottom: '3%', top: '8%', containLabel: true },
-                xAxis: { type: 'value', max: 100, axisLabel: { formatter: '{value}%', fontSize: 11, color: '#94a3b8' }, splitLine: { lineStyle: { color: '#f1f5f9' } } },
-                yAxis: { type: 'category', data: vData.map(d => d.virus_name.replace(/ virus| syndrome/gi,'')).reverse(), axisLabel: { fontSize: 11, color: '#64748b' } },
-                series: [{
-                    type: 'bar',
-                    data: vData.map(d => ({ value: d.mortality_rate_max||0, mortality_min: d.mortality_rate_min, mortality_max: d.mortality_rate_max, itemStyle: { color: d.virulence_label==='high'||d.virulence_label===1 ? '#ef4444' : '#10b981' } })).reverse(),
-                    label: { show: true, position: 'right', formatter: p => p.data.mortality_max+'%', fontSize: 11, color: '#64748b' },
-                    barMaxWidth: 24,
-                    itemStyle: { borderRadius: [0, 6, 6, 0] }
-                }]
-            });
-        } catch(e) {}
-
-        // Temperature
-        try {
-            const tData = await (await fetch('/api/temperature')).json();
-            const c = reg(echarts.init(document.getElementById('chart-temperature')));
-            c.setOption({
-                tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: p => {
-                    const d = p[0]; return `${d.name}<br/>Optimum: ${d.data.opt_min}-${d.data.opt_max}°C`;
-                }},
-                grid: { left: '3%', right: '10%', bottom: '3%', top: '8%', containLabel: true },
-                xAxis: { type: 'value', min: 0, max: 70, axisLabel: { formatter: '{value}°C', fontSize: 11, color: '#94a3b8' }, splitLine: { lineStyle: { color: '#f1f5f9' } } },
-                yAxis: { type: 'category', data: tData.map(d => d.virus_name.replace(/ virus| syndrome/gi,'')).reverse(), axisLabel: { fontSize: 11, color: '#64748b' } },
-                series: [{
-                    type: 'custom',
-                    renderItem: (params, api) => {
-                        const idx = api.value(0);
-                        const start = api.coord([api.value(1), idx]);
-                        const end = api.coord([api.value(2), idx]);
-                        const h = api.size([0,1])[1] * 0.4;
-                        return { type: 'rect', shape: { x: start[0], y: start[1]-h/2, width: Math.max(end[0]-start[0], 2), height: h }, style: { fill: '#0ea5e9', opacity: 0.8, borderRadius: 3 } };
-                    },
-                    data: tData.map((d,i) => [i, d.optimal_temp_min||0, d.optimal_temp_max||0]).reverse()
-                }]
-            });
-        } catch(e) {}
+        } catch(e) { chartError(['chart-timeline']); }
 
         // Protein categories
         try {
@@ -508,7 +448,7 @@
                     series: [{ type: 'bar', data: pData.top_viruses.map(d => d.protein_count), itemStyle: { color: new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'#8b5cf6'},{offset:1,color:'#10b981'}]), borderRadius: [6,6,0,0] }, label: { show: true, position: 'top', fontSize: 11, color: '#64748b' } }]
                 });
             }
-        } catch(e) {}
+        } catch(e) { chartError(['chart-protein-categories', 'chart-protein-top']); }
 
         // Genome stats
         try {
@@ -538,7 +478,7 @@
                 yAxis: { type: 'value', axisLabel: { color: '#94a3b8' }, splitLine: { lineStyle: { color: '#f1f5f9' } } },
                 series: [{ type: 'bar', data: gData.completeness_distribution.map(d=>({value:d.count, itemStyle:{color:compColors[d.status]||'#94a3b8', borderRadius:[6,6,0,0]}})), label: { show: true, position: 'top', fontSize: 11, color: '#64748b' } }]
             });
-        } catch(e) {}
+        } catch(e) { chartError(['chart-gc', 'chart-length', 'chart-completeness']); }
 
         window.addEventListener('resize', () => charts.forEach(c => c && c.resize()));
     }
@@ -551,7 +491,7 @@
         const phylumColors = {
             'Arthropoda': '#3b82f6', 'Mollusca': '#8b5cf6', 'Cnidaria': '#ec4899',
             'Echinodermata': '#f59e0b', 'Porifera': '#06b6d4', 'Annelida': '#84cc16',
-            'Nematoda': '#ef4444', 'Platyhelminthes': '#a855f7', 'Rotifera': '#14b8a6',
+            'Nematoda': '#ef4444', 'Platyhelminthes': '#a855f7', 'Rotifera': '#3a7db5',
             'multiple': '#94a3b8', 'non_target (algae)': '#65a30d', 'non_aquatic': '#78716c'
         };
         c.setOption({
@@ -619,7 +559,7 @@
                     text: ['100%', '0%'], textStyle: { color: '#64748b' } },
                 series: [{ type: 'heatmap', data: d.data, label: { show: false }, emphasis: { itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0,0,0,0.3)' } } }]
             });
-        }).catch(() => {});
+        }).catch(() => { chartError(['chart-completeness-heatmap']); });
 
     document.addEventListener('DOMContentLoaded', initStats);
 </script>

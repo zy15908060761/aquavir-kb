@@ -5,8 +5,8 @@
 {% block breadcrumbs %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
     <nav class="flex text-xs text-gray-400 space-x-1 flex-wrap">
-        <a href="/" class="hover:text-teal-600 transition">Home</a>
-        <span>/</span><a href="/search" class="hover:text-teal-600 transition">Search</a>
+        <a href="/" class="hover:text-blue-600 transition">Home</a>
+        <span>/</span><a href="/search" class="hover:text-blue-600 transition">Search</a>
         <span>/</span><span class="text-gray-600 italic truncate max-w-xs">{{ host.scientific_name }}</span>
     </nav>
 </div>
@@ -17,7 +17,7 @@
     <!-- Tab Navigation -->
     <div class="card overflow-hidden sticky top-14 z-40 mb-6 glass border-white/60 shadow-md">
         <div class="flex gap-0 overflow-x-auto px-4">
-            <a href="#section-host-overview" class="tab-nav-link whitespace-nowrap px-5 py-3.5 text-sm font-semibold text-teal-600 border-b-[3px] border-teal-500">Overview</a>
+            <a href="#section-host-overview" class="tab-nav-link whitespace-nowrap px-5 py-3.5 text-sm font-semibold text-blue-600 border-b-[3px] border-blue-500">Overview</a>
             <a href="#section-host-viruses" class="tab-nav-link whitespace-nowrap px-5 py-3.5 text-sm font-medium text-slate-500 border-b-[3px] border-transparent hover:text-slate-700">Associated Viruses</a>
             <a href="#section-host-biology" class="tab-nav-link whitespace-nowrap px-5 py-3.5 text-sm font-medium text-slate-500 border-b-[3px] border-transparent hover:text-slate-700">Biology</a>
             <a href="#section-host-geo" class="tab-nav-link whitespace-nowrap px-5 py-3.5 text-sm font-medium text-slate-500 border-b-[3px] border-transparent hover:text-slate-700">Geographic Distribution</a>
@@ -29,9 +29,6 @@
             <div class="min-w-0">
                 <div class="flex items-center gap-3 mb-2 flex-wrap">
                     <h1 class="text-2xl font-bold text-gray-800 italic">{{ host.scientific_name }}</h1>
-                    {% if host.common_name_cn %}
-                    <span class="text-lg text-gray-500">{{ host.common_name_cn }}</span>
-                    {% endif %}
                     {% if host.host_group %}
                     <span class="bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm font-medium">{{ host.host_group }}</span>
                     {% endif %}
@@ -48,7 +45,7 @@
             </div>
             <div class="flex gap-2 flex-wrap">
                 {% if infection_stats.total_records %}
-                <span class="px-3 py-1.5 rounded-lg text-sm font-medium bg-teal-100 text-teal-700">
+                <span class="px-3 py-1.5 rounded-lg text-sm font-medium bg-blue-100 text-blue-700">
                     {{ infection_stats.total_records }} infection records
                 </span>
                 {% endif %}
@@ -69,12 +66,6 @@
                         <div class="text-xs text-gray-400 uppercase tracking-wide">Scientific Name</div>
                         <div class="text-sm font-medium text-gray-800 italic mt-0.5">{{ host.scientific_name }}</div>
                     </div>
-                    {% if host.common_name_cn %}
-                    <div>
-                        <div class="text-xs text-gray-400 uppercase tracking-wide">Chinese Common Name</div>
-                        <div class="text-sm font-medium text-gray-800 mt-0.5">{{ host.common_name_cn }}</div>
-                    </div>
-                    {% endif %}
                     <div class="grid grid-cols-2 gap-4">
                         {% if host.taxon_order %}
                         <div>
@@ -127,7 +118,7 @@
                     <div>
                         <div class="text-xs text-gray-400 uppercase tracking-wide">NCBI TaxID</div>
                         <div class="text-sm font-medium text-gray-800 mt-0.5 font-mono">
-                            <a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={{ host.ncbi_taxid }}" target="_blank" class="text-teal-600 hover:text-teal-500">{{ host.ncbi_taxid }} ↗</a>
+                            <a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={{ host.ncbi_taxid }}" target="_blank" class="text-blue-600 hover:text-blue-500">{{ host.ncbi_taxid }} -></a>
                         </div>
                     </div>
                     {% endif %}
@@ -163,7 +154,7 @@
                         {% endif %}
                     </div>
                     <div class="pt-2 border-t border-gray-100">
-                        <a href="/enrichment/host-ecology" class="text-sm text-teal-600 hover:text-teal-500">View Host Ecology Enrichment Data →</a>
+                        <a href="/enrichment/host-ecology" class="text-sm text-blue-600 hover:text-blue-500">View Host Ecology Enrichment Data -></a>
                     </div>
                 </div>
             </div>
@@ -174,7 +165,7 @@
             <!-- Stats Bar -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div class="card p-4 text-center">
-                    <div class="text-2xl font-bold text-teal-600">{{ infection_stats.unique_isolates }}</div>
+                    <div class="text-2xl font-bold text-blue-600">{{ infection_stats.unique_isolates }}</div>
                     <div class="text-xs text-gray-500 mt-1">Associated Isolates</div>
                 </div>
                 <div class="card p-4 text-center">
@@ -212,20 +203,17 @@
                             <tr class="hover:bg-gray-50">
                                 <td class="px-4 py-3">
                                     <div class="font-medium text-gray-800">{{ v.virus_name }}</div>
-                                    {% if v.chinese_name %}
-                                    <div class="text-xs text-gray-400">{{ v.chinese_name }}</div>
-                                    {% endif %}
                                 </td>
                                 <td class="px-4 py-3">
                                     {% if v.virus_family %}
-                                    <a href="/search?family={{ v.virus_family|urlencode }}" class="text-teal-600 hover:text-teal-500">{{ v.virus_family }}</a>
+                                    <a href="/search?family={{ v.virus_family|urlencode }}" class="text-blue-600 hover:text-blue-500">{{ v.virus_family }}</a>
                                     {% else %}
                                     <span class="text-gray-400">-</span>
                                     {% endif %}
                                 </td>
                                 <td class="px-4 py-3 text-right font-mono text-gray-700">{{ v.isolate_count }}</td>
                                 <td class="px-4 py-3 text-center">
-                                    <a href="/search?q={{ v.virus_name|urlencode }}" class="text-xs px-3 py-1.5 bg-teal-50 text-teal-700 rounded-lg hover:bg-teal-100 transition">View Isolates</a>
+                                    <a href="/search?q={{ v.virus_name|urlencode }}" class="text-xs px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition">View Isolates</a>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -234,7 +222,7 @@
                 </div>
                 {% else %}
                 <div class="p-8 text-center text-gray-400">
-                    <div class="text-4xl mb-3">🔬</div>
+                    <div class="text-4xl mb-3"></div>
                     <p>No virus infection records</p>
                 </div>
                 {% endif %}
@@ -263,7 +251,7 @@
                         {% if host_biology.temperature_tolerance_min is not none %}
                         <div class="border border-gray-100 rounded-lg p-3">
                             <div class="text-xs text-gray-400 uppercase">Temperature Tolerance</div>
-                            <div class="text-sm font-medium text-gray-800 mt-1">{{ host_biology.temperature_tolerance_min }} - {{ host_biology.temperature_tolerance_max }}°C</div>
+                            <div class="text-sm font-medium text-gray-800 mt-1">{{ host_biology.temperature_tolerance_min }} - {{ host_biology.temperature_tolerance_max }} C</div>
                         </div>
                         {% endif %}
                         {% if host_biology.max_body_length_cm %}
@@ -319,7 +307,7 @@
                     </div>
                     {% else %}
                     <div class="text-center py-8 text-gray-400">
-                        <div class="text-3xl mb-2">🌿</div>
+                        <div class="text-3xl mb-2"></div>
                         <p>No ecological data available</p>
                     </div>
                     {% endif %}
@@ -348,7 +336,7 @@
                 </div>
                 {% else %}
                 <div class="p-8 text-center text-gray-400">
-                    <div class="text-4xl mb-3">🗺️</div>
+                    <div class="text-4xl mb-3"></div>
                     <p>No geographic distribution data</p>
                 </div>
                 {% endif %}
@@ -366,8 +354,8 @@ window.addEventListener('scroll', () => {
     let current = hostSections[0]?.id;
     hostSections.forEach(sec => { if (sec.getBoundingClientRect().top < 120) current = sec.id; });
     hostTabLinks.forEach(link => {
-        link.classList.toggle('text-teal-600', link.getAttribute('href') === '#' + current);
-        link.classList.toggle('border-teal-600', link.getAttribute('href') === '#' + current);
+        link.classList.toggle('text-blue-600', link.getAttribute('href') === '#' + current);
+        link.classList.toggle('border-blue-600', link.getAttribute('href') === '#' + current);
         link.classList.toggle('text-gray-500', link.getAttribute('href') !== '#' + current);
         link.classList.toggle('border-transparent', link.getAttribute('href') !== '#' + current);
     });

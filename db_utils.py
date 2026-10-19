@@ -23,21 +23,24 @@ DEFAULT_DB_PATH = DB_PATH
 
 def get_db(db_path=None, foreign_keys=True, wal_mode=True, timeout=60):
     """Standardized DB connection. ALWAYS enables FK by default.
+    Read-only safe: skips PRAGMAs that require write access on RO mounts.
+    Uses memory-mapped I/O for shared cache across workers (NAR readiness).
 
     Parameters
     ----------
     db_path : str or Path, optional
-        Path to the SQLite database file. Defaults to crustacean_virus_core.db
-        in the project root.
+        Path to the SQLite database file.
     foreign_keys : bool
         Enable PRAGMA foreign_keys = ON (default True).
     wal_mode : bool
-        Enable WAL journal mode (default True).
+        Enable WAL journal mode (default True). Silently skipped on RO mounts.
     timeout : int
         Connection timeout in seconds (default 60).
 
     Returns
     -------
+    sqlite3.Connection
+        Configured, ready-to-use connection.
     sqlite3.Connection
     """
     conn = sqlite3.connect(str(db_path or DB_PATH), timeout=timeout)

@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Evidence Graph - {{ virus_name or 'AquaVir-KB' }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-6">
+    <div class="mb-5">
+        <h1 style="font-size:26px;font-weight:600;color:var(--primary-dark);letter-spacing:0">{{ virus_name or 'Evidence Graph' }}</h1>
+        <p style="color:var(--text-secondary);font-size:14px;margin-top:4px">Aggregated multi-entity view of a virus and its evidence: hosts, WOAH diseases, diagnostics, proteins, references and evidence types.</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats" style="margin-bottom:16px">
+        <div class="stat"><div class="num" id="g-nodes">--</div><div class="lbl">Entities</div></div>
+        <div class="stat"><div class="num" id="g-links">--</div><div class="lbl">Relations</div></div>
+        <div class="stat"><div class="num" id="g-evidence">--</div><div class="lbl">Evidence records</div></div>
+        <div class="stat"><div class="num" id="g-hosts">--</div><div class="lbl">Hosts</div></div>
+    </div>
+
+    <!-- Chart -->
+    <div class="card" style="padding:8px">
+        <div id="chart-graph" style="width:100%;height:640px"></div>
+    </div>
+
+    <!-- Legend -->
+    <div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center;margin-top:12px;font-size:12px;color:var(--text-secondary)">
+        <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#205493;margin-right:4px"></span>Virus</span>
+        <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#2563eb;margin-right:4px"></span>Host</span>
+        <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#dc2626;margin-right:4px"></span>WOAH disease</span>
+        <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#d97706;margin-right:4px"></span>Diagnostic</span>
+        <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#7c3aed;margin-right:4px"></span>Protein</span>
+        <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#94a3b8;margin-right:4px"></span>Reference</span>
+        <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#16a34a;margin-right:4px"></span>Evidence type</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    const CATEGORY_COLORS = ['#205493', '#2563eb', '#dc2626', '#d97706', '#7c3aed', '#94a3b8', '#16a34a'];
+
+    async function initGraph() {
+        const dom = document.getElementById('chart-graph');
+        if (!dom || typeof echarts === 'undefined') return;
+        const masterId = {{ master_id }};
+
+        try {
+            const res = await fetch('/api/evidence_graph/' + masterId);
+            const data = await res.json();
+            if (data.error || !data.nodes) {
+                dom.innerHTML = '<p style="text-align:center;padding:40px;color:var(--text-muted)">No evidence graph data</p>';
+                return;
+            }
+
+            // Stats
+            document.getElementById('g-nodes').textContent = data.nodes.length;
+            document.getElementById('g-links').textContent = data.links.length;
+            const evidenceNode = data.nodes.find(n => n.category === 6);
+            document.getElementById('g-evidence').textContent = (evidenceNode ? evidenceNode.value : 0).toLocaleString();
+            document.getElementById('g-hosts').textContent = data.nodes.filter(n => n.category === 1).length;
+
+            const categories = data.categories.map((c, i) => ({
+                name: c.name,
+                itemStyle: { color: CATEGORY_COLORS[i] || '#205493' }
+            }));
+
+            const nodes = data.nodes.map(n => ({
+                id: n.id,
+                name: n.name,
+                category: n.category,
+                symbolSize: n.symbolSize || 20,
+                value: n.value,
+                accession: n.accession
+            }));
+
+            const links = data.links.map(l => ({
+                source: l.source,
+                target: l.target,
+                value: l.value,
+                lineStyle: { width: Math.min(1 + (l.value || 1) / 500, 6), curveness: 0.1, opacity: 0.55 }
+            }));
+
+            const chart = echarts.init(dom);
+            chart.setOption({
+                tooltip: {
+                    trigger: 'item',
+                    formatter: p => {
+                        if (p.dataType === 'edge') {
+                            return p.data.source + ' &rarr; ' + p.data.target + (p.data.value ? '<br/>Records: ' + p.data.value.toLocaleString() : '');
+                        }
+                        const extra = p.data.value ? '<br/>Records: ' + p.data.value.toLocaleString() : '';
+                        return '<b>' + p.name + '</b><br/>' + (categories[p.data.category]?.name || '') + extra;
+                    }
+                },
+                legend: [{ data: categories.map(c => c.name), bottom: 0, textStyle: { fontSize: 11 } }],
+                series: [{
+                    type: 'graph',
+                    layout: 'force',
+                    data: nodes,
+                    links: links,
+                    categories: categories,
+                    roam: true,
+                    draggable: true,
+                    force: {
+                        repulsion: 320,
+                        edgeLength: [60, 180],
+                        gravity: 0.08,
+                        friction: 0.6
+                    },
+                    label: {
+                        show: true,
+                        position: 'right',
+                        fontSize: 10,
+                        color: '#475569',
+                        formatter: p => p.name.length > 30 ? p.name.slice(0, 28) + '...' : p.name
+                    },
+                    emphasis: { focus: 'adjacency', lineStyle: { width: 4 } },
+                    lineStyle: { color: 'source', curveness: 0.1, opacity: 0.5 }
+                }]
+            });
+
+            chart.on('click', params => {
+                if (params.dataType !== 'node') return;
+                const d = params.data;
+                if (d.category === 0 && d.accession) {
+                    window.location.href = '/virus/' + d.accession;
+                } else {
+                    window.location.href = '/search?q=' + encodeURIComponent(d.name);
+                }
+            });
+            window.addEventListener('resize', () => chart.resize());
+        } catch (e) {
+            dom.innerHTML = '<p style="text-align:center;padding:40px;color:var(--red)">Evidence graph loading failed</p>';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', initGraph);
+</script>
+{% endblock %}

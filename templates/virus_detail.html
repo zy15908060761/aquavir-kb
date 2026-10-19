@@ -3,11 +3,11 @@
 {% block title %}{{ virus.canonical_name or virus.virus_name or virus.accession }} - AquaVir-KB{% endblock %}
 
 {% block breadcrumbs %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+<div class="breadcrumbs">
     <nav class="flex text-xs text-gray-400 gap-1 flex-wrap">
-        <a href="/" class="hover:text-teal-600 transition">Home</a>
+        <a href="/" class="hover:text-blue-600 transition">Home</a>
         <span>/</span>
-        <a href="/search" class="hover:text-teal-600 transition">Search</a>
+        <a href="/search" class="hover:text-blue-600 transition">Search</a>
         <span>/</span>
         <span class="text-gray-600 truncate max-w-xs">{{ virus.canonical_name or virus.virus_name or virus.accession }}</span>
     </nav>
@@ -19,7 +19,7 @@
     <!-- Tab Navigation - glass sticky -->
     <div class="card overflow-hidden sticky top-14 z-40 glass border-white/60 shadow-md">
         <div class="flex gap-0 overflow-x-auto px-4">
-            <a href="#section-genome" class="tab-nav-link whitespace-nowrap px-5 py-3.5 text-sm font-semibold text-teal-600 border-b-[3px] border-teal-500">Overview</a>
+            <a href="#section-genome" class="tab-nav-link whitespace-nowrap px-5 py-3.5 text-sm font-semibold text-blue-600 border-b-[3px] border-blue-500">Overview</a>
             <a href="#section-isolates" class="tab-nav-link whitespace-nowrap px-5 py-3.5 text-sm font-medium text-slate-500 border-b-[3px] border-transparent hover:text-slate-700">Isolates</a>
             <a href="#section-hosts" class="tab-nav-link whitespace-nowrap px-5 py-3.5 text-sm font-medium text-slate-500 border-b-[3px] border-transparent hover:text-slate-700">Hosts</a>
             <a href="#section-proteins" class="tab-nav-link whitespace-nowrap px-5 py-3.5 text-sm font-medium text-slate-500 border-b-[3px] border-transparent hover:text-slate-700">Proteins</a>
@@ -27,6 +27,7 @@
             <a href="#section-literature" class="tab-nav-link whitespace-nowrap px-5 py-3.5 text-sm font-medium text-slate-500 border-b-[3px] border-transparent hover:text-slate-700">Literature</a>
             <a href="#section-geography" class="tab-nav-link whitespace-nowrap px-5 py-3.5 text-sm font-medium text-slate-500 border-b-[3px] border-transparent hover:text-slate-700">Geographic Distribution</a>
             <a href="#section-taxonomy" class="tab-nav-link whitespace-nowrap px-5 py-3.5 text-sm font-medium text-slate-500 border-b-[3px] border-transparent hover:text-slate-700">Taxonomy</a>
+            <a href="/evidence_graph/{{ virus.master_id }}" class="tab-nav-link whitespace-nowrap px-5 py-3.5 text-sm font-medium text-purple-600 border-b-[3px] border-transparent hover:text-slate-700">Evidence Graph &rarr;</a>
         </div>
     </div>
     <section id="section-genome" class="card p-6">
@@ -35,7 +36,7 @@
                 <div class="flex flex-wrap items-center gap-2 mb-2">
                     <h1 class="text-2xl font-bold text-gray-800">{{ virus.canonical_name or virus.virus_name or "Unknown virus" }}</h1>
                     {% if virus.virus_family %}
-                    <a href="/family/{{ virus.virus_family|urlencode }}" class="px-2.5 py-1 rounded-full bg-teal-50 text-teal-700 text-sm font-medium">{{ virus.virus_family }}</a>
+                    <a href="/family/{{ virus.virus_family|urlencode }}" class="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-sm font-medium">{{ virus.virus_family }}</a>
                     {% endif %}
                     {% if virus.virus_host_phylum %}
                     <span class="px-2.5 py-1 rounded-full text-sm font-medium
@@ -52,14 +53,11 @@
                     <span class="px-2 py-1 rounded bg-gray-100 text-gray-600 text-xs">{{ virus.dataset_tier or "unclassified tier" }}</span>
                 </div>
                 <p class="font-mono text-sm text-gray-500">{{ virus.accession }}</p>
-                {% if virus.canonical_name_cn %}
-                <p class="text-sm text-gray-500 mt-1">{{ virus.canonical_name_cn }}</p>
-                {% endif %}
             </div>
             <div class="flex flex-wrap gap-2">
                 <a href="https://www.ncbi.nlm.nih.gov/nuccore/{{ virus.accession }}" target="_blank" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded text-sm text-gray-700">NCBI</a>
                 {% if has_sequence %}
-                <a href="/api/virus/{{ virus.accession }}/sequence" download="{{ virus.accession }}.fasta" class="px-3 py-1.5 bg-teal-600 hover:bg-teal-500 rounded text-sm text-white">FASTA</a>
+                <a href="/api/virus/{{ virus.accession }}/sequence" download="{{ virus.accession }}.fasta" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 rounded text-sm text-white">FASTA</a>
                 {% endif %}
             </div>
         </div>
@@ -67,7 +65,7 @@
 
     <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2 card p-6">
-            <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-teal-400 to-teal-600 rounded-full"></span>Genome And Source</h2>
+            <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full"></span>Genome And Source</h2>
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-sm">
                 <div class="bg-slate-50 rounded-xl p-3.5 text-center card-hover">
                     <div class="text-xs text-slate-400 uppercase tracking-wide font-medium">Length</div>
@@ -97,10 +95,10 @@
         </div>
 
         <div class="card p-6">
-            <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-teal-400 to-teal-600 rounded-full"></span>Curation Status</h2>
+            <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full"></span>Curation Status</h2>
             <div class="grid grid-cols-2 gap-3 text-sm">
-                <div class="bg-teal-50 rounded-xl p-3.5 text-center">
-                    <div class="text-2xl font-extrabold text-teal-700 font-mono">{{ isolate_count }}</div>
+                <div class="bg-blue-50 rounded-xl p-3.5 text-center">
+                    <div class="text-2xl font-extrabold text-blue-700 font-mono">{{ isolate_count }}</div>
                     <div class="text-xs text-slate-500 mt-1">Isolates</div>
                 </div>
                 <div class="bg-blue-50 rounded-xl p-3.5 text-center">
@@ -112,7 +110,7 @@
                     <div class="text-xs text-slate-500 mt-1">Proteins</div>
                 </div>
                 <div class="bg-emerald-50 rounded-xl p-3.5 text-center">
-                    <div class="text-2xl font-extrabold {{ 'text-emerald-700' if has_sequence else 'text-slate-400' }} font-mono">{{ "✓" if has_sequence else "—" }}</div>
+                    <div class="text-2xl font-extrabold {{ 'text-emerald-700' if has_sequence else 'text-slate-400' }} font-mono">{{ "OK" if has_sequence else "-" }}</div>
                     <div class="text-xs text-slate-500 mt-1">Sequence</div>
                 </div>
             </div>
@@ -121,7 +119,7 @@
 
     {% if pathogenicity %}
     <section class="card p-6">
-        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-teal-400 to-teal-600 rounded-full"></span>Pathogenicity</h2>
+        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full"></span>Pathogenicity</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             {% set vl = pathogenicity|selectattr("virulence_level")|first %}
             <div class="border border-gray-100 rounded-lg p-4 text-center">
@@ -149,7 +147,7 @@
 
     {% if outbreak_events %}
     <section class="card p-6">
-        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-teal-400 to-teal-600 rounded-full"></span>Outbreak Events</h2>
+        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full"></span>Outbreak Events</h2>
         <div class="space-y-3">
             {% for o in outbreak_events %}
             <div class="border border-gray-100 rounded-lg p-4">
@@ -178,7 +176,7 @@
 
     <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="card p-6">
-            <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-teal-400 to-teal-600 rounded-full"></span>Reference</h2>
+            <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full"></span>Reference</h2>
             {% if virus.ref_title %}
             <p class="text-sm font-medium text-gray-800">{{ virus.ref_title }}</p>
             <p class="text-sm text-gray-500 mt-2">{{ virus.ref_authors or "" }}</p>
@@ -193,14 +191,14 @@
         </div>
 
         <div class="card p-6">
-            <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-teal-400 to-teal-600 rounded-full"></span>ICTV Mapping</h2>
+            <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full"></span>ICTV Mapping</h2>
             {% if ictv_mapped %}
             <div class="space-y-2">
                 {% for item in ictv_mapped[:8] %}
                 <div class="border border-gray-100 rounded p-3 text-sm">
                     <div class="font-medium text-gray-800">{{ item.species }}</div>
                     <div class="text-gray-500">{{ item.family or "Unclassified family" }} / {{ item.genus or "Unclassified genus" }}</div>
-                    <div class="text-xs text-gray-400 mt-1">{{ item.match_status or "mapping" }} · {{ item.confidence or "unknown confidence" }}</div>
+                    <div class="text-xs text-gray-400 mt-1">{{ item.match_status or "mapping" }} - {{ item.confidence or "unknown confidence" }}</div>
                 </div>
                 {% endfor %}
             </div>
@@ -219,7 +217,7 @@
 
     {% if virulence or temperature %}
     <section class="card p-6">
-        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-teal-400 to-teal-600 rounded-full"></span>Reviewed Evidence</h2>
+        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full"></span>Reviewed Evidence</h2>
         <p class="text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded p-3 mb-4">Only manual-checked evidence records are displayed here. Candidate or inferred records are excluded from this page.</p>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {% if virulence and virulence.records %}
@@ -230,7 +228,7 @@
                     <div class="border border-gray-100 rounded p-3 text-sm">
                         <div class="font-medium">{{ record.claim }}</div>
                         <div class="text-gray-500 mt-1">{{ record.value_text or record.context or "No value text" }}</div>
-                        <div class="text-xs text-gray-400 mt-1">{{ record.evidence_type }} · {{ record.evidence_strength or "unknown" }}</div>
+                        <div class="text-xs text-gray-400 mt-1">{{ record.evidence_type }} - {{ record.evidence_strength or "unknown" }}</div>
                     </div>
                     {% endfor %}
                 </div>
@@ -244,7 +242,7 @@
                     <div class="border border-gray-100 rounded p-3 text-sm">
                         <div class="font-medium">{{ record.claim }}</div>
                         <div class="text-gray-500 mt-1">{{ record.value_text or record.context or "No value text" }}</div>
-                        <div class="text-xs text-gray-400 mt-1">{{ record.evidence_type }} · {{ record.evidence_strength or "unknown" }}</div>
+                        <div class="text-xs text-gray-400 mt-1">{{ record.evidence_type }} - {{ record.evidence_strength or "unknown" }}</div>
                     </div>
                     {% endfor %}
                 </div>
@@ -262,7 +260,7 @@
                 {% for host in hosts %}
                 <a href="/host/{{ host.host_id }}" class="block border border-gray-100 rounded p-3 hover:bg-gray-50">
                     <div class="font-medium text-gray-800"><em>{{ host.scientific_name }}</em></div>
-                    <div class="text-sm text-gray-500">{{ host.common_name_cn or "" }} {{ host.taxon_family or "" }}</div>
+                    {% if host.taxon_family %}<div class="text-sm text-gray-500">{{ host.taxon_family }}</div>{% endif %}
                 </a>
                 {% endfor %}
             </div>
@@ -279,7 +277,7 @@
                 {% for dm in diagnostic_methods %}
                 <div class="border border-gray-100 rounded p-3 text-sm">
                     <div class="font-medium text-gray-800">{{ dm.method_name }}</div>
-                    <div class="text-gray-500">{{ dm.primary_cn or dm.primary_category }} · {{ dm.target_gene_or_region or "target not specified" }}</div>
+                    <div class="text-gray-500">{{ dm.primary_cn or dm.primary_category }} - {{ dm.target_gene_or_region or "target not specified" }}</div>
                     <div class="text-xs text-gray-400 mt-1">{{ dm.evidence_strength or "unknown evidence" }}</div>
                 </div>
                 {% endfor %}
@@ -291,7 +289,7 @@
                 {% for cm in control_methods %}
                 <div class="border border-gray-100 rounded p-3 text-sm">
                     <div class="font-medium text-gray-800">{{ cm.method_name }}</div>
-                    <div class="text-gray-500">{{ cm.method_category or "category not specified" }} · {{ cm.evidence_strength or "unknown evidence" }}</div>
+                    <div class="text-gray-500">{{ cm.method_category or "category not specified" }} - {{ cm.evidence_strength or "unknown evidence" }}</div>
                     {% if cm.effect_summary %}<div class="text-gray-500 mt-1">{{ cm.effect_summary }}</div>{% endif %}
                 </div>
                 {% endfor %}
@@ -304,11 +302,11 @@
     </section>
 
     <section id="section-proteins" class="card p-6">
-        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-teal-400 to-teal-600 rounded-full"></span>Proteins</h2>
+        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full"></span>Proteins</h2>
         <div id="proteins-container">
             <div class="flex items-center justify-center py-8 text-gray-400">
                 <div class="text-center">
-                    <div class="inline-block w-6 h-6 border-2 border-teal-600 border-t-transparent rounded-full animate-spin mb-2"></div>
+                    <div class="inline-block w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mb-2"></div>
                     <div class="text-sm">Loading protein data...</div>
                 </div>
             </div>
@@ -316,11 +314,11 @@
     </section>
 
     <section id="section-literature" class="card p-6">
-        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-teal-400 to-teal-600 rounded-full"></span>Related Literature <span class="text-sm text-gray-400 font-normal">({{ literature_count }} articles)</span></h2>
+        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full"></span>Related Literature <span class="text-sm text-gray-400 font-normal">({{ literature_count }} articles)</span></h2>
         <div id="literature-container">
             <div class="flex items-center justify-center py-8 text-gray-400">
                 <div class="text-center">
-                    <div class="inline-block w-6 h-6 border-2 border-teal-600 border-t-transparent rounded-full animate-spin mb-2"></div>
+                    <div class="inline-block w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mb-2"></div>
                     <div class="text-sm">Loading literature data...</div>
                 </div>
             </div>
@@ -328,7 +326,7 @@
     </section>
 
     <section id="section-geography" class="card p-6">
-        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-teal-400 to-teal-600 rounded-full"></span>Geographic Distribution</h2>
+        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full"></span>Geographic Distribution</h2>
         {% if virus_geo %}
         <div id="virus-geo-map" class="h-72 bg-gray-50 rounded border border-gray-200"></div>
         <div class="mt-3 grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
@@ -345,7 +343,7 @@
     </section>
 
     <section id="section-taxonomy" class="card p-6">
-        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-teal-400 to-teal-600 rounded-full"></span>Taxonomy Information</h2>
+        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full"></span>Taxonomy Information</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div class="border border-gray-100 rounded-lg p-4">
                 <div class="text-xs text-gray-400 uppercase tracking-wide">Family</div>
@@ -381,7 +379,7 @@
     </section>
 
     <section id="section-isolates" class="card p-6">
-        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-teal-400 to-teal-600 rounded-full"></span>Related Isolates</h2>
+        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full"></span>Related Isolates</h2>
         {% if isolates %}
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
@@ -398,7 +396,7 @@
                 <tbody class="divide-y divide-gray-100">
                     {% for iso in isolates %}
                     <tr class="hover:bg-gray-50">
-                        <td class="px-3 py-2 font-mono"><a class="text-teal-600" href="/virus/{{ iso.accession }}">{{ iso.accession }}</a></td>
+                        <td class="px-3 py-2 font-mono"><a class="text-blue-600" href="/virus/{{ iso.accession }}">{{ iso.accession }}</a></td>
                         <td class="px-3 py-2 text-right font-mono">{{ "{:,}".format(iso.genome_length) if iso.genome_length else "N/A" }}</td>
                         <td class="px-3 py-2 text-right font-mono">{{ "{:.1f}".format(iso.gc_content) if iso.gc_content else "N/A" }}</td>
                         <td class="px-3 py-2">{{ iso.completeness or "N/A" }}</td>
@@ -416,11 +414,11 @@
 
     {% if has_phylogeny %}
     <section class="card p-6">
-        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-teal-400 to-teal-600 rounded-full"></span>Phylogeny</h2>
+        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full"></span>Phylogeny</h2>
         <img src="/downloads/phylogeny/figures/{{ family_lower }}_tree.png" alt="{{ virus.virus_family }} phylogeny" class="max-w-full rounded border border-gray-200">
         <div class="flex gap-3 mt-3 text-sm">
-            <a class="text-teal-600" href="/downloads/phylogeny/figures/{{ family_lower }}_tree.svg" target="_blank">SVG</a>
-            <a class="text-teal-600" href="/downloads/phylogeny/{{ family_lower }}_iqtree.contree" target="_blank">Newick</a>
+            <a class="text-blue-600" href="/downloads/phylogeny/figures/{{ family_lower }}_tree.svg" target="_blank">SVG</a>
+            <a class="text-blue-600" href="/downloads/phylogeny/{{ family_lower }}_iqtree.contree" target="_blank">Newick</a>
         </div>
     </section>
     {% endif %}
@@ -431,7 +429,7 @@
             <h2 class="text-lg font-semibold text-gray-800">Sequence</h2>
             <div class="flex gap-2">
                 <input id="seq-search" class="border border-gray-200 rounded px-3 py-1.5 text-sm" placeholder="Find motif">
-                <button class="px-3 py-1.5 bg-teal-600 text-white rounded text-sm" onclick="searchSequence()">Find</button>
+                <button class="px-3 py-1.5 bg-blue-600 text-white rounded text-sm" onclick="searchSequence()">Find</button>
             </div>
         </div>
         <div id="seq-meta" class="text-xs text-gray-500 mb-2"></div>
@@ -453,17 +451,19 @@ window.addEventListener('scroll', () => {
         if (top < 120) current = sec.id;
     });
     tabLinks.forEach(link => {
-        link.classList.toggle('text-teal-600', link.getAttribute('href') === '#' + current);
-        link.classList.toggle('border-teal-600', link.getAttribute('href') === '#' + current);
+        link.classList.toggle('text-blue-600', link.getAttribute('href') === '#' + current);
+        link.classList.toggle('border-blue-600', link.getAttribute('href') === '#' + current);
         link.classList.toggle('text-gray-500', link.getAttribute('href') !== '#' + current);
         link.classList.toggle('border-transparent', link.getAttribute('href') !== '#' + current);
     });
 });
 // Smooth scroll on tab click
 tabLinks.forEach(link => {
+    const href = link.getAttribute('href');
+    if (!href || !href.startsWith('#')) return;
     link.addEventListener('click', function(e) {
         e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
+        const target = document.querySelector(href);
         if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 });
@@ -475,7 +475,7 @@ fetch('/api/virus/{{ virus.accession }}/proteins')
         const container = document.getElementById('proteins-container');
         const proteins = data.proteins || data;
         if (!proteins || proteins.length === 0) {
-            container.innerHTML = '<div class="text-center py-8 text-gray-400"><div class="text-3xl mb-2">🧬</div><p>No protein annotations available</p></div>';
+            container.innerHTML = '<div class="text-center py-8 text-gray-400"><div class="text-3xl mb-2"></div><p>No protein annotations available</p></div>';
             return;
         }
         let html = '<div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-50"><tr><th class="text-left px-3 py-2">Name</th><th class="text-left px-3 py-2">Gene</th><th class="text-right px-3 py-2">Length</th><th class="text-left px-3 py-2">Functional Category</th><th class="text-center px-3 py-2">3D Structure</th></tr></thead><tbody class="divide-y divide-gray-100">';
@@ -485,14 +485,14 @@ fetch('/api/virus/{{ virus.accession }}/proteins')
                 '<td class="px-3 py-2 font-mono text-xs text-gray-600">' + (p.gene_symbol || p.locus_tag || '-') + '</td>' +
                 '<td class="px-3 py-2 text-right font-mono text-gray-700">' + (p.aa_length ? p.aa_length.toLocaleString() + ' aa' : '-') + '</td>' +
                 '<td class="px-3 py-2"><span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded text-xs">' + (p.functional_category || 'unclassified') + '</span></td>' +
-                '<td class="px-3 py-2 text-center">' + (p._has_structure ? '<span class="text-green-600 font-bold">✓</span>' : '<span class="text-gray-300">-</span>') + '</td>' +
+                '<td class="px-3 py-2 text-center">' + (p._has_structure ? '<span class="text-green-600 font-bold">OK</span>' : '<span class="text-gray-300">-</span>') + '</td>' +
                 '</tr>';
         });
         html += '</tbody></table><div class="px-3 py-2 text-xs text-gray-400">' + proteins.length + ' proteins total</div></div>';
         container.innerHTML = html;
     })
     .catch(() => {
-        document.getElementById('proteins-container').innerHTML = '<div class="text-center py-8 text-gray-400"><div class="text-3xl mb-2">⚠️</div><p class="text-red-500">Protein data loading failed</p></div>';
+        document.getElementById('proteins-container').innerHTML = '<div class="text-center py-8 text-gray-400"><div class="text-3xl mb-2"></div><p class="text-red-500">Protein data loading failed</p></div>';
     });
 
 // Load literature (from existing reference + evidence PMIDs)
@@ -520,7 +520,7 @@ fetch('/api/virus/{{ virus.accession }}/proteins')
     {% endif %}
 
     if (refs.length === 0 && evidencePmids.size === 0) {
-        litContainer.innerHTML = '<div class="text-center py-8 text-gray-400"><div class="text-3xl mb-2">📄</div><p>No related literature</p></div>';
+        litContainer.innerHTML = '<div class="text-center py-8 text-gray-400"><div class="text-3xl mb-2"></div><p>No related literature</p></div>';
         return;
     }
     let html = '<div class="space-y-3">';
