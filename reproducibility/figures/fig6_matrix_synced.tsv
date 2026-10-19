@@ -1,0 +1,59 @@
+master_id	name	family	nz	ictv	isolates	genomes	countries	evidence	hosts	diagnostics	woah	outbreaks	control	vaccine	resistance
+1	White spot syndrome virus	Nimaviridae	12	17	1188	111	26	3062	1193	151	1	2	29	6	94
+3	Taura syndrome virus	Dicistroviridae	10	11	376	11	20	1004	492	32	1	1	5	0	0
+4	Infectious hypodermal and hematopoietic necrosis virus	Parvoviridae	10	2	147	9	14	961	147	34	1	1	5	0	0
+2	Yellow head virus	Roniviridae	10	10	105	7	8	855	105	35	1	1	2	0	0
+6	Macrobrachium rosenbergii nodavirus	Sarthroviridae	10	3	100	7	9	546	84	30	1	1	1	0	0
+5	Infectious myonecrosis virus	Artiviridae	10	11	38	12	4	568	34	16	1	1	1	0	0
+10	Decapod iridescent virus	Iridoviridae	10	4	30	4	4	1668	30	9	1	1	1	0	0
+7	Covert mortality nodavirus	Nodaviridae	7	2	9	0	1	913	9	9	0	1	0	0	0
+8	Hepatopancreatic parvovirus	Parvoviridae	7	2	8	0	1	321	10	16	0	1	0	0	0
+19	Chinese mitten crab virus	Cruliviridae	7	8	6	6	1	100	6	0	0	1	0	0	0
+1304	Ostreid herpesvirus 1	Malacoherpesviridae	6	2	803	0	13	781	804	23	0	0	0	0	0
+1056	Extra small virus	Sarthroviridae	6	1	22	0	4	955	22	3	0	0	0	0	0
+398	Mourilyan virus	Phenuiviridae	6	1	14	0	1	254	1	2	0	0	0	0	0
+14	Wenzhou crab virus	Chuviridae	6	7	12	4	1	38	12	0	0	0	0	0	0
+45	Brine shrimp iflavirus 3	Iflaviridae	6	16	11	0	4	743	11	0	0	1	0	0	0
+372	Chequa iflavirus	Iflaviridae	6	16	4	0	2	24	4	0	0	1	0	0	0
+49	Qianjiang picorna-like virus 109	Picornaviridae	6	1	4	0	1	18	2	0	0	1	0	0	0
+82	Brine shrimp iflavirus 1	Iflaviridae	6	16	3	0	1	743	3	0	0	1	0	0	0
+547	Haliotid herpesvirus 1	Malacoherpesviridae	6	0	3	0	1	160	6	0	1	3	0	0	0
+321	Eriocheir sinensis reovirus	Sedoreoviridae	6	2	2	0	1	56	2	0	0	1	0	0	0
+172	Qianjiang picorna-like virus 103	Picornaviridae	6	1	2	0	1	16	2	0	0	1	0	0	0
+192	Qianjiang picorna-like virus 100	Picornaviridae	6	1	2	0	1	17	2	0	0	1	0	0	0
+589	Cherax quadricarinatus iridovirus	Iridoviridae	6	1	2	0	1	64	2	1	0	0	0	0	0
+378	Brine shrimp iflavirus 2	Iflaviridae	6	16	1	0	1	738	1	0	0	1	0	0	0
+319	Macrobrachium rosenbergii virus 7	Dicistroviridae	6	6	1	0	1	170	1	0	0	1	0	0	0
+125	Scylla serrata reovirus SZ-2007	Sedoreoviridae	6	4	1	0	1	46	29	2	0	0	0	0	0
+210	Brine shrimp rhabdovirus 1	Rhabdoviridae	6	2	1	0	1	739	1	0	0	1	0	0	0
+21	Penaeus monodon endogenous virus	Parvoviridae	6	1	1	0	1	412	1	0	0	1	0	0	0
+58	Portunus trituberculatus picorna-like virus 1	Picornaviridae	6	1	1	0	1	29	1	0	0	1	0	0	0
+92	Qianjiang picorna-like virus 1	Picornaviridae	6	1	1	0	1	16	1	0	0	1	0	0	0
+103	Qianjiang picorna-like virus 112	Picornaviridae	6	1	1	0	1	16	1	0	0	1	0	0	0
+145	Eriocheir sinensis dicistro-like virus	Dicistroviridae	6	1	1	0	1	47	1	0	0	1	0	0	0
+186	Eriocheir sinensis picorna-like virus	Picornaviridae	6	1	1	0	1	55	1	0	0	1	0	0	0
+189	Qianjiang picorna-like virus 116	Picornaviridae	6	1	1	0	1	16	1	0	0	1	0	0	0
+197	Qianjiang picorna-like virus 114	Picornaviridae	6	1	1	0	1	16	1	0	0	1	0	0	0
+218	Qianjiang picorna-like virus 101	Picornaviridae	6	1	1	0	1	16	1	0	0	1	0	0	0
+219	Qianjiang picorna-like virus 110	Picornaviridae	6	1	1	0	1	16	1	0	0	1	0	0	0
+229	Qianjiang picorna-like virus 105	Picornaviridae	6	1	1	0	1	16	1	0	0	1	0	0	0
+233	Qianjiang picorna-like virus 10	Picornaviridae	6	1	1	0	1	16	1	0	0	1	0	0	0
+243	Macrobrachium rosenbergii virus 8	Dicistroviridae	6	1	1	0	1	170	1	0	0	1	0	0	0
+283	Qianjiang picorna-like virus 108	Picornaviridae	6	1	1	0	1	16	1	0	0	1	0	0	0
+303	Qianjiang picorna-like virus 102	Picornaviridae	6	1	1	0	1	16	1	0	0	1	0	0	0
+344	Qianjiang picorna-like virus 113	Picornaviridae	6	1	1	0	1	16	1	0	0	1	0	0	0
+349	Eriocheir sinensis noda-like virus	Nodaviridae	6	1	1	0	1	40	1	0	0	1	0	0	0
+351	Qianjiang picorna-like virus 111	Picornaviridae	6	1	1	0	1	16	1	0	0	1	0	0	0
+400	Qianjiang picorna-like virus 107	Picornaviridae	6	1	1	0	1	16	1	0	0	1	0	0	0
+416	Qianjiang picorna-like virus 11	Picornaviridae	6	1	1	0	1	16	1	0	0	1	0	0	0
+431	Elliovirales sp.	Phenuiviridae	6	1	1	0	1	4	1	1	0	0	0	0	0
+441	Brine shrimp dicistrovirus 1	Dicistroviridae	6	1	1	0	1	738	1	0	0	1	0	0	0
+455	Qianjiang picorna-like virus 115	Picornaviridae	6	1	1	0	1	16	1	0	0	1	0	0	0
+466	Iridovirus CN01	Iridoviridae	6	1	1	0	1	8	1	0	0	1	0	0	0
+468	Eriocheir sinensis dicistrovirus 1	Dicistroviridae	6	1	1	0	1	42	1	0	0	1	0	0	0
+478	Picornavirales sp. 2	Picornaviridae	6	1	1	0	1	4	1	0	0	1	0	0	0
+491	Qianjiang picorna-like virus 106	Picornaviridae	6	1	1	0	1	16	1	0	0	1	0	0	0
+514	Qianjiang picorna-like virus 104	Picornaviridae	6	1	1	0	1	16	1	0	0	1	0	0	0
+519	Macrobrachium rosenbergii virus 9	Dicistroviridae	6	1	1	0	1	170	1	0	0	1	0	0	0
+88	Callinectes sapidus reovirus	Reoviridae	6	0	1	0	1	51	1	1	0	1	0	0	0
+546	Ostreid herpesvirus 1 microvariant	Malacoherpesviridae	6	0	1	0	0	155	1	0	1	3	6	0	0

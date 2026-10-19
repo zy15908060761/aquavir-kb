@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use AquaVir-KB, please cite the database paper or this release."
+title: "AquaVir-KB: a curated knowledge base of viruses in aquatic invertebrates"
+version: "1.0"
+date-released: "2026-10-19"
+repository-code: "https://github.com/zy15908060761/aquavir-kb"
+license: "CC-BY-NC-ND-4.0"
+authors:
+  - family-names: "AquaVir-KB Team"
+    affiliation: "AquaVir-KB project"

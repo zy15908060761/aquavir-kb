@@ -1,0 +1,48 @@
+set_name,unit,source_object,filter,dedup,scope,version_lib,version_public,count,script,relation
+Strict target isolates,isolate record,analysis_strict_target_isolates,"isolate_id in isolate_curated_profiles where curation_status<>'conflict_open'",none,public,490ba87a(2026-10-05),same,5403,build_stat_dict_20261016.py#1,-
+Virus entries (strict target),distinct virus master record,analysis_strict_target_isolates,same as above,COUNT(DISTINCT master_id),public,same,same,893,#1,intersects core(678); minus core(215)
+Core target viruses,core target virus (view row),v_core_target_viruses,view definition,none,public,same,same,779,#1,minus strict(101)
+Evidence (analysis set),evidence record,analysis_reviewed_evidence_records,"curation_status='manual_checked' AND reference_id IS NOT NULL",none,public,same,same,93168,#1,subset of 93180
+Proteins (annotated),protein record,viral_proteins,none,none,public,same,same,29004,#1,-
+References,literature record,ref_literatures,none,none,public,same,same,9069,#1,-
+All isolates,isolate record,viral_isolates,none,none,internal,same,same,17867,#1,superset
+Metagenomic candidates,candidate sequence,analysis_metagenomic_candidates,none,none,internal,same,same,8008,#1,disjoint from strict
+Virus entries (raw master),virus master row,virus_master,none,none,internal,same,same,3531,#1,-
+Broad target isolates,isolate record,analysis_target_isolates,none,none,internal,same,same,5536,#6,superset of strict by 133 conflict_open
+Countries,distinct country,sample_collections,not null/empty + Taiwan->China,CASE Taiwan->China,public,same,same,62,#1,raw=63
+Host entries (imported),host entry,crustacean_hosts,none,none,internal,278,277,277,#2,-
+Host entries (public),host entry,crustacean_hosts,host_scope_status NOT LIKE 'excluded%',none,public,244,243,243,#2,-
+Host entries with curated virus association,host entry,crustacean_hosts,host_scope_status LIKE 'target%',none,public,159,158,158,#2,not synonym-normalised
+strict_target_hosts,distinct host_id,infection_records x strict isolates,host_id not null + withdrawal predicate,DISTINCT,public,125,121,121,measure_hosts_page2.py,-
+Phyla covered,distinct phylum,crustacean_hosts,host_scope_status LIKE 'target%',DISTINCT,public,8,8,8,#2,-
+/hosts page list,host entry,crustacean_hosts,target% AND >=1 association,none,public,114,110,110,measure_hosts_page2.py,-
+Graded assessment rows,assessment row (isolate-level),host_association_assessment,withdrawal predicate,none,public,9522,4956,4956,#3,not a pair count
+confirmed_infection rows,assessment row,host_association_assessment,association_tier='confirmed_infection' + withdrawal,none,public,812,736,736,#3,-
+disease_associated rows,assessment row,host_association_assessment,association_tier='disease_associated' + withdrawal,none,public,1889,1749,1749,#3,-
+candidate_or_context rows,assessment row,host_association_assessment,association_tier='candidate_or_context' + withdrawal,none,public,6077,1764,1764,#3,-
+excluded_host rows,assessment row,host_association_assessment,association_tier='excluded_host' + withdrawal,none,public,710,701,701,#3,-
+needs_reference rows,assessment row,host_association_assessment,association_tier='needs_reference' + withdrawal,none,public,34,6,6,#3,-
+Confirmed pairs,distinct (master_id,host_id),host_association_assessment,confirmed + withdrawal,DISTINCT,public,10,7,7,#3,-
+Network edges,distinct (master_id,host_id),host_association_assessment,confirmed OR disease + withdrawal,DISTINCT,public,92,83,83,#3,-
+Withdrawn batch,assessment row,host_association_assessment,host_id=37 OR record_id IN(523),none,internal->withdrawn,same,4566,4566,#3,-
+WSSV strict isolates,isolate record,analysis_strict_target_isolates,master_id=1,none,public,same,same,1188,#4,-
+WSSV analysis evidence,evidence record,analysis_reviewed_evidence_records,virus_master_id=1,none,public,same,same,3062,#4,-
+WSSV graded rows,assessment row,host_association_assessment,master_id=1 + withdrawal,none,public,1193,1188,1188,#4,5 excluded rows withdrawn
+OsHV-1 (546) strict isolates,isolate record,analysis_strict_target_isolates,master_id=546,none,public,same,same,1,#4,-
+OsHV-1 (1304) strict isolates,isolate record,analysis_strict_target_isolates,master_id=1304,none,public,same,same,803,#4,-
+OsHV-1 union isolates,isolate record,union 546+1304,no overlap,none,public,same,same,804,#4,-
+OsHV-1 analysis evidence,evidence record,analysis_reviewed_evidence_records,virus_master_id IN (546,1304),none,public,same,same,936,#4,155+781
+OsHV-1 distinct claim,distinct claim string,analysis_reviewed_evidence_records,same + COUNT(DISTINCT claim),DISTINCT,public,same,same,646,#4,string-level
+RdRp classification set,sequence,rdrp_classification_v2,none,none,public,same,same,1213,#5,865 high/156 med/192 low
+RdRp browsable (/api/rdrp),protein,viral_proteins,"is_rdrp=1 AND functional_annotation_status<>'rule_suggested_unreviewed' AND strict isolate",none,public,same,same,776,diag,-
+RdRp overlap,sequence/protein,accession=sequence_id intersection,see above,DISTINCT,public,same,same,124,diag,-
+AlphaFold structures,structure model,uniprot_structures,none,none,public,same,same,6203,part2#A,-
+Structure-flagged proteins,protein,protein_annotation_bridge,has_structure=1,COUNT(DISTINCT protein_id),public,same,same,22,part2#A,ESMFold scope
+InterPro-covered proteins,protein,interpro_annotations,none,COUNT(DISTINCT protein_id),public,same,same,25671,part2#A,-
+GO-covered proteins,protein,interpro_go_terms,none,COUNT(DISTINCT protein_id),public,same,same,22620,part2#A,source table corrected
+UniProt protein links,link,uniprot_protein_links,none,none,public,same,same,11351,part2#A,-
+KEGG annotation rows,annotation row,kegg_annotations,none,none,public,same,same,18620,part2#A,rows not proteins
+KEGG pathway-linked proteins,protein,kegg_protein_pathways,none,COUNT(DISTINCT protein_id),public,same,same,13,part2#A,-
+Schema objects,schema object,sqlite_master,incl sqlite_% internal,none,internal,same,same,481,part2#F,"139 tables+46 views+3 triggers+293 indexes"
+conflict_open isolates,isolate record,isolate_curated_profiles,curation_status='conflict_open',none,internal,same,same,136,diag,133 in broad-strict; 3 outside target
+BLAST snapshot,sequence,server blast dir,build 2026-10-05,none,public,same,same,5911/28956,NOT_IN_FROZEN_DB,pending verification
